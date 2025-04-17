@@ -1,5 +1,6 @@
 package put.inf154030.frog.login_pages
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,10 +40,13 @@ class InitialActivity : ComponentActivity() {
                                 .fillMaxSize(0.75f)
                         )
                         Button(
-                            onClick = {},
+                            onClick = {
+                                val intent = Intent(this@InitialActivity, LogInActivity::class.java)
+                                startActivity(intent)
+                            },
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
-                                .fillMaxWidth(0.5f),
+                                .fillMaxWidth(0.65f),
                         ) {
                             Text(
                                 text = "Log In"
@@ -52,7 +56,7 @@ class InitialActivity : ComponentActivity() {
                             onClick = {},
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
-                                .fillMaxWidth(0.5f),
+                                .fillMaxWidth(0.65f),
                         ) {
                             Text(
                                 text = "Sign Up"
