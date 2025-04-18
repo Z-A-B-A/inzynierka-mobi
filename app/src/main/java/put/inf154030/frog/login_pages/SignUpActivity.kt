@@ -35,11 +35,158 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
 
-class SignInActivity : AppCompatActivity() {
+class SignUpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
+            FrogTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.size(64.dp))
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "App logo",
+                            modifier = Modifier
+                                .fillMaxWidth(0.75f)
+                                .height(128.dp)
+                        )
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Bottom
+                        ) {
+                            var name by remember { mutableStateOf("") }
+                            BasicTextField(
+                                value = name,
+                                onValueChange = { newValue -> name = newValue },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .size(40.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp
+                                ),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (name.isEmpty()) {
+                                            Text("Name")
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.size(16.dp))
+                            var email by remember { mutableStateOf("") }
+                            BasicTextField(
+                                value = email,
+                                onValueChange = { newValue -> email = newValue },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .size(40.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp
+                                ),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (email.isEmpty()) {
+                                            Text("E-mail")
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.size(16.dp))
+                            var password by remember { mutableStateOf("") }
+                            BasicTextField(
+                                value = password,
+                                onValueChange = { newValue -> password = newValue },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .size(40.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp
+                                ),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (password.isEmpty()) {
+                                            Text("Password")
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.size(16.dp))
+                            var passwordConfirmation by remember { mutableStateOf("") }
+                            BasicTextField(
+                                value = passwordConfirmation,
+                                onValueChange = { newValue -> passwordConfirmation = newValue },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .size(40.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp
+                                ),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (passwordConfirmation.isEmpty()) {
+                                            Text("Confirm password")
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.size(64.dp))
+                            Button(
+                                onClick = {},
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f),
+                            ) {
+                                Text(
+                                    text = "Sign Up",
+                                )
+                            }
+                            Spacer(modifier = Modifier.size(64.dp))
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -56,142 +203,6 @@ fun DefaultPreview() {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.size(64.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "App logo",
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(128.dp)
-                )
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    var name by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = name,
-                        onValueChange = { newValue -> name = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (name.isEmpty()) {
-                                    Text("Name")
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    var email by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = email,
-                        onValueChange = { newValue -> email = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (email.isEmpty()) {
-                                    Text("E-mail")
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    var password by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = password,
-                        onValueChange = { newValue -> password = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (password.isEmpty()) {
-                                    Text("Password")
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    var passwordConfirmation by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = passwordConfirmation,
-                        onValueChange = { newValue -> passwordConfirmation = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (passwordConfirmation.isEmpty()) {
-                                    Text("Confirm password")
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(64.dp))
-                    Button(
-                        onClick = {},
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f),
-                    ) {
-                        Text(
-                            text = "Sign Up",
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(64.dp))
-                }
             }
         }
     }

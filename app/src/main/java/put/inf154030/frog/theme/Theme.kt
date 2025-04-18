@@ -1,7 +1,6 @@
 package put.inf154030.frog.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -26,7 +25,6 @@ val PoppinsFamily = FontFamily(
 
 @Composable
 fun FrogTheme(
-    darkTheme: Boolean = false, // You can use isSystemInDarkTheme() for system theme
     content: @Composable () -> Unit
 ) {
     val colorScheme = ColorScheme

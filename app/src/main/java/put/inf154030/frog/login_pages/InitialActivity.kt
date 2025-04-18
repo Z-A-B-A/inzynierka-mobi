@@ -53,7 +53,10 @@ class InitialActivity : ComponentActivity() {
                             )
                         }
                         Button(
-                            onClick = {},
+                            onClick = {
+                                val intent = Intent(this@InitialActivity, SignUpActivity::class.java)
+                                startActivity(intent)
+                            },
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
                                 .fillMaxWidth(0.65f),
