@@ -13,7 +13,7 @@ import put.inf154030.frog.R
 // Define your color palette
 private val ColorScheme = lightColorScheme(
     primary = Color(0xFF626C4D),
-    secondary = Color(0xFFD9D9D9),
+    secondary = Color(0xFFFFFFFF),
     background = Color(0xFF0D2606), // Light background
     surface = Color.White,
 )

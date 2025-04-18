@@ -13,6 +13,9 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".login_pages.SignInActivity"
+            android:exported="false" />
+        <activity
             android:name=".login_pages.LogInActivity"
             android:exported="false" />
         <activity
