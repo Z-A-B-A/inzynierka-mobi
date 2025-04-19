@@ -1,6 +1,7 @@
 package put.inf154030.frog.login_pages
 
 import android.os.Bundle
+import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -94,6 +95,11 @@ class SignUpActivity : ComponentActivity() {
                             )
                             Spacer(modifier = Modifier.size(16.dp))
                             var email by remember { mutableStateOf("") }
+                            val emailValid = remember {
+                                derivedStateOf {
+                                    Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                                }
+                            }
                             BasicTextField(
                                 value = email,
                                 onValueChange = { newValue -> email = newValue },
@@ -120,6 +126,16 @@ class SignUpActivity : ComponentActivity() {
                                     }
                                 }
                             )
+                            if (email.isNotEmpty() && !emailValid.value) {
+                                Text(
+                                    text = "Enter valid email address.",
+                                    color = Color.Red,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.65f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                             Spacer(modifier = Modifier.size(16.dp))
                             var password by remember { mutableStateOf("") }
                             val passwordValid = remember {
