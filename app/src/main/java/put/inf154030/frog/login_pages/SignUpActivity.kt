@@ -1,5 +1,6 @@
 package put.inf154030.frog.login_pages
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import androidx.activity.ComponentActivity
@@ -38,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
+import put.inf154030.frog.locations.LocationsActivity
 import put.inf154030.frog.theme.FrogTheme
 
 class SignUpActivity : ComponentActivity() {
@@ -228,7 +230,17 @@ class SignUpActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.size(64.dp))
                             Button(
                                 onClick = {
-
+                                    if (
+                                        name.isNotEmpty()
+                                        && email.isNotEmpty()
+                                        && password.isNotEmpty()
+                                        && passwordValid.value
+                                        && passwordsMatch.value
+                                        ){
+                                        // TODO: /auth/register
+                                        val intent = Intent(this@SignUpActivity, LocationsActivity::class.java)
+                                        startActivity(intent)
+                                    }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth(0.65f),

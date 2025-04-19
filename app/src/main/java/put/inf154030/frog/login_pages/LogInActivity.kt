@@ -1,10 +1,13 @@
 package put.inf154030.frog.login_pages
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,10 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
+import put.inf154030.frog.locations.LocationsActivity
 import put.inf154030.frog.theme.FrogTheme
 
 class LogInActivity : ComponentActivity() {
@@ -118,9 +123,23 @@ class LogInActivity : ComponentActivity() {
                                     }
                                 }
                             )
-                            Spacer(modifier = Modifier.size(64.dp))
+                            Spacer(modifier = Modifier.size(32.dp))
+                            Text(
+                                text = "-- forgot password? --",
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontSize = 16.sp,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier
+                                    .clickable {  }
+                                    .padding(8.dp)
+                            )
+                            Spacer(modifier = Modifier.size(32.dp))
                             Button(
-                                onClick = {},
+                                onClick = {
+                                    // TODO: /auth/login
+                                    val intent = Intent(this@LogInActivity, LocationsActivity::class.java)
+                                    startActivity(intent)
+                                },
                                 modifier = Modifier
                                     .fillMaxWidth(0.65f),
                             ) {
@@ -218,7 +237,17 @@ fun LogInActivityPreview() {
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.size(64.dp))
+                    Spacer(modifier = Modifier.size(32.dp))
+                    Text(
+                        text = "-- forgot password? --",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 16.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .clickable {  }
+                            .padding(8.dp)
+                    )
+                    Spacer(modifier = Modifier.size(32.dp))
                     Button(
                         onClick = {},
                         modifier = Modifier
