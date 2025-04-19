@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true)
 @Composable
-fun DefaultPreview() {
+fun MainActivityPreview() {
     FrogTheme {
         Box(
             modifier = Modifier.fillMaxSize(),
