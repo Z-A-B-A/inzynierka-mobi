@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
@@ -102,6 +103,7 @@ class LogInActivity : ComponentActivity() {
                                 textStyle = TextStyle(
                                     fontSize = 16.sp
                                 ),
+                                visualTransformation = PasswordVisualTransformation(),
                                 decorationBox = { innerTextField ->
                                     Box(
                                         modifier = Modifier.padding(horizontal = 16.dp),
