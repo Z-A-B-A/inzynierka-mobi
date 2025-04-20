@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.locations.LocationsActivity
 import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 
 class SignUpActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +90,7 @@ class SignUpActivity : ComponentActivity() {
                                         contentAlignment = Alignment.CenterStart
                                     ) {
                                         if (name.isEmpty()) {
-                                            Text("Name")
+                                            Text("Name", fontFamily = PoppinsFamily)
                                         }
                                         innerTextField()
                                     }
@@ -122,7 +123,7 @@ class SignUpActivity : ComponentActivity() {
                                         contentAlignment = Alignment.CenterStart
                                     ) {
                                         if (email.isEmpty()) {
-                                            Text("E-mail")
+                                            Text("E-mail", fontFamily = PoppinsFamily)
                                         }
                                         innerTextField()
                                     }
@@ -133,6 +134,7 @@ class SignUpActivity : ComponentActivity() {
                                     text = "Enter valid email address.",
                                     color = Color.Red,
                                     fontSize = 14.sp,
+                                    fontFamily = PoppinsFamily,
                                     modifier = Modifier
                                         .fillMaxWidth(0.65f),
                                     textAlign = TextAlign.Center
@@ -160,7 +162,8 @@ class SignUpActivity : ComponentActivity() {
                                     ),
                                 singleLine = true,
                                 textStyle = TextStyle(
-                                    fontSize = 16.sp
+                                    fontSize = 16.sp,
+                                    fontFamily = PoppinsFamily
                                 ),
                                 visualTransformation = PasswordVisualTransformation(),
                                 decorationBox = { innerTextField ->
@@ -169,7 +172,7 @@ class SignUpActivity : ComponentActivity() {
                                         contentAlignment = Alignment.CenterStart
                                     ) {
                                         if (password.isEmpty()) {
-                                            Text("Password")
+                                            Text("Password", fontFamily = PoppinsFamily)
                                         }
                                         innerTextField()
                                     }
@@ -180,6 +183,7 @@ class SignUpActivity : ComponentActivity() {
                                     text = "Password must have at least 8 characters, 1 uppercase, 1 lowercase, and 1 number.",
                                     color = Color.Red,
                                     fontSize = 14.sp,
+                                    fontFamily = PoppinsFamily,
                                     modifier = Modifier
                                         .fillMaxWidth(0.65f),
                                     textAlign = TextAlign.Center
@@ -202,7 +206,8 @@ class SignUpActivity : ComponentActivity() {
                                     ),
                                 singleLine = true,
                                 textStyle = TextStyle(
-                                    fontSize = 16.sp
+                                    fontSize = 16.sp,
+                                    fontFamily = PoppinsFamily
                                 ),
                                 visualTransformation = PasswordVisualTransformation(),
                                 decorationBox = { innerTextField ->
@@ -211,7 +216,7 @@ class SignUpActivity : ComponentActivity() {
                                         contentAlignment = Alignment.CenterStart
                                     ) {
                                         if (passwordConfirmation.isEmpty()) {
-                                            Text("Confirm password")
+                                            Text("Confirm password", fontFamily = PoppinsFamily)
                                         }
                                         innerTextField()
                                     }
@@ -222,6 +227,7 @@ class SignUpActivity : ComponentActivity() {
                                     text = "Password do not match.",
                                     color = Color.Red,
                                     fontSize = 14.sp,
+                                    fontFamily = PoppinsFamily,
                                     modifier = Modifier
                                         .fillMaxWidth(0.65f),
                                     textAlign = TextAlign.Center
@@ -247,6 +253,7 @@ class SignUpActivity : ComponentActivity() {
                             ) {
                                 Text(
                                     text = "Sign Up",
+                                    fontFamily = PoppinsFamily
                                 )
                             }
                             Spacer(modifier = Modifier.size(64.dp))
@@ -296,7 +303,8 @@ fun SignUpActivityPreview() {
                             ),
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = PoppinsFamily
                         ),
                         decorationBox = { innerTextField ->
                             Box(
@@ -304,7 +312,7 @@ fun SignUpActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (name.isEmpty()) {
-                                    Text("Name")
+                                    Text("Name", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -324,7 +332,8 @@ fun SignUpActivityPreview() {
                             ),
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = PoppinsFamily
                         ),
                         decorationBox = { innerTextField ->
                             Box(
@@ -332,7 +341,7 @@ fun SignUpActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (email.isEmpty()) {
-                                    Text("E-mail")
+                                    Text("E-mail", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -352,7 +361,8 @@ fun SignUpActivityPreview() {
                             ),
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = PoppinsFamily
                         ),
                         visualTransformation = PasswordVisualTransformation(),
                         decorationBox = { innerTextField ->
@@ -361,7 +371,7 @@ fun SignUpActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (password.isEmpty()) {
-                                    Text("Password")
+                                    Text("Password", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -381,7 +391,8 @@ fun SignUpActivityPreview() {
                             ),
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = PoppinsFamily
                         ),
                         visualTransformation = PasswordVisualTransformation(),
                         decorationBox = { innerTextField ->
@@ -390,7 +401,7 @@ fun SignUpActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (passwordConfirmation.isEmpty()) {
-                                    Text("Confirm password")
+                                    Text("Confirm password", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -406,6 +417,7 @@ fun SignUpActivityPreview() {
                     ) {
                         Text(
                             text = "Sign Up",
+                            fontFamily = PoppinsFamily
                         )
                     }
                     Spacer(modifier = Modifier.size(64.dp))

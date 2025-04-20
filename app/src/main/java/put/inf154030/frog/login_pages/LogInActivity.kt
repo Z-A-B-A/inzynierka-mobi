@@ -2,7 +2,6 @@ package put.inf154030.frog.login_pages
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.locations.LocationsActivity
 import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -202,7 +202,7 @@ fun LogInActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (email.isEmpty()) {
-                                    Text("E-mail")
+                                    Text("E-mail", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -231,7 +231,7 @@ fun LogInActivityPreview() {
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 if (password.isEmpty()) {
-                                    Text("Password")
+                                    Text("Password", fontFamily = PoppinsFamily)
                                 }
                                 innerTextField()
                             }
@@ -242,6 +242,7 @@ fun LogInActivityPreview() {
                         text = "-- forgot password? --",
                         color = MaterialTheme.colorScheme.secondary,
                         fontSize = 16.sp,
+                        fontFamily = PoppinsFamily,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier
                             .clickable {  }
@@ -255,6 +256,7 @@ fun LogInActivityPreview() {
                     ) {
                         Text(
                             text = "Log In",
+                            fontFamily = PoppinsFamily
                         )
                     }
                     Spacer(modifier = Modifier.size(64.dp))

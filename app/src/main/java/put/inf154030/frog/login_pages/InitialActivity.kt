@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 
 class InitialActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +52,8 @@ class InitialActivity : ComponentActivity() {
                                 .fillMaxWidth(0.65f),
                         ) {
                             Text(
-                                text = "Log In"
+                                text = "Log In",
+                                fontFamily = PoppinsFamily
                             )
                         }
                         Button(
@@ -64,7 +66,8 @@ class InitialActivity : ComponentActivity() {
                                 .fillMaxWidth(0.65f),
                         ) {
                             Text(
-                                text = "Sign Up"
+                                text = "Sign Up",
+                                fontFamily = PoppinsFamily
                             )
                         }
                     }
@@ -99,7 +102,8 @@ fun InitialActivityPreview() {
                         .fillMaxWidth(0.65f),
                 ) {
                     Text(
-                        text = "Log In"
+                        text = "Log In",
+                        fontFamily = PoppinsFamily
                     )
                 }
                 Button(
@@ -109,7 +113,8 @@ fun InitialActivityPreview() {
                         .fillMaxWidth(0.65f),
                 ) {
                     Text(
-                        text = "Sign Up"
+                        text = "Sign Up",
+                        fontFamily = PoppinsFamily
                     )
                 }
             }
