@@ -13,7 +13,8 @@ import put.inf154030.frog.R
 private val ColorScheme = lightColorScheme(
     primary = Color(0xFF626C4D),
     secondary = Color(0xFFFFFFFF),
-    background = Color(0xFF0D2606), // Light background
+    tertiary = Color(0xFFF2E3C6),
+    background = Color(0xFF0D2606),
     surface = Color.White,
 )
 
