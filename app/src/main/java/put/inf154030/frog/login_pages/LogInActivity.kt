@@ -2,6 +2,7 @@ package put.inf154030.frog.login_pages
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -22,7 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,13 +34,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.locations.LocationsActivity
+import put.inf154030.frog.models.requests.LoginRequest
+import put.inf154030.frog.models.responses.AuthResponse
+import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +75,9 @@ class LogInActivity : ComponentActivity() {
                             verticalArrangement = Arrangement.Bottom
                         ) {
                             var email by remember { mutableStateOf("") }
+                            val emailValid = remember {
+                                derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
+                            }
                             BasicTextField(
                                 value = email,
                                 onValueChange = { newValue -> email = newValue },
@@ -134,132 +144,79 @@ class LogInActivity : ComponentActivity() {
                                     .padding(8.dp)
                             )
                             Spacer(modifier = Modifier.size(32.dp))
+                            var isLoading by remember { mutableStateOf(false) }
+                            var errorMessage by remember { mutableStateOf<String?>(null) }
                             Button(
                                 onClick = {
-                                    // TODO: /auth/login
-                                    val intent = Intent(this@LogInActivity, LocationsActivity::class.java)
-                                    startActivity(intent)
+                                    if (email.isNotEmpty() && password.isNotEmpty() && emailValid.value) {
+                                        isLoading = true
+                                        errorMessage = null
+
+                                        val loginRequest = LoginRequest(
+                                            email = email,
+                                            password = password
+                                        )
+
+                                        ApiClient.apiService.loginUser(loginRequest).enqueue(object :
+                                            Callback<AuthResponse> {
+                                            override fun onResponse(
+                                                call: Call<AuthResponse>,
+                                                response: Response<AuthResponse>
+                                            ) {
+                                                isLoading = false
+                                                if (response.isSuccessful) {
+                                                    response.body()?.let { authResponse ->
+                                                        // Save token in SessionManager - updated to use the singleton object
+                                                        SessionManager.saveAuthToken(authResponse.token)
+
+                                                        // Optionally, save user info if needed
+                                                        authResponse.user.let { user ->
+                                                            SessionManager.saveUserInfo(
+                                                                user.id.toString(),
+                                                                user.name,
+                                                                user.email
+                                                            )
+                                                        }
+
+                                                        // Navigate to locations
+                                                        val intent = Intent(this@LogInActivity, LocationsActivity::class.java)
+                                                        startActivity(intent)
+                                                        finish()
+                                                    } ?: run {
+                                                        errorMessage = "Empty response received"
+                                                    }
+                                                } else {
+                                                    errorMessage = try {
+                                                        response.errorBody()?.string() ?: "Login failed"
+                                                    } catch (e: Exception) {
+                                                        "Login failed: ${e.message}"
+                                                    }
+                                                }
+                                            }
+
+                                            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                                                isLoading = false
+                                                errorMessage = "Network error: ${t.message}"
+                                            }
+                                        })
+                                    } else if (!emailValid.value) {
+                                        errorMessage = "Please enter a valid email address"
+                                    } else {
+                                        errorMessage = "Please enter email and password"
+                                    }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth(0.65f),
+                                enabled = !isLoading
                             ) {
                                 Text(
-                                    text = "Log In",
+                                    text = if (isLoading) "Logging in..." else "Log In",
+                                    fontFamily = PoppinsFamily
                                 )
                             }
                             Spacer(modifier = Modifier.size(64.dp))
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LogInActivityPreview() {
-    FrogTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.size(64.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "App logo",
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(128.dp)
-                )
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    var email by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = email,
-                        onValueChange = { newValue -> email = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (email.isEmpty()) {
-                                    Text("E-mail", fontFamily = PoppinsFamily)
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    var password by remember { mutableStateOf("") }
-                    BasicTextField(
-                        value = password,
-                        onValueChange = { newValue -> password = newValue },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 16.sp
-                        ),
-                        visualTransformation = PasswordVisualTransformation(),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (password.isEmpty()) {
-                                    Text("Password", fontFamily = PoppinsFamily)
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.size(32.dp))
-                    Text(
-                        text = "-- forgot password? --",
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontSize = 16.sp,
-                        fontFamily = PoppinsFamily,
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier
-                            .clickable {  }
-                            .padding(8.dp)
-                    )
-                    Spacer(modifier = Modifier.size(32.dp))
-                    Button(
-                        onClick = {},
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f),
-                    ) {
-                        Text(
-                            text = "Log In",
-                            fontFamily = PoppinsFamily
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(64.dp))
                 }
             }
         }
