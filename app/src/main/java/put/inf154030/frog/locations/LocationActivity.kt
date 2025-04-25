@@ -31,84 +31,97 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
-import put.inf154030.frog.fragments.LocationCard
+import put.inf154030.frog.fragments.BackButton
+import put.inf154030.frog.fragments.ContainerCard
+import put.inf154030.frog.fragments.FilterButtonsRow
 import put.inf154030.frog.fragments.SideMenu
 import put.inf154030.frog.fragments.TopNavigationBar
-import put.inf154030.frog.models.Location
-import put.inf154030.frog.models.responses.LocationsResponse
+import put.inf154030.frog.models.Container
+import put.inf154030.frog.models.responses.ContainersResponse
 import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LocationsActivity : ComponentActivity() {
-    private lateinit var addLocationLauncher: ActivityResultLauncher<Intent>
-    private var locationsList by mutableStateOf<List<Location>>(emptyList())
+class LocationActivity : ComponentActivity() {
+    private lateinit var addContainerLauncher: ActivityResultLauncher<Intent>
+    private var containersList by mutableStateOf<List<Container>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
-    private val userName = SessionManager.getUserName()
+    private var locationId: Int = -1
+    private var locationName: String = "Location"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        locationId = intent.getIntExtra("LOCATION_ID", -1)
+        locationName = intent.getStringExtra("LOCATION_NAME") ?: "Location"
+
         // Initialize activity result launcher
-        addLocationLauncher = registerForActivityResult(
+        addContainerLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            // When returning from AddLocationActivity, refresh the locations
-            loadLocations()
+            loadContainers()
         }
 
         setContent {
             FrogTheme {
-                LocationsScreen(
-                    userName = userName,
-                    locations = locationsList,
+                LocationScreen(
+                    locationName = locationName,
+                    containers = containersList,
                     isLoading = isLoading,
                     errorMessage = errorMessage,
-                    onAddLocationClick = {
-                        val intent = Intent(this, AddLocationActivity::class.java)
-                        addLocationLauncher.launch(intent)
+                    onBackClick = { finish() },
+                    onAddContainerClick = {
+//                        val intent = Intent(this, AddContainerActivity::class.java)
+//                        intent.putExtra("LOCATION_ID", locationId)
+//                        addContainerLauncher.launch(intent)
                     },
-                    onLocationClick = { location ->
-                        val intent = Intent(this, LocationActivity::class.java)
-                        intent.putExtra("LOCATION_ID", location.id)
-                        intent.putExtra("LOCATION_NAME", location.name)
-                        startActivity(intent)
+                    onContainerClick = { container ->
+//                        val intent = Intent(this, ContainerDetailActivity::class.java)
+//                        intent.putExtra("CONTAINER_ID", container.id)
+//                        startActivity(intent)
                     },
-                    onEditClick = { location ->
-                        TODO()
+                    onEditClick = { container ->
+//                        val intent = Intent(this, EditContainerActivity::class.java)
+//                        intent.putExtra("CONTAINER_ID", container.id)
+//                        addContainerLauncher.launch(intent)
                     }
                 )
             }
         }
         // Load locations when activity is created
-        loadLocations()
+        loadContainers()
     }
 
-    private fun loadLocations() {
+    private fun loadContainers() {
+        if (locationId == -1) {
+            errorMessage = "Invalid location ID"
+            return
+        }
+
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getLocations().enqueue(object : Callback<LocationsResponse> {
+        ApiClient.apiService.getContainers(locationId).enqueue(object : Callback<ContainersResponse> {
             override fun onResponse(
-                call: Call<LocationsResponse>,
-                response: Response<LocationsResponse>
+                call: Call<ContainersResponse>,
+                response: Response<ContainersResponse>
             ) {
                 isLoading = false
                 if (response.isSuccessful) {
-                    locationsList = response.body()?.locations ?: emptyList()
+                    containersList = response.body()?.containers ?: emptyList()
                 } else {
                     errorMessage = "Failed to load locations: ${response.message()}"
                 }
             }
 
-            override fun onFailure(call: Call<LocationsResponse>, t: Throwable) {
+            override fun onFailure(call: Call<ContainersResponse>, t: Throwable) {
                 isLoading = false
                 errorMessage = "Network error: ${t.message}"
             }
@@ -118,16 +131,25 @@ class LocationsActivity : ComponentActivity() {
 }
 
 @Composable
-fun LocationsScreen(
-    userName: String? = "XYZ",
-    locations: List<Location> = emptyList(),
+fun LocationScreen(
+    locationName: String,
+    containers: List<Container> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
-    onAddLocationClick: () -> Unit = {},
-    onLocationClick: (Location) -> Unit = {},
-    onEditClick: (Location) -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onAddContainerClick: () -> Unit = {},
+    onContainerClick: (Container) -> Unit = {},
+    onEditClick: (Container) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf("all") }
+
+    val filteredContainers = when (selectedFilter) {
+        "aquariums" -> containers.filter { it.type.lowercase() == "aquarium" }
+        "terrariums" -> containers.filter { it.type.lowercase() == "terrarium" }
+        else -> containers // "all" or any other case
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -140,8 +162,19 @@ fun LocationsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TopNavigationBar(
-                    title = "Hi, $userName!",
+                    title = locationName,
                     onMenuClick = { showMenu = !showMenu }
+                )
+                Box (
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    BackButton { onBackClick() }
+                }
+
+                FilterButtonsRow(
+                    selectedFilter = selectedFilter,
+                    onFilterSelected = { filter -> selectedFilter = filter }
                 )
 
                 // Show loading indicator if needed
@@ -171,7 +204,7 @@ fun LocationsScreen(
                 }
 
                 // This is the scrollable content
-                if (locations.isEmpty()) {
+                else if (filteredContainers.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -179,7 +212,8 @@ fun LocationsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No locations added yet",
+                            text = if (containers.isEmpty()) "No containers added yet"
+                            else "No ${selectedFilter.dropLast(1)}s in this location",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium
@@ -194,11 +228,12 @@ fun LocationsScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
-                        items(locations) { location ->
-                            LocationCard(
-                                locationName = location.name,
-                                onEditClick = { onEditClick(location) },
-                                onClick = { onLocationClick(location) }
+                        items(filteredContainers) { container ->
+                            ContainerCard(
+                                containerName = container.name,
+                                containerType = container.type,
+                                onEditClick = { onEditClick(container) },
+                                onClick = { onContainerClick(container) }
                             )
                         }
                     }
@@ -207,14 +242,14 @@ fun LocationsScreen(
 
             // Floating action button
             IconButton(
-                onClick = { onAddLocationClick() },
+                onClick = onAddContainerClick,
                 modifier = Modifier
                     .padding(bottom = 48.dp, end = 32.dp)
                     .align(Alignment.BottomEnd)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.add_buton),
-                    contentDescription = "Add new location",
+                    contentDescription = "Add new container",
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(48.dp)
                 )
@@ -224,6 +259,26 @@ fun LocationsScreen(
         SideMenu(
             isVisible = showMenu,
             onDismiss = { showMenu = false }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun LocationActivityPreview() {
+    FrogTheme {
+        LocationScreen(
+            locationName = "Shop",
+            containers = listOf(
+                Container(1, "Aquarium", "aquarium", "", true, ""),
+                Container(2, "Terrarium", "terrarium", "", true, "")
+            ),
+            isLoading = false,
+            errorMessage = null,
+            onBackClick = {  },
+            onContainerClick = {  },
+            onAddContainerClick = {  },
+            onEditClick = {  }
         )
     }
 }
