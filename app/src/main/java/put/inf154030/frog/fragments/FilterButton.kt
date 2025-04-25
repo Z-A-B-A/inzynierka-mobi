@@ -42,9 +42,6 @@ fun FilterButton(
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 10.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
     }
