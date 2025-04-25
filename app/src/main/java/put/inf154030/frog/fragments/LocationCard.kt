@@ -14,16 +14,19 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import androidx.compose.foundation.clickable
 
 @Composable
 fun LocationCard(
     locationName: String,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp),
+            .height(72.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
@@ -64,7 +67,9 @@ fun LocationCard(
 fun LocationCardPreview() {
     FrogTheme {
         LocationCard(
-            locationName = "Home"
-        ) { }
+            locationName = "Home",
+            onEditClick = {  },
+            onClick = {  }
+        )
     }
 }

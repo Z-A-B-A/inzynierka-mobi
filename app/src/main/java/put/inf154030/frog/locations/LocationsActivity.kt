@@ -77,7 +77,8 @@ fun LocationsScreen(
                         items(locations) { location ->
                             LocationCard(
                                 locationName = location.name,
-                                onEditClick = { /* Handle edit click */ }
+                                onEditClick = { /* Handle edit click */ },
+                                onClick = {  }
                             )
                         }
                     }
