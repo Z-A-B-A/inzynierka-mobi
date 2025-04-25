@@ -17,6 +17,9 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".locations.EditLocationActivity"
+            android:exported="false" />
+        <activity
             android:name=".locations.AddLocationActivity"
             android:exported="false" />
         <activity

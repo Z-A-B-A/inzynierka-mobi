@@ -140,7 +140,7 @@ class LogInActivity : ComponentActivity() {
                                 fontSize = 16.sp,
                                 textDecoration = TextDecoration.Underline,
                                 modifier = Modifier
-                                    .clickable {  }
+                                    .clickable { TODO() }
                                     .padding(8.dp)
                             )
                             Spacer(modifier = Modifier.size(32.dp))

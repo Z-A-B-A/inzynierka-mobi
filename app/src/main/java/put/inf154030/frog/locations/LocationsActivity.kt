@@ -76,10 +76,10 @@ class LocationsActivity : ComponentActivity() {
                         addLocationLauncher.launch(intent)
                     },
                     onLocationClick = { location ->
-                        // Handle location click if needed
+                        TODO()
                     },
                     onEditClick = { location ->
-                        // Handle edit click if needed
+                        TODO()
                     }
                 )
             }
