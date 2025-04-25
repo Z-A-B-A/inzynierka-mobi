@@ -90,7 +90,7 @@ fun TopNavigationBarPreview() {
     FrogTheme {
         TopNavigationBar(
             title = "Locations",
-            onMenuClick = {  }
+            onMenuClick = {}
         )
     }
 }

@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,10 +34,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.fragments.LocationCard
+import put.inf154030.frog.fragments.SideMenu
 import put.inf154030.frog.fragments.TopNavigationBar
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import retrofit2.Call
@@ -48,6 +51,7 @@ class LocationsActivity : ComponentActivity() {
     private var locationsList by mutableStateOf<List<Location>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val userName = SessionManager.getUserName()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +67,7 @@ class LocationsActivity : ComponentActivity() {
         setContent {
             FrogTheme {
                 LocationsScreen(
+                    userName = userName,
                     locations = locationsList,
                     isLoading = isLoading,
                     errorMessage = errorMessage,
@@ -111,6 +116,7 @@ class LocationsActivity : ComponentActivity() {
 
 @Composable
 fun LocationsScreen(
+    userName: String? = "XYZ",
     locations: List<Location> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
@@ -118,6 +124,7 @@ fun LocationsScreen(
     onLocationClick: (Location) -> Unit = {},
     onEditClick: (Location) -> Unit = {}
 ) {
+    var showMenu by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -130,8 +137,8 @@ fun LocationsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TopNavigationBar(
-                    title = "Hi, XYZ!",
-                    onMenuClick = { /* Handle menu click */ }
+                    title = "Hi, $userName!",
+                    onMenuClick = { showMenu = !showMenu }
                 )
 
                 // Show loading indicator if needed
@@ -210,5 +217,10 @@ fun LocationsScreen(
                 )
             }
         }
+
+        SideMenu(
+            isVisible = showMenu,
+            onDismiss = { showMenu = false }
+        )
     }
 }
