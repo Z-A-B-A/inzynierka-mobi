@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,14 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.TopHeaderBar
-import put.inf154030.frog.models.requests.LocationCreateRequest
-import put.inf154030.frog.models.responses.LocationResponse
-import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class EditLocationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -182,7 +175,7 @@ fun EditLocationScreen (
 
 @Preview
 @Composable
-fun TopNavigationBarPreview() {
+fun EditLocationPreview() {
     FrogTheme {
         EditLocationScreen(
             onBackClick = {  },
