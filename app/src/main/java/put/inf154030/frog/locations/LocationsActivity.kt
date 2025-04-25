@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.fragments.LocationCard
@@ -211,19 +210,5 @@ fun LocationsScreen(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LocationsActivityPreview() {
-    FrogTheme {
-        LocationsScreen(
-            locations = listOf(
-                Location(1, "Home", "", ""),
-                Location(2, "Office", "", ""),
-                Location(3, "Gym", "", "")
-            )
-        )
     }
 }

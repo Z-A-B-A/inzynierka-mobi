@@ -44,6 +44,7 @@ class InitialActivity : ComponentActivity() {
                             onClick = {
                                 val intent = Intent(this@InitialActivity, LogInActivity::class.java)
                                 startActivity(intent)
+                                finish()
                             },
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
@@ -58,6 +59,7 @@ class InitialActivity : ComponentActivity() {
                             onClick = {
                                 val intent = Intent(this@InitialActivity, SignUpActivity::class.java)
                                 startActivity(intent)
+                                finish()
                             },
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
