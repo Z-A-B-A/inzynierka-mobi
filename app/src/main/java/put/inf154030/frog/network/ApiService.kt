@@ -1,10 +1,51 @@
 package put.inf154030.frog.network
 
-import put.inf154030.frog.models.*
-import put.inf154030.frog.models.requests.*
-import put.inf154030.frog.models.responses.*
+import put.inf154030.frog.models.MessageResponse
+import put.inf154030.frog.models.requests.AddSpeciesRequest
+import put.inf154030.frog.models.requests.ContainerCreateRequest
+import put.inf154030.frog.models.requests.ContainerUpdateRequest
+import put.inf154030.frog.models.requests.LocationCreateRequest
+import put.inf154030.frog.models.requests.LoginRequest
+import put.inf154030.frog.models.requests.ParameterCreateRequest
+import put.inf154030.frog.models.requests.ParameterUpdateRequest
+import put.inf154030.frog.models.requests.ParameterValueUpdateRequest
+import put.inf154030.frog.models.requests.PresetParametersRequest
+import put.inf154030.frog.models.requests.RegisterRequest
+import put.inf154030.frog.models.requests.ScheduleCreateRequest
+import put.inf154030.frog.models.requests.ScheduleUpdateRequest
+import put.inf154030.frog.models.requests.UpdateSpeciesCountRequest
+import put.inf154030.frog.models.responses.AuthResponse
+import put.inf154030.frog.models.responses.ContainerDetailResponse
+import put.inf154030.frog.models.responses.ContainerResponse
+import put.inf154030.frog.models.responses.ContainerSpeciesItemResponse
+import put.inf154030.frog.models.responses.ContainerSpeciesResponse
+import put.inf154030.frog.models.responses.ContainerSpeciesUpdateResponse
+import put.inf154030.frog.models.responses.ContainersResponse
+import put.inf154030.frog.models.responses.LocationDetailResponse
+import put.inf154030.frog.models.responses.LocationResponse
+import put.inf154030.frog.models.responses.LocationsResponse
+import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
+import put.inf154030.frog.models.responses.NotificationUpdateResponse
+import put.inf154030.frog.models.responses.NotificationsResponse
+import put.inf154030.frog.models.responses.ParameterHistoryResponse
+import put.inf154030.frog.models.responses.ParameterResponse
+import put.inf154030.frog.models.responses.ParameterValueResponse
+import put.inf154030.frog.models.responses.ParametersResponse
+import put.inf154030.frog.models.responses.PresetParametersResponse
+import put.inf154030.frog.models.responses.RegisterResponse
+import put.inf154030.frog.models.responses.ScheduleResponse
+import put.inf154030.frog.models.responses.SchedulesResponse
+import put.inf154030.frog.models.responses.SpeciesDetailResponse
+import put.inf154030.frog.models.responses.SpeciesListResponse
+import put.inf154030.frog.models.responses.UpcomingEventsResponse
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     // Auth Endpoints

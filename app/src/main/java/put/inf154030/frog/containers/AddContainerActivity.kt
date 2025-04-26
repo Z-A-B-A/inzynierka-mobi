@@ -2,6 +2,7 @@ package put.inf154030.frog.containers
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -82,13 +83,14 @@ class AddContainerActivity : AppCompatActivity() {
             FrogTheme {
                 AddContainerScreen(
                     onBackClick = { finish() },
-                    onCodeScanned = { containerData ->
+                    onCodeScanned = { code, type ->
                         // Navigate to next activity with container data
-//                        val intent = Intent(this, NewContainerDetailsActivity::class.java)
-//                        intent.putExtra("CONTAINER_DATA", containerData)
-//                        intent.putExtra("LOCATION_ID", locationId)
-//                        startActivity(intent)
-//                        finish()
+                        val intent = Intent(this, AddContainerNextStepActivity::class.java)
+                        intent.putExtra("CONTAINER_CODE", code)
+                        intent.putExtra("CONTAINER_TYPE", type)
+                        intent.putExtra("LOCATION_ID", locationId)
+                        startActivity(intent)
+                        finish()
                     },
                     requestCameraPermission = {
                         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -102,7 +104,7 @@ class AddContainerActivity : AppCompatActivity() {
 @Composable
 fun AddContainerScreen (
     onBackClick: () -> Unit = {},
-    onCodeScanned: (String) -> Unit = {},
+    onCodeScanned: (String, String) -> Unit,
     requestCameraPermission: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -147,7 +149,10 @@ fun AddContainerScreen (
                             onBarcodeDetected = { barcode ->
                                 showCamera = false
                                 // Process the barcode and navigate
-                                barcode?.let { onCodeScanned(it) }
+                                barcode?.let {
+                                    val type = if (it.endsWith("1")) "aquarium" else "terrarium"
+                                    onCodeScanned(it, type)
+                                }
                             }
                         )
 
@@ -291,8 +296,10 @@ fun AddContainerScreen (
                                 isLoading = true
                                 errorMessage = null
 
+                                val type = if (code.endsWith("1")) "aquarium" else "terrarium"
+
                                 // Process manual code
-                                onCodeScanned(code)
+                                onCodeScanned(code, type)
                             },
                             modifier = Modifier.fillMaxWidth(0.65f),
                             enabled = !isLoading
