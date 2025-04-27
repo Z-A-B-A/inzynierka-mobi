@@ -38,6 +38,10 @@ object SessionManager {
         return prefs.getString(KEY_USER_NAME, null)
     }
 
+    fun getUserEmail(): String? {
+        return prefs.getString(KEY_USER_EMAIL, null)
+    }
+
     fun clearSession() {
         val editor = prefs.edit()
         editor.clear()

@@ -60,5 +60,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.barecode.scanning)
+    implementation(libs.accompanist.flowlayout)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
