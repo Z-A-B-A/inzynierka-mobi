@@ -1,5 +1,6 @@
 package put.inf154030.frog.account
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
@@ -44,7 +44,10 @@ class AccountActivity : ComponentActivity() {
             FrogTheme {
                 AccountScreen(
                     onBackClick = { finish() },
-                    onEditClick = {  },
+                    onEditClick = {
+                        val intent = Intent(this, EditAccountActivity::class.java)
+                        startActivity(intent)
+                    },
                     userName = userName,
                     userEmail = userEmail
                 )
@@ -129,18 +132,5 @@ fun AccountScreen (
                 Spacer(modifier = Modifier.size(64.dp))
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun AccountActivityPreview () {
-    FrogTheme {
-        AccountScreen(
-            onBackClick = {},
-            onEditClick = {},
-            userName = "Bartosz",
-            userEmail = "mobileuser1@example.com"
-        )
     }
 }
