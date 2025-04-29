@@ -2,8 +2,8 @@ package put.inf154030.frog.account
 
 import android.os.Bundle
 import android.util.Patterns
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +40,7 @@ import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
-class EditAccountActivity : AppCompatActivity() {
+class EditAccountActivity : ComponentActivity() {
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
 
