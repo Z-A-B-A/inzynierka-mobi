@@ -1,5 +1,7 @@
 package put.inf154030.frog.fragments
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -28,13 +30,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.account.AccountActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun SideMenu(
     isVisible: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: Context
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -99,7 +103,11 @@ fun SideMenu(
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp,
                             modifier = Modifier
-                                .clickable { TODO() }
+                                .clickable {
+                                    val intent = Intent(context, AccountActivity::class.java)
+                                    context.startActivity(intent)
+                                    onDismiss()
+                                }
                                 .padding(end = 8.dp)
                         )
                         Spacer(modifier = Modifier.size(8.dp))
@@ -139,16 +147,5 @@ fun SideMenu(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun SideMenuPreview() {
-    FrogTheme {
-        SideMenu(
-            isVisible = true,
-            onDismiss = {  }
-        )
     }
 }

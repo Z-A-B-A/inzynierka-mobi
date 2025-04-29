@@ -1,5 +1,6 @@
 package put.inf154030.frog.locations
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -83,7 +84,8 @@ class LocationsActivity : ComponentActivity() {
                     },
                     onEditClick = { location ->
                         TODO()
-                    }
+                    },
+                    context = this
                 )
             }
         }
@@ -125,7 +127,8 @@ fun LocationsScreen(
     errorMessage: String? = null,
     onAddLocationClick: () -> Unit = {},
     onLocationClick: (Location) -> Unit = {},
-    onEditClick: (Location) -> Unit = {}
+    onEditClick: (Location) -> Unit = {},
+    context: Context
 ) {
     var showMenu by remember { mutableStateOf(false) }
     Surface(
@@ -223,7 +226,8 @@ fun LocationsScreen(
 
         SideMenu(
             isVisible = showMenu,
-            onDismiss = { showMenu = false }
+            onDismiss = { showMenu = false },
+            context = context
         )
     }
 }

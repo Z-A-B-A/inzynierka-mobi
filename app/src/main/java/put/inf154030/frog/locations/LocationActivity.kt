@@ -1,5 +1,6 @@
 package put.inf154030.frog.locations
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.containers.AddContainerActivity
@@ -92,7 +92,8 @@ class LocationActivity : ComponentActivity() {
 //                        val intent = Intent(this, EditContainerActivity::class.java)
 //                        intent.putExtra("CONTAINER_ID", container.id)
 //                        addContainerLauncher.launch(intent)
-                    }
+                    },
+                    context = this
                 )
             }
         }
@@ -140,7 +141,8 @@ fun LocationScreen(
     onBackClick: () -> Unit = {},
     onAddContainerClick: () -> Unit = {},
     onContainerClick: (Container) -> Unit = {},
-    onEditClick: (Container) -> Unit = {}
+    onEditClick: (Container) -> Unit = {},
+    context: Context
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("all") }
@@ -259,27 +261,8 @@ fun LocationScreen(
 
         SideMenu(
             isVisible = showMenu,
-            onDismiss = { showMenu = false }
-        )
-    }
-}
-
-@Preview
-@Composable
-fun LocationActivityPreview() {
-    FrogTheme {
-        LocationScreen(
-            locationName = "Shop",
-            containers = listOf(
-                Container(1, "Aquarium", "aquarium", "", true, ""),
-                Container(2, "Terrarium", "terrarium", "", true, "")
-            ),
-            isLoading = false,
-            errorMessage = null,
-            onBackClick = {  },
-            onContainerClick = {  },
-            onAddContainerClick = {  },
-            onEditClick = {  }
+            onDismiss = { showMenu = false },
+            context = context
         )
     }
 }
