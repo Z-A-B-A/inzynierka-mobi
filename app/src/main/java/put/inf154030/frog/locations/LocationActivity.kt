@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.containers.AddContainerActivity
+import put.inf154030.frog.containers.EditContainerActivity
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.ContainerCard
 import put.inf154030.frog.fragments.FilterButtonsRow
@@ -89,9 +90,12 @@ class LocationActivity : ComponentActivity() {
 //                        startActivity(intent)
                     },
                     onEditClick = { container ->
-//                        val intent = Intent(this, EditContainerActivity::class.java)
-//                        intent.putExtra("CONTAINER_ID", container.id)
-//                        addContainerLauncher.launch(intent)
+                        val intent = Intent(this, EditContainerActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", container.id)
+                        intent.putExtra("CONTAINER_NAME", container.name)
+                        intent.putExtra("CONTAINER_DESCRIPTION", container.description)
+                        intent.putExtra("LOCATION_ID", locationId)
+                        addContainerLauncher.launch(intent)
                     },
                     context = this
                 )
