@@ -50,7 +50,9 @@ class EditAccountActivity : AppCompatActivity() {
             FrogTheme {
                 EditAccountScreen(
                     onBackClick = { finish() },
-                    onSave = { TODO() },
+                    onSave = { name, email ->
+                        TODO("Nie ma requesta na to")
+                    },
                     userName = userName,
                     userEmail = userEmail
                 )
@@ -62,7 +64,7 @@ class EditAccountActivity : AppCompatActivity() {
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSave: () -> Unit,
+    onSave: (String, String) -> Unit,
     userName: String?,
     userEmail: String?
 ) {
@@ -76,11 +78,17 @@ fun EditAccountScreen (
             )
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
+            var name by remember { mutableStateOf(userName) }
+            var email by remember { mutableStateOf(userEmail) }
+            val emailValid = remember {
+                derivedStateOf {
+                    Patterns.EMAIL_ADDRESS.matcher(email!!).matches()
+                }
+            }
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                var name by remember { mutableStateOf(userName) }
                 BasicTextField(
                     value = name!!,
                     onValueChange = { newValue -> name = newValue },
@@ -108,12 +116,6 @@ fun EditAccountScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(32.dp))
-                var email by remember { mutableStateOf(userEmail) }
-                val emailValid = remember {
-                    derivedStateOf {
-                        Patterns.EMAIL_ADDRESS.matcher(email!!).matches()
-                    }
-                }
                 BasicTextField(
                     value = email!!,
                     onValueChange = { newValue -> email = newValue },
@@ -159,7 +161,7 @@ fun EditAccountScreen (
             ) {
                 Button(
                     onClick = {
-                        onSave()
+                        onSave(name!!, email!!)
                     },
                     modifier = Modifier
                         .padding(vertical = 8.dp)
@@ -183,7 +185,7 @@ fun EditAccountActivityPreview () {
     FrogTheme {
         EditAccountScreen(
             onBackClick = {  },
-            onSave = {  },
+            onSave = { _, _ -> },
             userName = "Bartosz",
             userEmail = "mobileuser1@example.com"
         )
