@@ -83,7 +83,9 @@ class LocationsActivity : ComponentActivity() {
                         startActivity(intent)
                     },
                     onEditClick = { location ->
-                        TODO()
+                        val intent = Intent(this, EditLocationActivity::class.java)
+                        intent.putExtra("LOCATION_ID", location.id)
+                        startActivity(intent)
                     },
                     context = this
                 )

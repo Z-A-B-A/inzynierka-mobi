@@ -41,6 +41,9 @@ import put.inf154030.frog.theme.PoppinsFamily
 class EditLocationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val locationId = intent.getIntExtra("LOCATION_ID", -1)
+
         setContent {
             FrogTheme {
                 EditLocationScreen(
