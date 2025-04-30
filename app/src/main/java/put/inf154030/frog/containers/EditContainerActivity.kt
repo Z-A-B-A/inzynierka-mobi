@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.TopHeaderBar
 import put.inf154030.frog.models.Location
+import put.inf154030.frog.models.requests.ContainerUpdateRequest
+import put.inf154030.frog.models.responses.ContainerResponse
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -80,10 +82,41 @@ class EditContainerActivity : ComponentActivity() {
             FrogTheme {
                 EditContainerScreen(
                     onBackClick = { finish() },
-                    onSave = { name, descripton, selectedLocation ->
-                        TODO()
+                    onSave = { name, description, selectedLocation ->
+                        val containerUpdateRequest = ContainerUpdateRequest(
+                            name = name,
+                            description = description,
+                            active = true
+                        )
+
+                        ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
+                            .enqueue(object : Callback<ContainerResponse> {
+                                override fun onResponse(
+                                    call: Call<ContainerResponse>,
+                                    response: Response<ContainerResponse>
+                                ) {
+                                    if (response.isSuccessful) {
+                                        // Container updated successfully
+                                        setResult(RESULT_OK)
+                                        finish()
+                                    } else {
+                                        // Handle error
+                                        errorMessage = "Failed to update container: ${response.message()}"
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<ContainerResponse>, t: Throwable) {
+                                    errorMessage = "Network error: ${t.message}"
+                                }
+                            })
+                        finish()
                     },
-                    onDeleteContainer = { TODO() },
+                    onDeleteContainer = {
+                        val intent = Intent(this, DeleteContainerActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        startActivity(intent)
+                        finish()
+                    },
                     containerName = containerName,
                     containerDescription = containerDescription,
                     locationsList = locationsList,
