@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.EditParameterRow
+import put.inf154030.frog.fragments.EditSpeciesRow
 import put.inf154030.frog.fragments.TopHeaderBar
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.Species
@@ -62,19 +63,21 @@ class ManageContainerActivity : ComponentActivity() {
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
 
-        activityResultLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            loadParameters()
-            loadSpecies()
-        }
+//        activityResultLauncher = registerForActivityResult(
+//            ActivityResultContracts.StartActivityForResult()
+//        ) {
+//            loadParameters()
+//            loadSpecies()
+//        }
 
         setContent {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
                     onAddParameter = { TODO() },
+                    onDeleteParameter = { TODO() },
                     onAddSpecies = { TODO() },
+                    onDeleteSpecies = { TODO() },
                     onSave = { TODO() },
                     isLoadingParams = isLoadingParams,
                     isLoadingSpecies = isLoadingSpecies,
@@ -87,24 +90,26 @@ class ManageContainerActivity : ComponentActivity() {
             }
         }
 
-        loadParameters()
-        loadSpecies()
+//        loadParameters()
+//        loadSpecies()
     }
 
-    private fun loadParameters() {
-
-    }
-
-    private fun loadSpecies() {
-
-    }
+//    private fun loadParameters() {
+//        TODO()
+//    }
+//
+//    private fun loadSpecies() {
+//        TODO()
+//    }
 }
 
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
     onAddParameter: () -> Unit,
+    onDeleteParameter: (Parameter) -> Unit,
     onAddSpecies: () -> Unit,
+    onDeleteSpecies: (Species) -> Unit,
     onSave: () -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
@@ -221,7 +226,7 @@ fun ManageContainerScreen(
                             EditParameterRow (
                                 parameterName = parameter.name,
                                 parameterValue = parameter.current_value!!,
-                                onDeleteClick = {  }
+                                onDeleteClick = { onDeleteParameter(parameter) }
                             )
                         }
                     }
@@ -302,7 +307,10 @@ fun ManageContainerScreen(
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
                         items(species) { species ->
-                            // TODO("EditSpeciesRow")
+                            EditSpeciesRow(
+                                speciesName = species.name,
+                                onDeleteClick = { onDeleteSpecies(species) }
+                            )
                         }
                     }
                 }
@@ -335,7 +343,9 @@ fun ManageContainerActivityPreview () {
         ManageContainerScreen(
             onBackClick = {  },
             onAddParameter = {  },
+            onDeleteParameter = {  },
             onAddSpecies = {  },
+            onDeleteSpecies = {  },
             onSave = {  },
             isLoadingParams = false,
             isLoadingSpecies = false,
