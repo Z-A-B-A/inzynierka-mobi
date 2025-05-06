@@ -1,5 +1,6 @@
 package put.inf154030.frog.containers
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,14 +31,17 @@ class ContainerActivity : ComponentActivity() {
 
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
-        val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "ERROR READING DESRIPTION"
+        val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "ERROR READING DESCRIPTION"
 
         setContent {
             FrogTheme {
                 ContainerScreen(
                     onBackClick = { finish() },
                     onChangeClick = {
-                        TODO()
+                        val intent = Intent(this, ManageContainerActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        intent.putExtra("CONTAINER_NAME", containerName)
+                        startActivity(intent)
                     },
                     containerName = containerName,
                     containerDescription = containerDescription
@@ -58,6 +62,7 @@ fun ContainerScreen (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // TODO("Pozmieniać layout na wzór ManageContainerActivity")
         Column {
             TopHeaderBar(
                 title = containerName,
@@ -80,9 +85,9 @@ fun ContainerScreen (
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                TODO("Mam plan taki, żeby zrobić tutaj 3 pola:" +
-                        "parametry, statystyki, zwierzęta." +
-                        "jak klikasz na daną opcję to się rozwija widok z danymi")
+//                TODO("Mam plan taki, żeby zrobić tutaj 3 pola:" +
+//                        "parametry, statystyki, zwierzęta." +
+//                        "jak klikasz na daną opcję to się rozwija widok z danymi")
                 Spacer(modifier = Modifier.size(16.dp))
                 Column (
                     modifier = Modifier.fillMaxSize(),

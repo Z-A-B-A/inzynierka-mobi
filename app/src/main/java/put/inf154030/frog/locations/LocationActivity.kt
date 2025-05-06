@@ -89,6 +89,7 @@ class LocationActivity : ComponentActivity() {
                         val intent = Intent(this, ContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", container.id)
                         intent.putExtra("CONTAINER_NAME", container.name)
+                        intent.putExtra("CONTAINER_DESCRIPTION", container.description)
                         startActivity(intent)
                     },
                     onEditClick = { container ->
