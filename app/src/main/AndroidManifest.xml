@@ -22,6 +22,18 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".schedule.CreateScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".schedule.AddScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".schedule.EditScheduleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".schedule.ScheduleActivity"
+            android:exported="false" />
+        <activity
             android:name=".species.CreateSpeciesActivity"
             android:exported="false" />
         <activity
