@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -30,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,10 +40,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Param
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.TopHeaderBar
-import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
@@ -74,7 +69,11 @@ class AddParameterActivity : ComponentActivity() {
                 AddParameterScreen(
                     onBackClick = { finish() },
                     onSaveClick = { TODO() },
-                    onCreateParameterClick = { TODO() },
+                    onCreateParameterClick = {
+                        val intent = Intent(this, CreateParameterActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        startActivity(intent)
+                    },
                     parametersList = parametersList
                 )
             }
