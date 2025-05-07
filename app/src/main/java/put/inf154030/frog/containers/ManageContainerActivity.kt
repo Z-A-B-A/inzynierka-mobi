@@ -45,6 +45,7 @@ import put.inf154030.frog.fragments.EditSpeciesRow
 import put.inf154030.frog.fragments.TopHeaderBar
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.Species
+import put.inf154030.frog.parameters.AddParameterActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
@@ -74,7 +75,11 @@ class ManageContainerActivity : ComponentActivity() {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
-                    onAddParameter = { TODO() },
+                    onAddParameter = {
+                        val intent = Intent(this, AddParameterActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        startActivity(intent)
+                    },
                     onDeleteParameter = { TODO() },
                     onAddSpecies = { TODO() },
                     onDeleteSpecies = { TODO() },
