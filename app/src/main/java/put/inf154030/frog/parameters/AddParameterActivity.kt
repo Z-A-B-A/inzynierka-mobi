@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,8 +44,13 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.TopHeaderBar
 import put.inf154030.frog.models.Parameter
+import put.inf154030.frog.models.responses.ParametersResponse
+import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class AddParameterActivity : ComponentActivity() {
     private lateinit var addParameterLauncher: ActivityResultLauncher<Intent>
@@ -57,12 +63,12 @@ class AddParameterActivity : ComponentActivity() {
 
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
 
-//        addParameterLauncher = registerForActivityResult(
-//            ActivityResultContracts.StartActivityForResult()
-//        ) {
-//            // When returning from AddLocationActivity, refresh the locations
-//            loadParameters()
-//        }
+        addParameterLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            // When returning from AddLocationActivity, refresh the parameters
+            loadParameters(containerId)
+        }
 
         setContent {
             FrogTheme {
@@ -79,12 +85,34 @@ class AddParameterActivity : ComponentActivity() {
             }
         }
 
-//        loadParameters()
+        loadParameters(containerId)
     }
 
-//    private fun loadParameters() {
-//        TODO()
-//    }
+    private fun loadParameters(
+        containerId: Int
+    ) {
+        isLoading = true
+        errorMessage = null
+
+        ApiClient.apiService.getParameters(containerId).enqueue(object: Callback<ParametersResponse> {
+            override fun onResponse(
+                call: Call<ParametersResponse>,
+                response: Response<ParametersResponse>
+            ) {
+                isLoading = false
+                if (response.isSuccessful) {
+                    parametersList = response.body()?.parameters ?: emptyList()
+                } else {
+                    errorMessage = "Failed to load parameters: ${response.message()}"
+                }
+            }
+
+            override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
+                isLoading = false
+                errorMessage = "Network error: ${t.message}"
+            }
+        })
+    }
 }
 
 @Composable
