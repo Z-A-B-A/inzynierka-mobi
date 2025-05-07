@@ -30,7 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.about.AboutActivity
 import put.inf154030.frog.account.AccountActivity
+import put.inf154030.frog.notifications.NotificationsActivity
+import put.inf154030.frog.notifications.UpcomingActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
@@ -58,7 +61,7 @@ fun SideMenu(
                         .fillMaxHeight()
                         .fillMaxWidth(0.3f)
                         .background(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.69f))
-                        .clickable { onDismiss() }  // Prevents click propagation
+                        .clickable { onDismiss() }
                 ) { }
 
                 Box(
@@ -118,7 +121,11 @@ fun SideMenu(
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp,
                             modifier = Modifier
-                                .clickable { TODO() }
+                                .clickable {
+                                    val intent = Intent(context, UpcomingActivity::class.java)
+                                    context.startActivity(intent)
+                                    onDismiss()
+                                }
                                 .padding(end = 8.dp)
                         )
                         Spacer(modifier = Modifier.size(8.dp))
@@ -129,7 +136,11 @@ fun SideMenu(
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp,
                             modifier = Modifier
-                                .clickable { TODO() }
+                                .clickable {
+                                    val intent = Intent(context, NotificationsActivity::class.java)
+                                    context.startActivity(intent)
+                                    onDismiss()
+                                }
                                 .padding(end = 8.dp)
                         )
                         Spacer(modifier = Modifier.size(8.dp))
@@ -140,12 +151,29 @@ fun SideMenu(
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp,
                             modifier = Modifier
-                                .clickable { TODO() }
+                                .clickable {
+                                    val intent = Intent(context, AboutActivity::class.java)
+                                    context.startActivity(intent)
+                                    onDismiss()
+                                }
                                 .padding(end = 8.dp)
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun SideMenuPreview() {
+    FrogTheme {
+        val context = androidx.compose.ui.platform.LocalContext.current
+        SideMenu(
+            isVisible = true,
+            onDismiss = {},
+            context = context
+        )
     }
 }
