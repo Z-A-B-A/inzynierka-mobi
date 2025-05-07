@@ -45,9 +45,14 @@ import put.inf154030.frog.fragments.EditSpeciesRow
 import put.inf154030.frog.fragments.TopHeaderBar
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.Species
+import put.inf154030.frog.models.responses.ParametersResponse
+import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.parameters.AddParameterActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ManageContainerActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
@@ -64,12 +69,12 @@ class ManageContainerActivity : ComponentActivity() {
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
 
-//        activityResultLauncher = registerForActivityResult(
-//            ActivityResultContracts.StartActivityForResult()
-//        ) {
-//            loadParameters()
+        activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            loadParameters(containerId)
 //            loadSpecies()
-//        }
+        }
 
         setContent {
             FrogTheme {
@@ -95,14 +100,37 @@ class ManageContainerActivity : ComponentActivity() {
             }
         }
 
-//        loadParameters()
+        loadParameters(containerId)
 //        loadSpecies()
     }
 
-//    private fun loadParameters() {
-//        TODO()
-//    }
-//
+    private fun loadParameters(
+        containerId: Int
+    ) {
+        isLoadingParams = true
+        errorMessageParams = null
+
+        ApiClient.apiService.getParameters(containerId).enqueue(object:
+            Callback<ParametersResponse> {
+            override fun onResponse(
+                call: Call<ParametersResponse>,
+                response: Response<ParametersResponse>
+            ) {
+                isLoadingParams = false
+                if (response.isSuccessful) {
+                    parametersList = response.body()?.parameters ?: emptyList()
+                } else {
+                    errorMessageParams = "Failed to load parameters: ${response.message()}"
+                }
+            }
+
+            override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
+                isLoadingParams = false
+                errorMessageParams = "Network error: ${t.message}"
+            }
+        })
+    }
+
 //    private fun loadSpecies() {
 //        TODO()
 //    }
