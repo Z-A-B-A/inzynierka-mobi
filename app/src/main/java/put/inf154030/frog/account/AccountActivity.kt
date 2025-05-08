@@ -35,6 +35,7 @@ import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
 class AccountActivity : ComponentActivity() {
+    // Getting user data from current session
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
 
@@ -92,6 +93,7 @@ fun AccountScreen (
                 var scaledTextSize by remember { mutableStateOf(24.sp) }
                 var readyToDraw by remember { mutableStateOf(false) }
 
+                // Text that allows scaling the email address so it will fit in the screen even if it is too big
                 Text(
                     text = userEmail ?: "Couldn't load email",
                     fontFamily = PoppinsFamily,

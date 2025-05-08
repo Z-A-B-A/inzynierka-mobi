@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import put.inf154030.frog.R
 
-// Define your color palette
+// Define color palette
 private val ColorScheme = lightColorScheme(
     primary = Color(0xFF626C4D),
     secondary = Color(0xFFFFFFFF),
@@ -18,6 +18,7 @@ private val ColorScheme = lightColorScheme(
     surface = Color.White,
 )
 
+// Define font family
 val PoppinsFamily = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_medium, FontWeight.Medium),

@@ -40,6 +40,7 @@ import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
 class EditAccountActivity : ComponentActivity() {
+    // Getting user data from current session
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
 
@@ -77,8 +78,10 @@ fun EditAccountScreen (
             )
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
+            
             var name by remember { mutableStateOf(userName) }
             var email by remember { mutableStateOf(userEmail) }
+            // Using derivedStateOf to check if the email address is valid
             val emailValid = remember {
                 derivedStateOf {
                     Patterns.EMAIL_ADDRESS.matcher(email!!).matches()
