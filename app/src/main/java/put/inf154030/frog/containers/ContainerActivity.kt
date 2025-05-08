@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
 import put.inf154030.frog.fragments.TopHeaderBar
+import put.inf154030.frog.schedule.ScheduleActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
@@ -48,7 +49,9 @@ class ContainerActivity : ComponentActivity() {
                         startActivity(intent)
                     },
                     onScheduleClick = {
-                        TODO()
+                        val intent = Intent(this, ScheduleActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        startActivity(intent)
                     },
                     containerName = containerName,
                     containerDescription = containerDescription

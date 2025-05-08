@@ -1,5 +1,6 @@
 package put.inf154030.frog.schedule
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,11 +33,18 @@ class EditScheduleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val containerId = intent.getIntExtra("CONTAINER_ID", -1)
+
         setContent {
             FrogTheme {
                 EditScheduleScreen(
                     onBackClick = { finish() },
-                    onAddScheduleClick = { TODO() },
+                    onAddScheduleClick = {
+                        val intent = Intent(this, AddScheduleActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        startActivity(intent)
+                        finish()
+                    },
                     onSaveClick = { TODO() }
                 )
             }

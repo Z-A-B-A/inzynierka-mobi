@@ -84,6 +84,7 @@ class CreateScheduleActivity : ComponentActivity() {
                                     Toast.makeText(this@CreateScheduleActivity, "Oops! Something went wrong :( Try again.", Toast.LENGTH_LONG).show()
                                 }
                             })
+                        finish()
                     }
                 )
             }
