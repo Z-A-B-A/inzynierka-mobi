@@ -77,6 +77,7 @@ class CreateScheduleActivity : ComponentActivity() {
                                     call: Call<ScheduleResponse>,
                                     response: Response<ScheduleResponse>
                                 ) {
+//                                    TODO("Do zrobienia powiadomienie")
                                     finish()
                                 }
 

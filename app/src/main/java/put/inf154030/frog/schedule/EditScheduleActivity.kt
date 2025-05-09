@@ -39,12 +39,6 @@ class EditScheduleActivity : ComponentActivity() {
             FrogTheme {
                 EditScheduleScreen(
                     onBackClick = { finish() },
-                    onAddScheduleClick = {
-                        val intent = Intent(this, AddScheduleActivity::class.java)
-                        intent.putExtra("CONTAINER_ID", containerId)
-                        startActivity(intent)
-                        finish()
-                    },
                     onSaveClick = { TODO() }
                 )
             }
@@ -55,7 +49,6 @@ class EditScheduleActivity : ComponentActivity() {
 @Composable
 fun EditScheduleScreen(
     onBackClick: () -> Unit,
-    onAddScheduleClick: () -> Unit,
     onSaveClick: () -> Unit
 ) {
     Surface (
@@ -80,17 +73,6 @@ fun EditScheduleScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                Text(
-                    text = "-- Add Schedule --",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 16.sp,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable { onAddScheduleClick() }
-                        .padding(8.dp)
-                )
                 Spacer(modifier = Modifier.size(32.dp))
                 Button(
                     onClick = { onSaveClick() },
@@ -114,7 +96,6 @@ fun EditScheduleActivityPreview() {
     FrogTheme {
         EditScheduleScreen(
             onBackClick = {},
-            onAddScheduleClick = {},
             onSaveClick = {}
         )
     }
