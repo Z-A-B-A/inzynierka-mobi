@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,21 +92,21 @@ fun ScheduleItem (
         } else {
             val dayLabels = listOf("Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays", "Sundays")
             val days = weekDays.split(",").map { it.toInt() }
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+
+            Column(
+                modifier = Modifier.fillMaxWidth(0.8f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(days) { day ->
-                    Row (
-                        modifier = Modifier.fillMaxWidth(0.8f),
+                days.forEach { day ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = dayLabels[day - 1],
+                            text = "${dayLabels[day - 1]} at $executionTime",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
