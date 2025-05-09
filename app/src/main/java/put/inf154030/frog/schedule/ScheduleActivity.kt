@@ -34,14 +34,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
-import put.inf154030.frog.fragments.EditParameterRow
 import put.inf154030.frog.fragments.ScheduleItem
 import put.inf154030.frog.fragments.TopHeaderBar
-import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.Schedule
-import put.inf154030.frog.models.Species
-import put.inf154030.frog.models.responses.ParametersResponse
-import put.inf154030.frog.models.responses.ScheduleResponse
 import put.inf154030.frog.models.responses.SchedulesResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -183,7 +178,7 @@ fun ScheduleScreen(
                     ) {
                         items(schedulesList) { schedule ->
                             ScheduleItem(
-                                onEditClick = {},
+                                onEditClick = { onEditScheduleClick() },
                                 scheduleName = schedule.name,
                                 frequency = schedule.frequency,
                                 weekDays = schedule.weekdays,
