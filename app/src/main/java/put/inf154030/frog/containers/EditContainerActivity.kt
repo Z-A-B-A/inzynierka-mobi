@@ -82,7 +82,7 @@ class EditContainerActivity : ComponentActivity() {
             FrogTheme {
                 EditContainerScreen(
                     onBackClick = { finish() },
-                    onSave = { name, description, selectedLocation ->
+                    onSaveClick = { name, description, selectedLocation ->
                         val containerUpdateRequest = ContainerUpdateRequest(
                             name = name,
                             description = description,
@@ -111,7 +111,7 @@ class EditContainerActivity : ComponentActivity() {
                             })
                         finish()
                     },
-                    onDeleteContainer = {
+                    onDeleteContainerClick = {
                         val intent = Intent(this, DeleteContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
                         startActivity(intent)
@@ -156,8 +156,8 @@ class EditContainerActivity : ComponentActivity() {
 @Composable
 fun EditContainerScreen(
     onBackClick: () -> Unit,
-    onSave: (String, String, Int) -> Unit,
-    onDeleteContainer: () -> Unit,
+    onSaveClick: (String, String, Int) -> Unit,
+    onDeleteContainerClick: () -> Unit,
     containerName: String?,
     containerDescription: String?,
     locationId: Int,
@@ -346,7 +346,7 @@ fun EditContainerScreen(
                     textDecoration = TextDecoration.Underline,
                     fontSize = 20.sp,
                     modifier = Modifier
-                        .clickable { onDeleteContainer() }
+                        .clickable { onDeleteContainerClick() }
                         .padding(end = 8.dp)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
@@ -357,7 +357,7 @@ fun EditContainerScreen(
                         } else if (selectedLocation == null) {
                             errorMessage = "Please select a location"
                         } else {
-                            onSave(name!!, description ?: "", selectedLocation!!.id)
+                            onSaveClick(name!!, description ?: "", selectedLocation!!.id)
                         }
                     },
                     modifier = Modifier
@@ -382,8 +382,8 @@ fun EditContainerActivityPreview () {
     FrogTheme {
         EditContainerScreen(
             onBackClick = {  },
-            onSave = { _, _, _ -> },
-            onDeleteContainer = {  },
+            onSaveClick = { _, _, _ -> },
+            onDeleteContainerClick = {  },
             containerName = "Akwarium",
             containerDescription = "leleleleisonrgjnbtehib",
             locationId = 1

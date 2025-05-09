@@ -40,7 +40,7 @@ class DeleteContainerActivity : ComponentActivity() {
         setContent {
             FrogTheme {
                 DeleteContainerScreen(
-                    onYes = {
+                    onYesClick = {
                         ApiClient.apiService.deleteContainer(containerId)
                             .enqueue(object : Callback<MessageResponse> {
                                 override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
@@ -70,7 +70,7 @@ class DeleteContainerActivity : ComponentActivity() {
                                 }
                             })
                     },
-                    onNo = { finish() }
+                    onNoClick = { finish() }
                 )
             }
         }
@@ -79,8 +79,8 @@ class DeleteContainerActivity : ComponentActivity() {
 
 @Composable
 fun DeleteContainerScreen(
-    onYes: () -> Unit = {},
-    onNo: () -> Unit = {}
+    onYesClick: () -> Unit = {},
+    onNoClick: () -> Unit = {}
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -113,7 +113,7 @@ fun DeleteContainerScreen(
                 Row {
                     Button(
                         modifier = Modifier.fillMaxWidth(0.3f),
-                        onClick = { onYes() }
+                        onClick = { onYesClick() }
                     ) {
                         Text(
                             text = "Yes",
@@ -123,7 +123,7 @@ fun DeleteContainerScreen(
                     Spacer(modifier = Modifier.size(32.dp))
                     Button(
                         modifier = Modifier.fillMaxWidth(0.5f),
-                        onClick = { onNo() }
+                        onClick = { onNoClick() }
                     ) {
                         Text(
                             text = "No",
@@ -142,8 +142,8 @@ fun DeleteContainerScreen(
 fun DeleteContainerActivityPreview () {
     FrogTheme {
         DeleteContainerScreen(
-            onYes = {  },
-            onNo = {  }
+            onYesClick = {  },
+            onNoClick = {  }
         )
     }
 }

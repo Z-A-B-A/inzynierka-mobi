@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.fragments.LocationCard
@@ -127,9 +128,9 @@ fun LocationsScreen(
     locations: List<Location> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
-    onAddLocationClick: () -> Unit = {},
-    onLocationClick: (Location) -> Unit = {},
-    onEditClick: (Location) -> Unit = {},
+    onAddLocationClick: () -> Unit,
+    onLocationClick: (Location) -> Unit,
+    onEditClick: (Location) -> Unit,
     context: Context
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -229,6 +230,27 @@ fun LocationsScreen(
         SideMenu(
             isVisible = showMenu,
             onDismiss = { showMenu = false },
+            context = context
+        )
+    }
+}
+
+@Preview
+@Composable
+fun LocationsActivityPreview () {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    FrogTheme {
+        LocationsScreen(
+            userName = "Bartosz",
+            locations = listOf(
+                Location(1, "Sklep", null, ""),
+                Location(2, "Zoo", null, "")
+            ),
+            isLoading = false,
+            errorMessage = null,
+            onAddLocationClick = {},
+            onLocationClick = { _ -> },
+            onEditClick = { _ -> },
             context = context
         )
     }

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.fragments.BackButton
@@ -50,7 +51,7 @@ class EditAccountActivity : ComponentActivity() {
             FrogTheme {
                 EditAccountScreen(
                     onBackClick = { finish() },
-                    onSave = { name, email ->
+                    onSaveClick = { name, email ->
                         TODO("Nie ma requesta na to")
                     },
                     userName = userName,
@@ -64,7 +65,7 @@ class EditAccountActivity : ComponentActivity() {
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSave: (String, String) -> Unit,
+    onSaveClick: (String, String) -> Unit,
     userName: String?,
     userEmail: String?
 ) {
@@ -163,7 +164,7 @@ fun EditAccountScreen (
             ) {
                 Button(
                     onClick = {
-                        onSave(name!!, email!!)
+                        onSaveClick(name!!, email!!)
                     },
                     modifier = Modifier
                         .padding(vertical = 8.dp)
@@ -178,5 +179,18 @@ fun EditAccountScreen (
                 Spacer(modifier = Modifier.size(64.dp))
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun EditAccountActivityPreview () {
+    FrogTheme {
+        EditAccountScreen(
+            onBackClick = {},
+            onSaveClick = { _, _ ->},
+            userName = "Bartosz",
+            userEmail = "bartoszkorszun@gmail.com"
+        )
     }
 }

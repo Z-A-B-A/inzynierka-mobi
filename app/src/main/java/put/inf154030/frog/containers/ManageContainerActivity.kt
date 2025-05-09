@@ -80,15 +80,15 @@ class ManageContainerActivity : ComponentActivity() {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
-                    onAddParameter = {
+                    onAddParameterClick = {
                         val intent = Intent(this, AddParameterActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
                         startActivity(intent)
                     },
-                    onDeleteParameter = { TODO() },
-                    onAddSpecies = { TODO() },
-                    onDeleteSpecies = { TODO() },
-                    onSave = { TODO() },
+                    onDeleteParameterClick = { TODO() },
+                    onAddSpeciesClick = { TODO() },
+                    onDeleteSpeciesClick = { TODO() },
+                    onSaveClick = { TODO() },
                     isLoadingParams = isLoadingParams,
                     isLoadingSpecies = isLoadingSpecies,
                     errorMessageParams = errorMessageParams,
@@ -139,11 +139,11 @@ class ManageContainerActivity : ComponentActivity() {
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
-    onAddParameter: () -> Unit,
-    onDeleteParameter: (Parameter) -> Unit,
-    onAddSpecies: () -> Unit,
-    onDeleteSpecies: (Species) -> Unit,
-    onSave: () -> Unit,
+    onAddParameterClick: () -> Unit,
+    onDeleteParameterClick: (Parameter) -> Unit,
+    onAddSpeciesClick: () -> Unit,
+    onDeleteSpeciesClick: (Species) -> Unit,
+    onSaveClick: () -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
     errorMessageParams: String?,
@@ -193,7 +193,7 @@ fun ManageContainerScreen(
                         )
                         Spacer(modifier = Modifier.size(16.dp))
                         IconButton(
-                            onClick = { onAddParameter() },
+                            onClick = { onAddParameterClick() },
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
@@ -259,7 +259,7 @@ fun ManageContainerScreen(
                             EditParameterRow (
                                 parameterName = parameter.name,
                                 parameterValue = parameter.current_value!!,
-                                onDeleteClick = { onDeleteParameter(parameter) }
+                                onDeleteClick = { onDeleteParameterClick(parameter) }
                             )
                         }
                     }
@@ -278,7 +278,7 @@ fun ManageContainerScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     IconButton(
-                        onClick = { onAddSpecies() },
+                        onClick = { onAddSpeciesClick() },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -342,7 +342,7 @@ fun ManageContainerScreen(
                         items(species) { species ->
                             EditSpeciesRow(
                                 speciesName = species.name,
-                                onDeleteClick = { onDeleteSpecies(species) }
+                                onDeleteClick = { onDeleteSpeciesClick(species) }
                             )
                         }
                     }
@@ -354,7 +354,7 @@ fun ManageContainerScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Button(
-                    onClick = { onSave() },
+                    onClick = { onSaveClick() },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
                 ) {
@@ -375,11 +375,11 @@ fun ManageContainerActivityPreview () {
     FrogTheme {
         ManageContainerScreen(
             onBackClick = {  },
-            onAddParameter = {  },
-            onDeleteParameter = {  },
-            onAddSpecies = {  },
-            onDeleteSpecies = {  },
-            onSave = {  },
+            onAddParameterClick = {  },
+            onDeleteParameterClick = {  },
+            onAddSpeciesClick = {  },
+            onDeleteSpeciesClick = {  },
+            onSaveClick = {  },
             isLoadingParams = false,
             isLoadingSpecies = false,
             errorMessageParams = null,

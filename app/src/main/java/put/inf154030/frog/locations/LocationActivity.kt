@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.containers.AddContainerActivity
@@ -145,10 +146,10 @@ fun LocationScreen(
     containers: List<Container> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
-    onBackClick: () -> Unit = {},
-    onAddContainerClick: () -> Unit = {},
-    onContainerClick: (Container) -> Unit = {},
-    onEditClick: (Container) -> Unit = {},
+    onBackClick: () -> Unit,
+    onAddContainerClick: () -> Unit,
+    onContainerClick: (Container) -> Unit,
+    onEditClick: (Container) -> Unit,
     context: Context
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -269,6 +270,28 @@ fun LocationScreen(
         SideMenu(
             isVisible = showMenu,
             onDismiss = { showMenu = false },
+            context = context
+        )
+    }
+}
+
+@Preview
+@Composable
+fun LocationActivityPreview () {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    FrogTheme {
+        LocationScreen(
+            locationName = "Lokacja 1",
+            containers = listOf(
+                Container(1, "ASDF1", "aquarium", null, true, ""),
+                Container(2, "ASDF2", "terrarium", null, true, "")
+            ),
+            isLoading = false,
+            errorMessage = null,
+            onBackClick = {},
+            onAddContainerClick = {},
+            onContainerClick = { _ -> },
+            onEditClick = { _ -> },
             context = context
         )
     }

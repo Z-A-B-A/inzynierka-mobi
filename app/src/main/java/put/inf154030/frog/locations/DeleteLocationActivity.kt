@@ -31,8 +31,8 @@ class DeleteLocationActivity : AppCompatActivity() {
         setContent {
             FrogTheme {
                 DeleteLocationScreen(
-                    onYes = { finish() },
-                    onNo = { finish() }
+                    onYesClick = { finish() },
+                    onNoClick = { finish() }
                 )
             }
         }
@@ -41,8 +41,8 @@ class DeleteLocationActivity : AppCompatActivity() {
 
 @Composable
 fun DeleteLocationScreen (
-    onYes: () -> Unit = {},
-    onNo: () -> Unit = {}
+    onYesClick: () -> Unit,
+    onNoClick: () -> Unit
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -76,7 +76,7 @@ fun DeleteLocationScreen (
                     Button(
                         modifier = Modifier.fillMaxWidth(0.3f),
                         onClick = {
-                            onYes()
+                            onYesClick()
                             TODO("Waiting for API request")
                         }
                     ) {
@@ -88,7 +88,7 @@ fun DeleteLocationScreen (
                     Spacer(modifier = Modifier.size(32.dp))
                     Button(
                         modifier = Modifier.fillMaxWidth(0.5f),
-                        onClick = { onNo() }
+                        onClick = { onNoClick() }
                     ) {
                         Text(
                             text = "No",
@@ -107,8 +107,8 @@ fun DeleteLocationScreen (
 fun DeleteLocationPreview() {
     FrogTheme {
         DeleteLocationScreen(
-            onYes = {  },
-            onNo = {  }
+            onYesClick = {  },
+            onNoClick = {  }
         )
     }
 }

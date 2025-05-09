@@ -53,7 +53,7 @@ class AddContainerNextStepActivity : ComponentActivity() {
             FrogTheme {
                 AddContainerNextStepScreen(
                     onBackClick = { finish() },
-                    onFinish = { name, description ->
+                    onFinishClick = { name, description ->
                         val containerCreateRequest = ContainerCreateRequest(name, containerType!!, description)
 
                         ApiClient.apiService.createContainer(locationId, containerCreateRequest)
@@ -94,7 +94,7 @@ class AddContainerNextStepActivity : ComponentActivity() {
 @Composable
 fun AddContainerNextStepScreen (
     onBackClick: () -> Unit = {},
-    onFinish: (String, String) -> Unit
+    onFinishClick: (String, String) -> Unit
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -209,7 +209,7 @@ fun AddContainerNextStepScreen (
                         errorMessageName = null
                         errorMessageDescription = null
 
-                        onFinish(name, description)
+                        onFinishClick(name, description)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
@@ -231,7 +231,7 @@ fun AddContainerNextStepActivityPreview () {
     FrogTheme {
         AddContainerNextStepScreen(
             onBackClick = {  },
-            onFinish = { _, _ ->  }
+            onFinishClick = { _, _ ->  }
         )
     }
 }
