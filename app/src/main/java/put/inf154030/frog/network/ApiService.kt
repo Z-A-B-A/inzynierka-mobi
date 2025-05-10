@@ -14,6 +14,7 @@ import put.inf154030.frog.models.requests.RegisterRequest
 import put.inf154030.frog.models.requests.ScheduleCreateRequest
 import put.inf154030.frog.models.requests.ScheduleUpdateRequest
 import put.inf154030.frog.models.requests.UpdateSpeciesCountRequest
+import put.inf154030.frog.models.requests.UserUpdateRequest
 import put.inf154030.frog.models.responses.AuthResponse
 import put.inf154030.frog.models.responses.ContainerDetailResponse
 import put.inf154030.frog.models.responses.ContainerResponse
@@ -38,6 +39,7 @@ import put.inf154030.frog.models.responses.SchedulesResponse
 import put.inf154030.frog.models.responses.SpeciesDetailResponse
 import put.inf154030.frog.models.responses.SpeciesListResponse
 import put.inf154030.frog.models.responses.UpcomingEventsResponse
+import put.inf154030.frog.models.responses.UserResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -144,4 +146,7 @@ interface ApiService {
 
     @GET("notifications/upcoming")
     fun getUpcomingNotifications(@Query("days") days: Int?): Call<UpcomingEventsResponse>
+
+    @PUT("me")
+    fun updateUser(@Body request: UserUpdateRequest): Call<UserResponse>
 }

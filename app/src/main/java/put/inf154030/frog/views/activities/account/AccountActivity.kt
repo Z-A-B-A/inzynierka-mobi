@@ -37,11 +37,12 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 class AccountActivity : ComponentActivity() {
     // Getting user data from current session
-    private val userName = SessionManager.getUserName()
-    private val userEmail = SessionManager.getUserEmail()
+    private var userName by mutableStateOf<String?>(null)
+    private var userEmail by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadUserData()
         setContent {
             FrogTheme {
                 AccountScreen(
@@ -55,6 +56,16 @@ class AccountActivity : ComponentActivity() {
                 )
             }
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        // Reload user data when resuming the activity
+        loadUserData()
+    }
+
+    private fun loadUserData() {
+        userName = SessionManager.getUserName()
+        userEmail = SessionManager.getUserEmail()
     }
 }
 

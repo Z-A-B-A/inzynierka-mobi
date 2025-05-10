@@ -2,6 +2,7 @@ package put.inf154030.frog.views.activities.account
 
 import android.os.Bundle
 import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -34,11 +35,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.models.requests.UserUpdateRequest
+import put.inf154030.frog.models.responses.UserResponse
+import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class EditAccountActivity : ComponentActivity() {
     // Getting user data from current session
@@ -52,7 +59,23 @@ class EditAccountActivity : ComponentActivity() {
                 EditAccountScreen(
                     onBackClick = { finish() },
                     onSaveClick = { name, email ->
-                        TODO("Nie ma requesta na to")
+                        val userUpdateRequest = UserUpdateRequest(name = name, email = email)
+                        ApiClient.apiService.updateUser(userUpdateRequest).enqueue(object : Callback<UserResponse> {
+                            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                                if (response.isSuccessful) {
+                                    // Update session information
+                                    SessionManager.saveUpdatedUserInfo(name, email)
+                                    Toast.makeText(this@EditAccountActivity, "Account updated successfully", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                } else {
+                                    Toast.makeText(this@EditAccountActivity, "Failed to update account", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                                Toast.makeText(this@EditAccountActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        })
                     },
                     userName = userName,
                     userEmail = userEmail

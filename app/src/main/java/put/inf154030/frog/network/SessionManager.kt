@@ -34,6 +34,13 @@ object SessionManager {
         editor.apply()
     }
 
+    fun saveUpdatedUserInfo(name: String, email: String) {
+        val editor = prefs.edit()
+        editor.putString(KEY_USER_NAME, name)
+        editor.putString(KEY_USER_EMAIL, email)
+        editor.apply()
+    }
+
     fun getUserName(): String? {
         return prefs.getString(KEY_USER_NAME, null)
     }
