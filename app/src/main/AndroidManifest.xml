@@ -22,85 +22,82 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".about.AboutActivity"
+            android:name=".views.activities.about.AboutActivity"
             android:exported="false" />
         <activity
-            android:name=".notifications.UpcomingActivity"
+            android:name=".views.activities.notifications.UpcomingActivity"
             android:exported="false" />
         <activity
-            android:name=".notifications.NotificationsActivity"
+            android:name=".views.activities.notifications.NotificationsActivity"
             android:exported="false" />
         <activity
-            android:name=".schedule.CreateScheduleActivity"
+            android:name=".views.activities.schedule.CreateScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".schedule.AddScheduleActivity"
+            android:name=".views.activities.schedule.EditScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".schedule.EditScheduleActivity"
+            android:name=".views.activities.schedule.ScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".schedule.ScheduleActivity"
+            android:name=".views.activities.species.CreateSpeciesActivity"
             android:exported="false" />
         <activity
-            android:name=".species.CreateSpeciesActivity"
+            android:name=".views.activities.species.AddSpeciesActivity"
             android:exported="false" />
         <activity
-            android:name=".species.AddSpeciesActivity"
+            android:name=".views.activities.parameters.CreateParameterActivity"
             android:exported="false" />
         <activity
-            android:name=".parameters.CreateParameterActivity"
+            android:name=".views.activities.parameters.AddParameterActivity"
             android:exported="false" />
         <activity
-            android:name=".parameters.AddParameterActivity"
+            android:name=".views.activities.containers.ManageContainerActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.ManageContainerActivity"
+            android:name=".views.activities.containers.ContainerActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.ContainerActivity"
+            android:name=".views.activities.containers.DeleteContainerActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.DeleteContainerActivity"
+            android:name=".views.activities.containers.EditContainerActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.EditContainerActivity"
+            android:name=".views.activities.account.EditAccountActivity"
             android:exported="false" />
         <activity
-            android:name=".account.EditAccountActivity"
+            android:name=".views.activities.account.AccountActivity"
             android:exported="false" />
         <activity
-            android:name=".account.AccountActivity"
+            android:name=".views.activities.containers.AddContainerNextStepActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.AddContainerNextStepActivity"
+            android:name=".views.activities.containers.AddContainerActivity"
             android:exported="false" />
         <activity
-            android:name=".containers.AddContainerActivity"
+            android:name=".views.activities.locations.LocationActivity"
             android:exported="false" />
         <activity
-            android:name=".locations.LocationActivity"
+            android:name=".views.activities.locations.DeleteLocationActivity"
             android:exported="false" />
         <activity
-            android:name=".locations.DeleteLocationActivity"
+            android:name=".views.activities.locations.EditLocationActivity"
             android:exported="false" />
         <activity
-            android:name=".locations.EditLocationActivity"
+            android:name=".views.activities.locations.AddLocationActivity"
             android:exported="false" />
         <activity
-            android:name=".locations.AddLocationActivity"
+            android:name=".views.activities.locations.LocationsActivity"
             android:exported="false" />
         <activity
-            android:name=".locations.LocationsActivity"
+            android:name=".views.activities.login_pages.SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".login_pages.SignUpActivity"
+            android:name=".views.activities.login_pages.LogInActivity"
             android:exported="false" />
         <activity
-            android:name=".login_pages.LogInActivity"
-            android:exported="false" />
-        <activity
-            android:name=".login_pages.InitialActivity"
+            android:name=".views.activities.login_pages.InitialActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
