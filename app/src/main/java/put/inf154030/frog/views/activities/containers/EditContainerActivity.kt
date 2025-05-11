@@ -43,15 +43,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
-import put.inf154030.frog.models.responses.ContainerResponse
+import put.inf154030.frog.models.responses.ContainerUpdateResponse
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -86,14 +86,15 @@ class EditContainerActivity : ComponentActivity() {
                         val containerUpdateRequest = ContainerUpdateRequest(
                             name = name,
                             description = description,
-                            active = true
+                            active = true,
+                            locationId = locationId
                         )
 
                         ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
-                            .enqueue(object : Callback<ContainerResponse> {
+                            .enqueue(object : Callback<ContainerUpdateResponse> {
                                 override fun onResponse(
-                                    call: Call<ContainerResponse>,
-                                    response: Response<ContainerResponse>
+                                    call: Call<ContainerUpdateResponse>,
+                                    response: Response<ContainerUpdateResponse>
                                 ) {
                                     if (response.isSuccessful) {
                                         // Container updated successfully
@@ -105,7 +106,7 @@ class EditContainerActivity : ComponentActivity() {
                                     }
                                 }
 
-                                override fun onFailure(call: Call<ContainerResponse>, t: Throwable) {
+                                override fun onFailure(call: Call<ContainerUpdateResponse>, t: Throwable) {
                                     errorMessage = "Network error: ${t.message}"
                                 }
                             })

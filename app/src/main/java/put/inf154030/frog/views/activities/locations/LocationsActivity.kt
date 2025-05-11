@@ -243,8 +243,8 @@ fun LocationsActivityPreview () {
         LocationsScreen(
             userName = "Bartosz",
             locations = listOf(
-                Location(1, "Sklep", null, ""),
-                Location(2, "Zoo", null, "")
+                Location(1, "Sklep", ""),
+                Location(2, "Zoo", "")
             ),
             isLoading = false,
             errorMessage = null,
