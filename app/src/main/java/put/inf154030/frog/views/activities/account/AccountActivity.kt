@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,23 +26,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 
 class AccountActivity : ComponentActivity() {
     // Getting user data from current session
     private var userName by mutableStateOf<String?>(null)
     private var userEmail by mutableStateOf<String?>(null)
 
+    // TODO("ramka dla info")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadUserData()
@@ -86,46 +90,87 @@ fun AccountScreen (
             )
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(32.dp))
-            Text(
-                text = userName ?: "Couldn't load name",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.secondary,
+            BasicTextField(
+                value = "",
+                onValueChange = {  },
+                enabled = false,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .size(40.dp)
                     .padding(horizontal = 32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                decorationBox = { innerTextField ->
+                    Box(
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = userName!!,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
+                        innerTextField()
+                    }
+                }
             )
             Spacer(modifier = Modifier.size(16.dp))
-            Box(
+            BasicTextField(
+                value = userEmail ?: "",
+                onValueChange = { },
+                enabled = false,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .size(40.dp)
                     .padding(horizontal = 32.dp)
-            ) {
-                var scaledTextSize by remember { mutableStateOf(24.sp) }
-                var readyToDraw by remember { mutableStateOf(false) }
-
-                // Text that allows scaling the email address so it will fit in the screen even if it is too big
-                Text(
-                    text = userEmail ?: "Couldn't load email",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = scaledTextSize,
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                singleLine = true,
+                textStyle = TextStyle(
+                    fontSize = 0.sp, // Hide the default text
                     color = MaterialTheme.colorScheme.secondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    onTextLayout = { textLayoutResult ->
-                        if (textLayoutResult.hasVisualOverflow && scaledTextSize > 12.sp) {
-                            scaledTextSize = scaledTextSize.times(0.9f)
-                        } else {
-                            readyToDraw = true
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = PoppinsFamily
+                ),
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        var fontSize by remember { mutableStateOf(20.sp) }
+
+                        Text(
+                            text = userEmail ?: "",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = fontSize,
+                            color = MaterialTheme.colorScheme.secondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { textLayoutResult ->
+                                if (textLayoutResult.hasVisualOverflow && fontSize > 12.sp) {
+                                    fontSize = fontSize.times(0.9f)
+                                }
+                            }
+                        )
+
+                        // This makes the inner text field invisible but still functional
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            innerTextField()
                         }
-                    },
-                    modifier = Modifier.drawWithContent {
-                        if (readyToDraw) drawContent()
                     }
-                )
-            }
+                }
+            )
             Column (
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,

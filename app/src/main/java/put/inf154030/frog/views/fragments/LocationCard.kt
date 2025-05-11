@@ -39,6 +39,7 @@ fun LocationCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // TODO("długa nazwa")
             Text(
                 text = locationName,
                 color = MaterialTheme.colorScheme.primary,

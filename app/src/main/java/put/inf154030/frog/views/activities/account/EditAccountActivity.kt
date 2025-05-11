@@ -119,7 +119,7 @@ fun EditAccountScreen (
                     value = name!!,
                     onValueChange = { newValue -> name = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(0.8f)
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -146,7 +146,7 @@ fun EditAccountScreen (
                     value = email!!,
                     onValueChange = { newValue -> email = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(0.8f)
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,

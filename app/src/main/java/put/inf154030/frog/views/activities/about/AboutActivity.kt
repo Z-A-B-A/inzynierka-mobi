@@ -34,7 +34,7 @@ class AboutActivity : ComponentActivity() {
         }
     }
 }
-
+// TODO("Napisać ładnie o aplikacji")
 @Composable
 fun AboutScreen (
     onBackClick: () -> Unit

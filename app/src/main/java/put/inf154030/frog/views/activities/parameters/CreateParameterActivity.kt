@@ -74,7 +74,6 @@ class CreateParameterActivity : ComponentActivity() {
                                 ) {
                                     Toast.makeText(this@CreateParameterActivity, "Oops! Something went wrong. Try again.", Toast.LENGTH_LONG).show()
                                 }
-
                             })
                     }
                 )

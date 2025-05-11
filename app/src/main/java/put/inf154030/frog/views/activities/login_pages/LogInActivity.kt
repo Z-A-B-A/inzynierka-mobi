@@ -153,12 +153,12 @@ fun LogInScreen(
                 )
                 Spacer(modifier = Modifier.size(32.dp))
                 Text(
-                    text = "-- forgot password? --",
+                    text = "-- frogot password? --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
-                        .clickable { TODO() }
+                        .clickable { TODO("Usługa jeszcze nie zaimplementowana emoji żaby") }
                         .padding(8.dp)
                 )
                 Spacer(modifier = Modifier.size(32.dp))
