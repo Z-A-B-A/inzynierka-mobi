@@ -87,7 +87,7 @@ class EditContainerActivity : ComponentActivity() {
                             name = name,
                             description = description,
                             active = true,
-                            locationId = locationId
+                            locationId = selectedLocation
                         )
 
                         ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
