@@ -38,6 +38,7 @@ import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.models.responses.PresetParametersResponse
 import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.ScheduleResponse
+import put.inf154030.frog.models.responses.ScheduleUpdateResponse
 import put.inf154030.frog.models.responses.SchedulesResponse
 import put.inf154030.frog.models.responses.SpeciesDetailResponse
 import put.inf154030.frog.models.responses.SpeciesListResponse
@@ -119,7 +120,7 @@ interface ApiService {
     fun createSchedule(@Path("container_id") containerId: Int, @Body schedule: ScheduleCreateRequest): Call<ScheduleResponse>
 
     @PUT("schedules/{id}")
-    fun updateSchedule(@Path("id") scheduleId: Int, @Body schedule: ScheduleUpdateRequest): Call<ScheduleResponse>
+    fun updateSchedule(@Path("id") scheduleId: Int, @Body schedule: ScheduleUpdateRequest): Call<ScheduleUpdateResponse>
 
     @DELETE("schedules/{id}")
     fun deleteSchedule(@Path("id") scheduleId: Int): Call<MessageResponse>

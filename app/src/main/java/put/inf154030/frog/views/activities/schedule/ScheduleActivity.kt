@@ -73,7 +73,7 @@ class ScheduleActivity : ComponentActivity() {
                     },
                     onEditScheduleClick = { schedule ->
                         val intent = Intent(this, EditScheduleActivity::class.java)
-                        intent.putExtra("CONTAINER_ID", containerId)
+                        intent.putExtra("SCHEDULE_ID", schedule.id)
                         intent.putExtra("SCHEDULE_EXEC_TIME", schedule.execution_time)
                         activityResultLauncher.launch(intent)
                     },

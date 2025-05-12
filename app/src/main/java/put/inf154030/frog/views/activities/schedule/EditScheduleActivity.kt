@@ -1,6 +1,8 @@
 package put.inf154030.frog.views.activities.schedule
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,29 +28,63 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
+import put.inf154030.frog.models.requests.ScheduleUpdateRequest
+import put.inf154030.frog.models.responses.ScheduleUpdateResponse
+import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Locale
 
 class EditScheduleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val containerId = intent.getIntExtra("CONTAINER_ID", -1)
-        val scheduleExecTime = intent.getStringExtra("SCHEDULE_EXEC_TIME") ?: ""
+        val scheduleId = intent.getIntExtra("SCHEDULE_ID", -1)
+        val scheduleExecTime = intent.getStringExtra("SCHEDULE_EXEC_TIME") ?: "0000-01-01T12:00:00Z"
 
         setContent {
             FrogTheme {
                 EditScheduleScreen(
                     onBackClick = { finish() },
-                    onSaveClick = { TODO() }
+                    onDeleteScheduleClick = {
+                        val intent = Intent(this, DeleteScheduleActivity::class.java)
+                        intent.putExtra("SCHEDULE_ID", scheduleId)
+                        startActivity(intent)
+                        finish()
+                    },
+                    onSaveClick = { executionTime ->
+                        val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime, true)
+
+                        ApiClient.apiService.updateSchedule(scheduleId, scheduleUpdateRequest)
+                            .enqueue(object: Callback<ScheduleUpdateResponse> {
+                                override fun onResponse(
+                                    call: Call<ScheduleUpdateResponse>,
+                                    response: Response<ScheduleUpdateResponse>
+                                ) {
+//                                    TODO("Update powiadomienia")
+                                    finish()
+                                }
+
+                                override fun onFailure(
+                                    call: Call<ScheduleUpdateResponse>,
+                                    t: Throwable
+                                ) {
+                                    Toast.makeText(this@EditScheduleActivity, "Oops! Something went wrong :( Try again.", Toast.LENGTH_LONG).show()
+                                }
+                            })
+                    },
+                    executionTime = scheduleExecTime
                 )
             }
         }
@@ -59,10 +94,37 @@ class EditScheduleActivity : ComponentActivity() {
 @Composable
 fun EditScheduleScreen(
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit
+    onDeleteScheduleClick: () -> Unit,
+    onSaveClick: (String) -> Unit,
+    executionTime: String
 ) {
-    var hour by remember { mutableIntStateOf(12) }
-    var minute by remember { mutableIntStateOf(0) }
+    // Parse the ISO 8601 timestamp to extract only HH:mm
+    val formattedCurrentTime = try {
+        // Extract the time part from the ISO string
+        // Format is like "0000-01-01T03:25:00Z", we want just "03:25"
+        val timePattern = "\\d{4}-\\d{2}-\\d{2}T(\\d{2}:\\d{2}):\\d{2}Z".toRegex()
+        val matchResult = timePattern.find(executionTime)
+        matchResult?.groupValues?.get(1) ?: executionTime
+    } catch (e: Exception) {
+        // Fallback to original string if parsing fails
+        executionTime
+    }
+
+    // Extract hour and minute from the formatted time
+    val initialHour = try {
+        formattedCurrentTime.split(":")[0].toInt()
+    } catch (e: Exception) {
+        12 // Default fallback
+    }
+
+    val initialMinute = try {
+        formattedCurrentTime.split(":")[1].toInt()
+    } catch (e: Exception) {
+        0 // Default fallback
+    }
+
+    var hour by remember { mutableIntStateOf(initialHour) }
+    var minute by remember { mutableIntStateOf(initialMinute) }
     var showTimePicker by remember { mutableStateOf(false) }
 
     // Format time as "HH:mm"
@@ -123,8 +185,20 @@ fun EditScheduleScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Spacer(modifier = Modifier.size(32.dp))
+                Text(
+                    text = "delete schedule",
+                    color = Color.Red,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .clickable { onDeleteScheduleClick() }
+                        .padding(end = 8.dp)
+                )
+                Spacer(modifier = Modifier.size(64.dp))
                 Button(
-                    onClick = { onSaveClick() },
+                    onClick = { onSaveClick(formattedTime) },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
                 ) {
@@ -145,7 +219,9 @@ fun EditScheduleActivityPreview() {
     FrogTheme {
         EditScheduleScreen(
             onBackClick = {},
-            onSaveClick = {}
+            onDeleteScheduleClick = {},
+            onSaveClick = { _ -> },
+            executionTime = "0000-01-01T12:00:00Z"
         )
     }
 }
