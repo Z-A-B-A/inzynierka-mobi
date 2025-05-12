@@ -32,6 +32,18 @@ fun ScheduleItem (
     weekDays: String,
     executionTime: String
 ) {
+    // Parse the ISO 8601 timestamp to extract only HH:mm
+    val formattedTime = try {
+        // Extract the time part from the ISO string
+        // Format is like "0000-01-01T03:25:00Z", we want just "03:25"
+        val timePattern = "\\d{4}-\\d{2}-\\d{2}T(\\d{2}:\\d{2}):\\d{2}Z".toRegex()
+        val matchResult = timePattern.find(executionTime)
+        matchResult?.groupValues?.get(1) ?: executionTime
+    } catch (e: Exception) {
+        // Fallback to original string if parsing fails
+        executionTime
+    }
+
     Column (
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -75,7 +87,7 @@ fun ScheduleItem (
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = executionTime,
+                    text = formattedTime,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
@@ -106,7 +118,7 @@ fun ScheduleItem (
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "${dayLabels[day - 1]} at $executionTime",
+                            text = "${dayLabels[day - 1]} at $formattedTime",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
@@ -135,7 +147,7 @@ fun ScheduleItemPreview () {
             scheduleName = "Feeding",
             frequency = "weekly",
             weekDays = "1,3,5",
-            executionTime = "18:00"
+            executionTime = "0000-01-01T07:15:00Z"
         )
     }
 }
