@@ -36,18 +36,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.models.Species
 import put.inf154030.frog.models.responses.SpeciesListResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -74,7 +72,6 @@ class AddSpeciesActivity : ComponentActivity() {
             FrogTheme {
                 AddSpeciesScreen(
                     onBackClick = { finish() },
-                    onCreateSpeciesClick = { TODO() },
                     onSaveClick = { TODO() },
                     speciesList = speciesList
                 )
@@ -111,9 +108,8 @@ class AddSpeciesActivity : ComponentActivity() {
 @Composable
 fun AddSpeciesScreen(
     onBackClick: () -> Unit,
-    onCreateSpeciesClick: () -> Unit,
     onSaveClick: () -> Unit,
-    speciesList: List<Species> = emptyList()
+    speciesList: List<Species>
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -214,30 +210,6 @@ fun AddSpeciesScreen(
                     }
                 }
                 Spacer(modifier = Modifier.size(64.dp))
-                Text(
-                    text = "Your species is not on the list? \nAdd it!",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 16.sp,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .padding(8.dp)
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Text(
-                    text = "-- Create Species --",
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 16.sp,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable { onCreateSpeciesClick() }
-                        .padding(8.dp)
-                )
-                Spacer(modifier = Modifier.size(64.dp))
                 Button(
                     onClick = { onSaveClick() },
                     modifier = Modifier
@@ -260,7 +232,6 @@ fun AddSpeciesActivityPreview () {
     FrogTheme {
         AddSpeciesScreen(
             onBackClick = {  },
-            onCreateSpeciesClick = {  },
             onSaveClick = {  },
             speciesList = listOf(
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
