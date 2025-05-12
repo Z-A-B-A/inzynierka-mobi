@@ -6,18 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,9 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,8 +34,8 @@ import put.inf154030.frog.theme.PoppinsFamily
 @Composable
 fun EditParameterRow(
     parameterName: String,
-    parameterValue: Double,
-    onDeleteClick: () -> Unit
+    parameterMin: Double,
+    parameterMax: Double,
 ) {
     Column (
         modifier = Modifier.fillMaxWidth(),
@@ -62,14 +57,15 @@ fun EditParameterRow(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var valueText by remember { mutableStateOf(parameterValue.toString()) }
+                var minValue by remember { mutableStateOf(parameterMin.toString()) }
+                var maxValue by remember { mutableStateOf(parameterMax.toString()) }
 
                 BasicTextField(
-                    value = valueText,
+                    value = minValue,
                     onValueChange = { newValue ->
                         // Only accept numeric input with at most one decimal point
                         if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
-                            valueText = newValue
+                            minValue = newValue
                         }
                     },
                     modifier = Modifier
@@ -82,7 +78,8 @@ fun EditParameterRow(
                     singleLine = true,
                     textStyle = TextStyle(
                         fontSize = 16.sp,
-                        fontFamily = PoppinsFamily
+                        fontFamily = PoppinsFamily,
+                        textAlign = TextAlign.Center
                     ),
                     decorationBox = { innerTextField ->
                         Box(
@@ -93,18 +90,37 @@ fun EditParameterRow(
                         }
                     }
                 )
-                Spacer(modifier = Modifier.size(16.dp))
-                IconButton(
-                    onClick = { onDeleteClick() },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Add parameter",
-                        tint = Color.Red,
-                        modifier = Modifier.fillMaxSize(0.8f)
-                    )
-                }
+                Spacer(modifier = Modifier.size(8.dp))
+                BasicTextField(
+                    value = maxValue,
+                    onValueChange = { newValue ->
+                        // Only accept numeric input with at most one decimal point
+                        if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            maxValue = newValue
+                        }
+                    },
+                    modifier = Modifier
+                        .width(72.dp)
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.secondary,
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontSize = 16.sp,
+                        fontFamily = PoppinsFamily,
+                        textAlign = TextAlign.Center
+                    ),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            innerTextField()
+                        }
+                    }
+                )
             }
         }
         HorizontalDivider(
@@ -123,8 +139,8 @@ fun EditParameterRowPreview() {
     FrogTheme {
         EditParameterRow(
             parameterName = "Temperature",
-            parameterValue = 35.0,
-            onDeleteClick = {  }
+            parameterMin = 20.0,
+            parameterMax = 25.0
         )
     }
 }

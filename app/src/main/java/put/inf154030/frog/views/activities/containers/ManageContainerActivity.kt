@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,9 +80,8 @@ class ManageContainerActivity : ComponentActivity() {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
-                    onDeleteParameterClick = { TODO() },
                     onAddSpeciesClick = { TODO() },
-                    onDeleteSpeciesClick = { TODO() },
+                    onRemoveSpeciesClick = { TODO() },
                     onSaveClick = { TODO() },
                     isLoadingParams = isLoadingParams,
                     isLoadingSpecies = isLoadingSpecies,
@@ -133,9 +133,8 @@ class ManageContainerActivity : ComponentActivity() {
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
-    onDeleteParameterClick: (Parameter) -> Unit,
     onAddSpeciesClick: () -> Unit,
-    onDeleteSpeciesClick: (Species) -> Unit,
+    onRemoveSpeciesClick: (Species) -> Unit,
     onSaveClick: () -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
@@ -177,25 +176,24 @@ fun ManageContainerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Value",
+                            text = "Min",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.width(72.dp)
+                            modifier = Modifier.width(72.dp),
+                            textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.size(16.dp))
-                        IconButton(
-                            onClick = { TODO("Do wyjebania ta sekcja") },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add parameter",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.fillMaxSize(0.8f)
-                            )
-                        }
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            text = "Max",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.width(72.dp),
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
                 HorizontalDivider(
@@ -251,8 +249,8 @@ fun ManageContainerScreen(
                         items(parameters) { parameter ->
                             EditParameterRow (
                                 parameterName = parameter.name,
-                                parameterValue = parameter.current_value!!,
-                                onDeleteClick = { onDeleteParameterClick(parameter) }
+                                parameterMin = parameter.min_value!!,
+                                parameterMax = parameter.max_value!!
                             )
                         }
                     }
@@ -335,7 +333,7 @@ fun ManageContainerScreen(
                         items(species) { species ->
                             EditSpeciesRow(
                                 speciesName = species.name,
-                                onDeleteClick = { onDeleteSpeciesClick(species) }
+                                onDeleteClick = { onRemoveSpeciesClick(species) }
                             )
                         }
                     }
@@ -368,9 +366,8 @@ fun ManageContainerActivityPreview () {
     FrogTheme {
         ManageContainerScreen(
             onBackClick = {  },
-            onDeleteParameterClick = {  },
             onAddSpeciesClick = {  },
-            onDeleteSpeciesClick = {  },
+            onRemoveSpeciesClick = {  },
             onSaveClick = {  },
             isLoadingParams = false,
             isLoadingSpecies = false,
@@ -378,9 +375,9 @@ fun ManageContainerActivityPreview () {
             errorMessageSpecies = null,
             containerName = "Container X",
             parameters = listOf(
-                Parameter(1, "Temperature", 35.0, "C", null, null, true, null, null, null),
-                Parameter(2, "Humidity", 20.0, "%", null, null, true, null, null, null),
-                Parameter(3, "PH", 6.0, "", null, null, true, null, null, null)
+                Parameter(1, "Temperature", 35.0, "C", 20.0, 25.0, true, null, null, null),
+                Parameter(2, "Humidity", 20.0, "%", 30.0, 40.0, true, null, null, null),
+                Parameter(3, "PH", 6.0, "", 6.5, 7.5, true, null, null, null)
             ),
             species = listOf(
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
