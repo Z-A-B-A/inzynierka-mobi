@@ -1,5 +1,6 @@
 package put.inf154030.frog.views.activities.locations
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -33,10 +34,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
+import put.inf154030.frog.models.requests.LocationUpdateRequest
+import put.inf154030.frog.models.responses.LocationUpdateResponse
+import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Callback
 
 class EditLocationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +55,14 @@ class EditLocationActivity : AppCompatActivity() {
             FrogTheme {
                 EditLocationScreen(
                     onBackClick = { finish() },
-                    onEditSuccess = { finish() }
+                    onDeleteLocationClick = {
+                        val intent = Intent(this, DeleteLocationActivity::class.java)
+                        intent.putExtra("LOCATION_ID", locationId)
+                        startActivity(intent)
+                        finish()
+                    },
+                    onEditSuccess = { finish() },
+                    locationId = locationId
                 )
             }
         }
@@ -58,7 +72,9 @@ class EditLocationActivity : AppCompatActivity() {
 @Composable
 fun EditLocationScreen (
     onBackClick: () -> Unit = {},
-    onEditSuccess: () -> Unit = {}
+    onDeleteLocationClick: () -> Unit,
+    onEditSuccess: () -> Unit = {},
+    locationId: Int
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -125,7 +141,7 @@ fun EditLocationScreen (
                     textDecoration = TextDecoration.Underline,
                     fontSize = 20.sp,
                     modifier = Modifier
-                        .clickable { TODO("Czekam na odpowiedni request w API") }
+                        .clickable { onDeleteLocationClick() }
                         .padding(end = 8.dp)
                 )
                 Spacer(modifier = Modifier.size(64.dp))
@@ -139,28 +155,27 @@ fun EditLocationScreen (
                         isLoading = true
                         errorMessage = null
 
-                        TODO("Czekam na odpowiedni request w API")
-//                        val locationCreateRequest = LocationCreateRequest(name = name.trim())
-//
-//                        ApiClient.apiService.createLocation(locationCreateRequest).enqueue(object : Callback<LocationResponse> {
-//                            override fun onResponse(
-//                                call: Call<LocationResponse>,
-//                                response: Response<LocationResponse>
-//                            ) {
-//                                isLoading = false
-//                                if (response.isSuccessful) {
-//                                    onEditSuccess()
-//                                } else {
-//                                    errorMessage =
-//                                        "Failed to create location: ${response.message()}"
-//                                }
-//                            }
-//
-//                            override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
-//                                isLoading = false
-//                                errorMessage = "Network error: ${t.message}"
-//                            }
-//                        })
+                        val locationUpdateRequest = LocationUpdateRequest(name = name.trim())
+
+                        ApiClient.apiService.updateLocation(locationId, locationUpdateRequest).enqueue(object : Callback<LocationUpdateResponse> {
+                            override fun onResponse(
+                                call: Call<LocationUpdateResponse>,
+                                response: Response<LocationUpdateResponse>
+                            ) {
+                                isLoading = false
+                                if (response.isSuccessful) {
+                                    onEditSuccess()
+                                } else {
+                                    errorMessage =
+                                        "Failed to update location: ${response.message()}"
+                                }
+                            }
+
+                            override fun onFailure(call: Call<LocationUpdateResponse>, t: Throwable) {
+                                isLoading = false
+                                errorMessage = "Network error: ${t.message}"
+                            }
+                        })
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
@@ -182,7 +197,9 @@ fun EditLocationPreview() {
     FrogTheme {
         EditLocationScreen(
             onBackClick = {  },
-            onEditSuccess = {  }
+            onDeleteLocationClick = {},
+            onEditSuccess = {  },
+            locationId = 1
         )
     }
 }
