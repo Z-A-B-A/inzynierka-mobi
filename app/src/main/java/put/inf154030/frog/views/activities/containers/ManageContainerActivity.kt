@@ -39,17 +39,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.EditParameterRow
-import put.inf154030.frog.views.fragments.EditSpeciesRow
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.Species
 import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.views.activities.parameters.AddParameterActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.EditParameterRow
+import put.inf154030.frog.views.fragments.EditSpeciesRow
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -80,11 +79,6 @@ class ManageContainerActivity : ComponentActivity() {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
-                    onAddParameterClick = {
-                        val intent = Intent(this, AddParameterActivity::class.java)
-                        intent.putExtra("CONTAINER_ID", containerId)
-                        startActivity(intent)
-                    },
                     onDeleteParameterClick = { TODO() },
                     onAddSpeciesClick = { TODO() },
                     onDeleteSpeciesClick = { TODO() },
@@ -139,7 +133,6 @@ class ManageContainerActivity : ComponentActivity() {
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
-    onAddParameterClick: () -> Unit,
     onDeleteParameterClick: (Parameter) -> Unit,
     onAddSpeciesClick: () -> Unit,
     onDeleteSpeciesClick: (Species) -> Unit,
@@ -149,8 +142,8 @@ fun ManageContainerScreen(
     errorMessageParams: String?,
     errorMessageSpecies: String?,
     containerName: String,
-    parameters: List<Parameter> = emptyList(),
-    species: List<Species> = emptyList()
+    parameters: List<Parameter>,
+    species: List<Species>
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -193,7 +186,7 @@ fun ManageContainerScreen(
                         )
                         Spacer(modifier = Modifier.size(16.dp))
                         IconButton(
-                            onClick = { onAddParameterClick() },
+                            onClick = { TODO("Do wyjebania ta sekcja") },
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
@@ -375,7 +368,6 @@ fun ManageContainerActivityPreview () {
     FrogTheme {
         ManageContainerScreen(
             onBackClick = {  },
-            onAddParameterClick = {  },
             onDeleteParameterClick = {  },
             onAddSpeciesClick = {  },
             onDeleteSpeciesClick = {  },
