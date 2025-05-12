@@ -71,7 +71,12 @@ class ScheduleActivity : ComponentActivity() {
                         intent.putExtra("CONTAINER_ID", containerId)
                         startActivity(intent)
                     },
-                    onEditScheduleClick = { TODO() },
+                    onEditScheduleClick = { schedule ->
+                        val intent = Intent(this, EditScheduleActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        intent.putExtra("SCHEDULE_EXEC_TIME", schedule.execution_time)
+                        startActivity(intent)
+                    },
                     schedulesList = schedulesList,
                     isLoading = isLoading,
                     errorMessage = errorMessage
@@ -113,7 +118,7 @@ class ScheduleActivity : ComponentActivity() {
 fun ScheduleScreen(
     onBackClick: () -> Unit,
     onCreateScheduleClick: () -> Unit,
-    onEditScheduleClick: () -> Unit,
+    onEditScheduleClick: (Schedule) -> Unit,
     schedulesList: List<Schedule> = emptyList(),
     isLoading: Boolean,
     errorMessage: String?
@@ -178,7 +183,7 @@ fun ScheduleScreen(
                     ) {
                         items(schedulesList) { schedule ->
                             ScheduleItem(
-                                onEditClick = { onEditScheduleClick() },
+                                onEditClick = { onEditScheduleClick(schedule) },
                                 scheduleName = schedule.name,
                                 frequency = schedule.frequency,
                                 weekDays = schedule.weekdays,
@@ -218,10 +223,10 @@ fun ScheduleActivityPreview() {
         ScheduleScreen(
             onBackClick = {},
             onCreateScheduleClick = {},
-            onEditScheduleClick = {},
+            onEditScheduleClick = { _ -> },
             schedulesList = listOf(
-                Schedule(1, "Feeding", "", "daily", "0", "18:00", null, ""),
-                Schedule(2, "Cleaning", "", "weekly", "1,4", "18:00", null, "")
+                Schedule(1, "Feeding", "", "daily", "0", "18:00:00", null, ""),
+                Schedule(2, "Cleaning", "", "weekly", "1,4", "18:00:00", null, "")
             ),
             isLoading = false,
             errorMessage = null

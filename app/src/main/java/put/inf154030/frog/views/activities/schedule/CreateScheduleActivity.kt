@@ -66,7 +66,7 @@ class CreateScheduleActivity : ComponentActivity() {
                 CreateScheduleScreen(
                     onBackClick = { finish() },
                     onCreateClick = { name, frequency, weekDays, executionTime ->
-                        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
                         val currentDate = dateFormat.format(Date())
 
                         val scheduleCreateRequest = ScheduleCreateRequest(name, currentDate.toString(), frequency, weekDays, executionTime)
