@@ -75,7 +75,7 @@ class LocationsActivity : ComponentActivity() {
                     errorMessage = errorMessage,
                     onAddLocationClick = {
                         val intent = Intent(this, AddLocationActivity::class.java)
-                        addLocationLauncher.launch(intent)
+                        startActivity(intent)
                     },
                     onLocationClick = { location ->
                         val intent = Intent(this, LocationActivity::class.java)
@@ -124,10 +124,10 @@ class LocationsActivity : ComponentActivity() {
 
 @Composable
 fun LocationsScreen(
-    userName: String? = "XYZ",
+    userName: String?,
     locations: List<Location> = emptyList(),
-    isLoading: Boolean = false,
-    errorMessage: String? = null,
+    isLoading: Boolean,
+    errorMessage: String?,
     onAddLocationClick: () -> Unit,
     onLocationClick: (Location) -> Unit,
     onEditClick: (Location) -> Unit,

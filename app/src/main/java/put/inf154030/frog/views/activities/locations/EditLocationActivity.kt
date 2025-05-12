@@ -71,9 +71,9 @@ class EditLocationActivity : AppCompatActivity() {
 
 @Composable
 fun EditLocationScreen (
-    onBackClick: () -> Unit = {},
+    onBackClick: () -> Unit,
     onDeleteLocationClick: () -> Unit,
-    onEditSuccess: () -> Unit = {},
+    onEditSuccess: () -> Unit,
     locationId: Int
 ) {
     Surface (

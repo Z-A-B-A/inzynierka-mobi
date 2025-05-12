@@ -56,8 +56,8 @@ class AddLocationActivity : ComponentActivity() {
 
 @Composable
 fun AddLocationScreen (
-    onBackClick: () -> Unit = {},
-    onAddSuccess: () -> Unit = {}
+    onBackClick: () -> Unit,
+    onAddSuccess: () -> Unit
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),

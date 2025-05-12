@@ -27,6 +27,9 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 class DeleteLocationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val locationId = intent.getIntExtra("LOCATION_ID", -1)
+
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
