@@ -2,12 +2,14 @@ package put.inf154030.frog.views.activities.species
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,12 +19,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.Species
+import put.inf154030.frog.models.requests.AddSpeciesRequest
+import put.inf154030.frog.models.responses.ContainerSpeciesItemResponse
 import put.inf154030.frog.models.responses.SpeciesListResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -72,19 +79,47 @@ class AddSpeciesActivity : ComponentActivity() {
             FrogTheme {
                 AddSpeciesScreen(
                     onBackClick = { finish() },
-                    onSaveClick = { TODO() },
-                    speciesList = speciesList
+                    onSaveClick = { selectedSpecies ->
+                        if (selectedSpecies == null) {
+                            Toast.makeText(this, "No species selected!", Toast.LENGTH_LONG).show()
+                        } else {
+                            val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, 1)
+
+                            ApiClient.apiService.addSpeciesToContainer(containerId, addSpeciesRequest)
+                                .enqueue(object: Callback<ContainerSpeciesItemResponse> {
+                                    override fun onResponse(
+                                        call: Call<ContainerSpeciesItemResponse>,
+                                        response: Response<ContainerSpeciesItemResponse>
+                                    ) {
+                                        finish()
+                                        TODO("Not yet implemented")
+                                    }
+
+                                    override fun onFailure(
+                                        call: Call<ContainerSpeciesItemResponse>,
+                                        t: Throwable
+                                    ) {
+                                        Toast.makeText(this@AddSpeciesActivity, "Network error", Toast.LENGTH_LONG).show()
+                                    }
+
+                                })
+                        }
+                    },
+                    speciesList = speciesList,
+                    onFilterSelected = { category ->
+                        loadSpecies(if (category == "none") null else category)
+                    }
                 )
             }
         }
         loadSpecies()
     }
 
-    private fun loadSpecies () {
+    private fun loadSpecies(category: String? = null) {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getSpecies(null).enqueue(object: Callback<SpeciesListResponse> {
+        ApiClient.apiService.getSpecies(if (category == "none") null else category).enqueue(object: Callback<SpeciesListResponse> {
             override fun onResponse(
                 call: Call<SpeciesListResponse>,
                 response: Response<SpeciesListResponse>
@@ -108,9 +143,15 @@ class AddSpeciesActivity : ComponentActivity() {
 @Composable
 fun AddSpeciesScreen(
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit,
-    speciesList: List<Species>
+    onSaveClick: (Species?) -> Unit,
+    speciesList: List<Species>,
+    onFilterSelected: (String?) -> Unit
 ) {
+    var isSpeciesDropdownExpanded by remember { mutableStateOf(false) }
+    var selectedSpecies by remember { mutableStateOf<Species?>(null) }
+    val categories = listOf("none", "reptile", "amphibian", "invertebrate", "fish", "aquatic invertebrate")
+    var selectedCategory by remember { mutableStateOf("none") }
+
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -121,13 +162,60 @@ fun AddSpeciesScreen(
             )
             BackButton { onBackClick() }
             Column (
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                var isSpeciesDropdownExpanded by remember { mutableStateOf(false) }
-                var selectedSpecies by remember { mutableStateOf<Species?>(null) }
 
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = "-- filters --",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(bottom = 16.dp)
+                ) {
+
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        categories.forEach { category ->
+                            FilterChip(
+                                selected = selectedCategory == category,
+                                onClick = {
+                                    selectedCategory = category
+                                    // Filter species list based on category
+                                    if (category == "none") {
+                                        onFilterSelected(null)
+                                    } else {
+                                        onFilterSelected(category)
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = category.replaceFirstChar { it.uppercase() },
+                                        fontFamily = PoppinsFamily,
+                                        fontSize = 14.sp,
+                                        maxLines = 1
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.secondary,
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    labelColor = MaterialTheme.colorScheme.background
+                                )
+                            )
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -209,9 +297,16 @@ fun AddSpeciesScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.size(64.dp))
+            }
+//            TODO("Dodać species count")
+            Spacer(modifier = Modifier.size(32.dp))
+            Column (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
                 Button(
-                    onClick = { onSaveClick() },
+                    onClick = { onSaveClick(selectedSpecies) },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
                 ) {
@@ -232,11 +327,12 @@ fun AddSpeciesActivityPreview () {
     FrogTheme {
         AddSpeciesScreen(
             onBackClick = {  },
-            onSaveClick = {  },
+            onSaveClick = { _ -> },
             speciesList = listOf(
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
                 Species(2, "FROG2", "FROG2", "frog2", "amphibians", true)
-            )
+            ),
+            onFilterSelected = { _ -> }
         )
     }
 }
