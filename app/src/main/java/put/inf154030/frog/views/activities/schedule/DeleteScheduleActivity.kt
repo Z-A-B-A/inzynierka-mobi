@@ -47,7 +47,6 @@ class DeleteScheduleActivity : ComponentActivity() {
                                     call: Call<MessageResponse>,
                                     response: Response<MessageResponse>
                                 ) {
-//                                    TODO("Tu jest coś nie halo z api, albo halo, tylko jeszcze nie mam powiadomień")
                                     finish()
                                 }
 
