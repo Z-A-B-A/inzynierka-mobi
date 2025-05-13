@@ -73,7 +73,6 @@ fun ContainerScreen (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        // TODO("Pozmieniać layout na wzór ManageContainerActivity")
         Column {
             TopHeaderBar(
                 title = containerName,
@@ -95,7 +94,9 @@ fun ContainerScreen (
                 )
             }
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -115,23 +116,23 @@ fun ContainerScreen (
 //                        "parametry, statystyki, zwierzęta." +
 //                        "jak klikasz na daną opcję to się rozwija widok z danymi")
                 Spacer(modifier = Modifier.size(16.dp))
-                Column (
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
+            }
+            Column (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Button(
+                    onClick = { onChangeClick() },
+                    modifier = Modifier
+                        .fillMaxWidth(0.65f)
                 ) {
-                    Button(
-                        onClick = { onChangeClick() },
-                        modifier = Modifier
-                            .fillMaxWidth(0.65f)
-                    ) {
-                        Text(
-                            text = "Change",
-                            fontFamily = PoppinsFamily
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(64.dp))
+                    Text(
+                        text = "Change",
+                        fontFamily = PoppinsFamily
+                    )
                 }
+                Spacer(modifier = Modifier.size(64.dp))
             }
         }
     }
