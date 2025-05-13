@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +52,12 @@ fun EditParameterRow(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             )
             Row (
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -138,7 +144,7 @@ fun EditParameterRow(
 fun EditParameterRowPreview() {
     FrogTheme {
         EditParameterRow(
-            parameterName = "Temperature",
+            parameterName = "Temperatura wody",
             parameterMin = 20.0,
             parameterMax = 25.0
         )

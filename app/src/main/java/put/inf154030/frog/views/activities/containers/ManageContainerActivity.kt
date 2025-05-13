@@ -375,9 +375,9 @@ fun ManageContainerActivityPreview () {
             errorMessageSpecies = null,
             containerName = "Container X",
             parameters = listOf(
-                Parameter(1, "Temperature", 35.0, "C", 20.0, 25.0, true, null, null, null),
-                Parameter(2, "Humidity", 20.0, "%", 30.0, 40.0, true, null, null, null),
-                Parameter(3, "PH", 6.0, "", 6.5, 7.5, true, null, null, null)
+                Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
+                Parameter(6, "pH", 6.8, "pH", 6.5, 7.5, false, "", "", "predefined"),
+                Parameter(7, "Światło", 5.5, "on/off", 0.0, 0.0, true, "", "", "predefined")
             ),
             species = listOf(
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
