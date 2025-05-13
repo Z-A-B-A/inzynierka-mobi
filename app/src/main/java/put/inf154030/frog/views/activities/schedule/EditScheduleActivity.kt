@@ -72,7 +72,6 @@ class EditScheduleActivity : ComponentActivity() {
                                     call: Call<ScheduleUpdateResponse>,
                                     response: Response<ScheduleUpdateResponse>
                                 ) {
-//                                    TODO("Update powiadomienia")
                                     finish()
                                 }
 
