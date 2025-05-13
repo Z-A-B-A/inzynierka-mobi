@@ -77,12 +77,26 @@ fun AddLocationScreen (
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
 
+                // Character count display
+                Text(
+                    text = "${name.length}/32 characters",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth(0.65f)
+                        .padding(bottom = 4.dp),
+                    fontFamily = PoppinsFamily
+                )
+
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
-                        name = newValue
-                        errorMessage = null
-                                    },
+                        // Only update if within character limit
+                        if (newValue.length <= 32) {
+                            name = newValue
+                            errorMessage = null
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
                         .size(40.dp)

@@ -15,6 +15,7 @@ import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun LocationCard(
@@ -39,13 +40,17 @@ fun LocationCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // TODO("długa nazwa")
             Text(
                 text = locationName,
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 28.sp
+                fontSize = 28.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             )
 
             IconButton(
@@ -68,7 +73,7 @@ fun LocationCard(
 fun LocationCardPreview() {
     FrogTheme {
         LocationCard(
-            locationName = "Home",
+            locationName = "Politechnika Poznańska",
             onEditClick = {  },
             onClick = {  }
         )

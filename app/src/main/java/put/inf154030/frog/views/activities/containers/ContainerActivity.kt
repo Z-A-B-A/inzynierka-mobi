@@ -112,9 +112,7 @@ fun ContainerScreen (
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-//                TODO("Mam plan taki, żeby zrobić tutaj 3 pola:" +
-//                        "parametry, statystyki, zwierzęta." +
-//                        "jak klikasz na daną opcję to się rozwija widok z danymi")
+//                TODO("Dorobić parametry, species i wykresy")
                 Spacer(modifier = Modifier.size(16.dp))
             }
             Column (
