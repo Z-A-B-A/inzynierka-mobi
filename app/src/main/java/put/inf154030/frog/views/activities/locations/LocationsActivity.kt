@@ -75,7 +75,7 @@ class LocationsActivity : ComponentActivity() {
                     errorMessage = errorMessage,
                     onAddLocationClick = {
                         val intent = Intent(this, AddLocationActivity::class.java)
-                        startActivity(intent)
+                        addLocationLauncher.launch(intent)
                     },
                     onLocationClick = { location ->
                         val intent = Intent(this, LocationActivity::class.java)
@@ -86,13 +86,18 @@ class LocationsActivity : ComponentActivity() {
                     onEditClick = { location ->
                         val intent = Intent(this, EditLocationActivity::class.java)
                         intent.putExtra("LOCATION_ID", location.id)
-                        startActivity(intent)
+                        addLocationLauncher.launch(intent)
                     },
                     context = this
                 )
             }
         }
         // Load locations when activity is created
+        loadLocations()
+    }
+
+    override fun onResume() {
+        super.onResume()
         loadLocations()
     }
 
