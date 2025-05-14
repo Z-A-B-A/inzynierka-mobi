@@ -40,12 +40,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
-import put.inf154030.frog.models.Species
+import put.inf154030.frog.models.responses.ContainerSpeciesResponse
 import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.activities.species.AddSpeciesActivity
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.EditParameterRow
 import put.inf154030.frog.views.fragments.EditSpeciesRow
@@ -57,30 +59,35 @@ import retrofit2.Response
 class ManageContainerActivity : ComponentActivity() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
-    private var speciesList by mutableStateOf<List<Species>>(emptyList())
+    private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
     private var isLoadingParams by mutableStateOf(false)
     private var isLoadingSpecies by mutableStateOf(false)
     private var errorMessageParams by mutableStateOf<String?>(null)
     private var errorMessageSpecies by mutableStateOf<String?>(null)
+    private var containerId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val containerId = intent.getIntExtra("CONTAINER_ID", -1)
+        containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
 
         activityResultLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            loadParameters(containerId)
-//            loadSpecies()
+            loadParameters(containerId = containerId)
+            loadSpecies(containerId = containerId)
         }
 
         setContent {
             FrogTheme {
                 ManageContainerScreen(
                     onBackClick = { finish() },
-                    onAddSpeciesClick = { TODO() },
+                    onAddSpeciesClick = {
+                        val intent = Intent(this, AddSpeciesActivity::class.java)
+                        intent.putExtra("CONTAINER_ID", containerId)
+                        activityResultLauncher.launch(intent)
+                    },
                     onRemoveSpeciesClick = { TODO() },
                     onSaveClick = { TODO() },
                     isLoadingParams = isLoadingParams,
@@ -94,8 +101,13 @@ class ManageContainerActivity : ComponentActivity() {
             }
         }
 
-        loadParameters(containerId)
-//        loadSpecies()
+        loadParameters(containerId = containerId)
+        loadSpecies(containerId = containerId)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSpecies(containerId = containerId)
     }
 
     private fun loadParameters(
@@ -125,16 +137,39 @@ class ManageContainerActivity : ComponentActivity() {
         })
     }
 
-//    private fun loadSpecies() {
-//        TODO()
-//    }
+    private fun loadSpecies(
+        containerId: Int
+    ) {
+        isLoadingSpecies = true
+        errorMessageSpecies = null
+
+        ApiClient.apiService.getContainerSpecies(containerId)
+            .enqueue(object: Callback<ContainerSpeciesResponse> {
+                override fun onResponse(
+                    call: Call<ContainerSpeciesResponse>,
+                    response: Response<ContainerSpeciesResponse>
+                ) {
+                    isLoadingSpecies = false
+                    if (response.isSuccessful) {
+                        speciesList = response.body()?.species ?: emptyList()
+                    } else {
+                        errorMessageParams = "Failed to load species: ${response.message()}"
+                    }
+                }
+
+                override fun onFailure(call: Call<ContainerSpeciesResponse>, t: Throwable) {
+                    isLoadingSpecies = false
+                    errorMessageSpecies = "Network error: ${t.message}"
+                }
+            })
+    }
 }
 
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
     onAddSpeciesClick: () -> Unit,
-    onRemoveSpeciesClick: (Species) -> Unit,
+    onRemoveSpeciesClick: (ContainerSpecies) -> Unit,
     onSaveClick: () -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
@@ -142,7 +177,7 @@ fun ManageContainerScreen(
     errorMessageSpecies: String?,
     containerName: String,
     parameters: List<Parameter>,
-    species: List<Species>
+    species: List<ContainerSpecies>
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -198,7 +233,7 @@ fun ManageContainerScreen(
                 }
                 HorizontalDivider(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f) // Match the width of your parameter row
+                        .fillMaxWidth(0.8f)
                         .padding(vertical = 8.dp),
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
@@ -268,21 +303,35 @@ fun ManageContainerScreen(
                         fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.secondary
                     )
-                    IconButton(
-                        onClick = { onAddSpeciesClick() },
-                        modifier = Modifier.size(32.dp)
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add species",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.fillMaxSize(0.8f)
+                        Text(
+                            text = "Count",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.width(72.dp),
+                            textAlign = TextAlign.Center
                         )
+                        Spacer(modifier = Modifier.size(16.dp))
+                        IconButton(
+                            onClick = { onAddSpeciesClick() },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add species",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.fillMaxSize(0.8f)
+                            )
+                        }
                     }
                 }
                 HorizontalDivider(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f) // Match the width of your parameter row
+                        .fillMaxWidth(0.8f)
                         .padding(vertical = 8.dp),
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
@@ -333,6 +382,7 @@ fun ManageContainerScreen(
                         items(species) { species ->
                             EditSpeciesRow(
                                 speciesName = species.name,
+                                speciesCount = species.count,
                                 onDeleteClick = { onRemoveSpeciesClick(species) }
                             )
                         }
@@ -380,8 +430,7 @@ fun ManageContainerActivityPreview () {
                 Parameter(7, "Światło", 5.5, "on/off", 0.0, 0.0, true, "", "", "predefined")
             ),
             species = listOf(
-                Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
-                Species(2, "FROG2", "FROG2", "frog2", "amphibians", true)
+                ContainerSpecies(1, 1, "frog", 3, "")
             )
         )
     }
