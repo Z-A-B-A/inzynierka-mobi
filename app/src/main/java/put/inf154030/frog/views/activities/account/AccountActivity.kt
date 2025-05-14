@@ -89,9 +89,7 @@ fun AccountScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Account" // Header bar with title
-            )
+            TopHeaderBar( title = "Account" ) // Header bar with title
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(32.dp))
 
