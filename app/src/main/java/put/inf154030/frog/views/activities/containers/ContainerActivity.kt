@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,7 +31,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
+import put.inf154030.frog.models.responses.ContainerSpeciesResponse
 import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -40,16 +41,19 @@ import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.schedule.ScheduleActivity
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.ParameterItem
+import put.inf154030.frog.views.fragments.SpeciesItem
 import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class ContainerActivity : ComponentActivity() {
-    private lateinit var parametersLauncher: ActivityResultLauncher<Intent>
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
-    private var isLoading by mutableStateOf(false)
-    private var errorMessage by mutableStateOf<String?>(null)
+    private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
+    private var isLoadingParams by mutableStateOf(false)
+    private var isLoadingSpecies by mutableStateOf(false)
+    private var errorMessageParams by mutableStateOf<String?>(null)
+    private var errorMessageSpecies by mutableStateOf<String?>(null)
     private var containerId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,12 +62,6 @@ class ContainerActivity : ComponentActivity() {
         containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
         val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "ERROR READING DESCRIPTION"
-
-        parametersLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            loadParameters()
-        }
 
         setContent {
             FrogTheme {
@@ -82,26 +80,29 @@ class ContainerActivity : ComponentActivity() {
                     },
                     containerName = containerName,
                     containerDescription = containerDescription,
-                    parametersList = parametersList
+                    parametersList = parametersList,
+                    speciesList = speciesList
                 )
             }
         }
         loadParameters()
+        loadSpecies()
     }
 
     override fun onResume() {
         super.onResume()
         loadParameters()
+        loadSpecies()
     }
 
     private fun loadParameters() {
         if (containerId == -1) {
-            errorMessage = "Invalid location ID"
+            errorMessageParams = "Invalid container ID"
             return
         }
 
-        isLoading = true
-        errorMessage = null
+        isLoadingParams = true
+        errorMessageParams = null
 
         ApiClient.apiService.getParameters(containerId)
             .enqueue(object: Callback<ParametersResponse> {
@@ -109,18 +110,48 @@ class ContainerActivity : ComponentActivity() {
                     call: Call<ParametersResponse>,
                     response: Response<ParametersResponse>
                 ) {
-                    isLoading = false
+                    isLoadingParams = false
 
                     if (response.isSuccessful) {
                         parametersList = response.body()?.parameters ?: emptyList()
                     } else {
-                        errorMessage = "Failed to load parameters: ${response.message()}"
+                        errorMessageParams = "Failed to load parameters: ${response.message()}"
                     }
                 }
 
                 override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
-                    isLoading = false
-                    errorMessage = "Network error: ${t.message}"
+                    isLoadingParams = false
+                    errorMessageParams = "Network error: ${t.message}"
+                }
+            })
+    }
+
+    private fun loadSpecies() {
+        if (containerId == -1) {
+            errorMessageParams = "Invalid container ID"
+            return
+        }
+
+        isLoadingSpecies = true
+        errorMessageSpecies = null
+
+        ApiClient.apiService.getContainerSpecies(containerId)
+            .enqueue(object: Callback<ContainerSpeciesResponse> {
+                override fun onResponse(
+                    call: Call<ContainerSpeciesResponse>,
+                    response: Response<ContainerSpeciesResponse>
+                ) {
+                    isLoadingSpecies = false
+                    if (response.isSuccessful) {
+                        speciesList = response.body()?.species ?: emptyList()
+                    } else {
+                        errorMessageParams = "Failed to load species: ${response.message()}"
+                    }
+                }
+
+                override fun onFailure(call: Call<ContainerSpeciesResponse>, t: Throwable) {
+                    isLoadingSpecies = false
+                    errorMessageSpecies = "Network error: ${t.message}"
                 }
             })
     }
@@ -133,7 +164,8 @@ fun ContainerScreen (
     onScheduleClick: () -> Unit,
     containerName: String,
     containerDescription: String,
-    parametersList: List<Parameter>
+    parametersList: List<Parameter>,
+    speciesList: List<ContainerSpecies>
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -189,9 +221,7 @@ fun ContainerScreen (
                 else {
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(horizontal = 16.dp),
+                            .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(vertical = 4.dp)
                     ) {
@@ -204,7 +234,60 @@ fun ContainerScreen (
                         }
                     }
                 }
-//                TODO("Dorobić species i wykresy")
+                Spacer(modifier = Modifier.size(32.dp))
+                Column {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Species",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Count",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .padding(vertical = 8.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                if (speciesList.isEmpty()) {
+                    Text(
+                        text = "-- no species --",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(vertical = 4.dp)
+                    ) {
+                        items(speciesList) { species ->
+                            SpeciesItem(
+                                speciesName = species.name,
+                                speciesCount = species.count
+                            )
+                        }
+                    }
+                }
+//                TODO("Dorobić wykresy")
             }
             Spacer(modifier = Modifier.size(16.dp))
             Column (
@@ -242,6 +325,9 @@ fun ContainerActivityPreview () {
                 Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
                 Parameter(6, "pH", 6.8, "pH", 6.5, 7.5, false, "", "", "predefined"),
                 Parameter(7, "Światło", 5.5, "on/off", 0.0, 0.0, true, "", "", "predefined")
+            ),
+            speciesList = listOf(
+                ContainerSpecies(1, 1, "frog", 3, "")
             )
         )
     }

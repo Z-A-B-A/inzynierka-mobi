@@ -19,10 +19,9 @@ import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
-fun ParameterItem(
-    parameterName: String,
-    currentValue: Double,
-    unit: String,
+fun SpeciesItem(
+    speciesName: String,
+    speciesCount: Int
 ) {
     Column (
         modifier = Modifier.fillMaxWidth(),
@@ -34,14 +33,14 @@ fun ParameterItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = parameterName,
+                text = speciesName,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
             Text(
-                text = currentValue.toString() + unit,
+                text = speciesCount.toString(),
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
@@ -60,12 +59,11 @@ fun ParameterItem(
 
 @Preview
 @Composable
-fun ParameterItemPreview() {
+fun SpeciesItemPreview() {
     FrogTheme {
-        ParameterItem(
-            parameterName = "Temperature",
-            currentValue = 25.0,
-            unit = "°C"
+        SpeciesItem(
+            speciesName = "Frog",
+            speciesCount = 4
         )
     }
 }
