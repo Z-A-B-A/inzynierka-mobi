@@ -67,15 +67,15 @@ class EditAccountActivity : ComponentActivity() {
                                 if (response.isSuccessful) {
                                     // Update session information
                                     SessionManager.saveUpdatedUserInfo(name, email)
-                                    onResult(true, null)
+                                    onResult(null)
                                     finish()
                                 } else {
-                                    onResult(false, "Failed to update user information.")
+                                    onResult("Failed to update user information.")
                                 }
                             }
 
                             override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                                onResult(false, "Network error: ${t.message}")
+                                onResult("Network error: ${t.message}")
                             }
                         })
                     },
@@ -91,7 +91,7 @@ class EditAccountActivity : ComponentActivity() {
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSaveClick: (String, String, (Boolean, String?) -> Unit) -> Unit, // Save callback
+    onSaveClick: (String, String, (String?) -> Unit) -> Unit, // Save callback
     userName: String?,
     userEmail: String?
 ) {
@@ -231,8 +231,8 @@ fun EditAccountScreen (
                     onClick = {
                         isLoading = true
                         errorMessage = null
-                        onSaveClick(name, email) { success, error ->
-                            isLoading = success
+                        onSaveClick(name, email) { error ->
+                            isLoading = false
                             errorMessage = error
                         }
                     },
@@ -260,7 +260,7 @@ fun EditAccountActivityPreview () {
     FrogTheme {
         EditAccountScreen(
             onBackClick = {},
-            onSaveClick = { _, _, _ ->},
+            onSaveClick = { _, _, _ -> },
             userName = "Bartosz",
             userEmail = "bartoszkorszun@gmail.com"
         )
