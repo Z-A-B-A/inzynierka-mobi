@@ -2,7 +2,6 @@ package put.inf154030.frog.views.activities.account
 
 import android.os.Bundle
 import android.util.Patterns
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -39,11 +38,11 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.UserUpdateRequest
 import put.inf154030.frog.models.responses.UserResponse
 import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -123,10 +122,11 @@ fun EditAccountScreen (
                 Text(
                     text = "Name",
                     fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .padding(start = 8.dp, bottom = 4.dp)
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 BasicTextField(
                     value = name,
@@ -157,10 +157,11 @@ fun EditAccountScreen (
                 Text(
                     text = "Email",
                     fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .padding(start = 8.dp, bottom = 4.dp)
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 BasicTextField(
                     value = email,
@@ -231,7 +232,7 @@ fun EditAccountScreen (
                         isLoading = true
                         errorMessage = null
                         onSaveClick(name, email) { success, error ->
-                            isLoading = false
+                            isLoading = success
                             errorMessage = error
                         }
                     },
