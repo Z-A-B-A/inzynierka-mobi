@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,22 +58,23 @@ class EditAccountActivity : ComponentActivity() {
             FrogTheme {
                 EditAccountScreen(
                     onBackClick = { finish() },
-                    onSaveClick = { name, email ->
+                    onSaveClick = { name, email, onResult ->
                         val userUpdateRequest = UserUpdateRequest(name = name, email = email)
+
                         ApiClient.apiService.updateUser(userUpdateRequest).enqueue(object : Callback<UserResponse> {
                             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                                 if (response.isSuccessful) {
                                     // Update session information
                                     SessionManager.saveUpdatedUserInfo(name, email)
-                                    Toast.makeText(this@EditAccountActivity, "Account updated successfully", Toast.LENGTH_SHORT).show()
+                                    onResult(true, null)
                                     finish()
                                 } else {
-                                    Toast.makeText(this@EditAccountActivity, "Failed to update account", Toast.LENGTH_SHORT).show()
+                                    onResult(false, "Failed to update user information.")
                                 }
                             }
 
                             override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                                Toast.makeText(this@EditAccountActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+                                onResult(false, "Network error: ${t.message}")
                             }
                         })
                     },
@@ -87,24 +89,23 @@ class EditAccountActivity : ComponentActivity() {
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSaveClick: (String, String) -> Unit,
+    onSaveClick: (String, String, (Boolean, String?) -> Unit) -> Unit, // callback for loading/error
     userName: String?,
     userEmail: String?
 ) {
+    var name by remember { mutableStateOf(userName ?: "") }
+    var email by remember { mutableStateOf(userEmail ?: "") }
+    // Using derivedStateOf to check if the email address is valid
+    val emailValid = remember { derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email).matches() } }
+    val canSave = name.isNotBlank() && email.isNotBlank() && emailValid.value
+
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        var name by remember { mutableStateOf(userName ?: "") }
-        var email by remember { mutableStateOf(userEmail ?: "") }
-        // Using derivedStateOf to check if the email address is valid
-        val emailValid = remember {
-            derivedStateOf {
-                Patterns.EMAIL_ADDRESS.matcher(email).matches()
-            }
-        }
-        val canSave = name.isNotBlank() && email.isNotBlank() && emailValid.value
-
         Column {
             TopHeaderBar(
                 title = "Account"
@@ -116,6 +117,14 @@ fun EditAccountScreen (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(
+                    text = "Name",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(start = 8.dp, bottom = 4.dp)
+                )
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue -> name = newValue },
@@ -135,18 +144,19 @@ fun EditAccountScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text(
-                                    text = "Name",
-                                    color = Color.Gray,
-                                    fontFamily = PoppinsFamily
-                                )
-                            }
                             innerTextField()
                         }
                     }
                 )
                 Spacer(modifier = Modifier.size(32.dp))
+                Text(
+                    text = "Email",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(start = 8.dp, bottom = 4.dp)
+                )
                 BasicTextField(
                     value = email,
                     onValueChange = { newValue -> email = newValue },
@@ -166,17 +176,11 @@ fun EditAccountScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (email.isEmpty()) {
-                                Text(
-                                    text = "Email",
-                                    color = Color.Gray,
-                                    fontFamily = PoppinsFamily
-                                )
-                            }
                             innerTextField()
                         }
                     }
                 )
+                Spacer(modifier = Modifier.size(8.dp))
                 if (email.isNotEmpty() && !emailValid.value) {
                     Text(
                         text = "Enter valid email address.",
@@ -188,17 +192,39 @@ fun EditAccountScreen (
                         textAlign = TextAlign.Center
                     )
                 }
+
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
             Column (
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
                 Button(
                     onClick = {
-                        onSaveClick(name, email)
+                        isLoading = true
+                        errorMessage = null
+                        onSaveClick(name, email) { success, error ->
+                            isLoading = false
+                            errorMessage = error
+                        }
                     },
-                    enabled = canSave,
+                    enabled = canSave && !isLoading,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .fillMaxWidth(0.65f),
@@ -221,7 +247,7 @@ fun EditAccountActivityPreview () {
     FrogTheme {
         EditAccountScreen(
             onBackClick = {},
-            onSaveClick = { _, _ ->},
+            onSaveClick = { _, _, _ ->},
             userName = "Bartosz",
             userEmail = "bartoszkorszun@gmail.com"
         )
