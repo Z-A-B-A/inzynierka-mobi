@@ -40,18 +40,20 @@ import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 
+// Activity displaying the user's account information
 class AccountActivity : ComponentActivity() {
     private var userName by mutableStateOf<String?>(null)
     private var userEmail by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        loadUserData()
+        loadUserData() // Load user data when activity is created
         setContent {
-            FrogTheme {
+            FrogTheme { // Apply custom theme
                 AccountScreen(
-                    onBackClick = { finish() },
+                    onBackClick = { finish() }, // Close activity on back
                     onEditClick = {
+                        // Open EditAccountActivity when edit is clicked
                         val intent = Intent(this, EditAccountActivity::class.java)
                         startActivity(intent)
                     },
@@ -67,12 +69,14 @@ class AccountActivity : ComponentActivity() {
         loadUserData()
     }
 
+    // Helper function to load user data from SessionManager
     private fun loadUserData() {
         userName = SessionManager.getUserName()
         userEmail = SessionManager.getUserEmail()
     }
 }
 
+// Composable function for the account screen UI
 @Composable
 fun AccountScreen (
     onBackClick: () -> Unit,
@@ -86,10 +90,12 @@ fun AccountScreen (
     ) {
         Column {
             TopHeaderBar(
-                title = "Account"
+                title = "Account" // Header bar with title
             )
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(32.dp))
+
+            // Display user name in a styled box
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,6 +119,8 @@ fun AccountScreen (
                 )
             }
             Spacer(modifier = Modifier.size(16.dp))
+
+            // Display user email in a styled box with dynamic font size
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,6 +142,8 @@ fun AccountScreen (
                         .padding(horizontal = 16.dp)
                 )
             }
+
+            // Edit button at the bottom of the screen
             Column (
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -157,6 +167,7 @@ fun AccountScreen (
     }
 }
 
+// Composable for text that automatically resizes if it overflows
 @Composable
 fun AutoResizeText(
     text: String,
@@ -178,6 +189,7 @@ fun AutoResizeText(
         overflow = TextOverflow.Ellipsis,
         modifier = modifier,
         onTextLayout = { textLayoutResult ->
+            // Reduce font size if text overflows, down to minFontSize
             if (textLayoutResult.hasVisualOverflow && fontSize > minFontSize) {
                 fontSize = fontSize.times(0.9f)
             }
@@ -185,6 +197,7 @@ fun AutoResizeText(
     )
 }
 
+// Preview for the AccountScreen composable
 @Preview
 @Composable
 fun AccountActivityPreview () {
