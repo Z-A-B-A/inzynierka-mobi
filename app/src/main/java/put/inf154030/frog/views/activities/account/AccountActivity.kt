@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,13 +24,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
@@ -39,11 +41,9 @@ import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 
 class AccountActivity : ComponentActivity() {
-    // Getting user data from current session
     private var userName by mutableStateOf<String?>(null)
     private var userEmail by mutableStateOf<String?>(null)
 
-    // TODO("ramka dla info")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadUserData()
@@ -90,10 +90,7 @@ fun AccountScreen (
             )
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(32.dp))
-            BasicTextField(
-                value = "",
-                onValueChange = {  },
-                enabled = false,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(40.dp)
@@ -102,75 +99,41 @@ fun AccountScreen (
                         color = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(16.dp)
                     ),
-                decorationBox = { innerTextField ->
-                    Box(
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            text = userName!!,
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        )
-                        innerTextField()
-                    }
-                }
-            )
-            Spacer(modifier = Modifier.size(16.dp))
-            BasicTextField(
-                value = userEmail ?: "",
-                onValueChange = { },
-                enabled = false,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .size(40.dp)
-                    .padding(horizontal = 32.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(16.dp)
-                    ),
-                singleLine = true,
-                textStyle = TextStyle(
-                    fontSize = 0.sp, // Hide the default text
-                    color = MaterialTheme.colorScheme.secondary,
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = userName ?: "Could not load name",
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = PoppinsFamily
-                ),
-                decorationBox = { innerTextField ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        var fontSize by remember { mutableStateOf(20.sp) }
-
-                        Text(
-                            text = userEmail ?: "",
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = fontSize,
-                            color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            onTextLayout = { textLayoutResult ->
-                                if (textLayoutResult.hasVisualOverflow && fontSize > 12.sp) {
-                                    fontSize = fontSize.times(0.9f)
-                                }
-                            }
-                        )
-
-                        // This makes the inner text field invisible but still functional
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            innerTextField()
-                        }
-                    }
-                }
-            )
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.size(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(40.dp)
+                    .padding(horizontal = 32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                AutoResizeText(
+                    text = userEmail ?: "Could not load email",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
             Column (
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -192,6 +155,34 @@ fun AccountScreen (
             }
         }
     }
+}
+
+@Composable
+fun AutoResizeText(
+    text: String,
+    fontFamily: FontFamily,
+    fontWeight: FontWeight,
+    color: Color,
+    modifier: Modifier = Modifier,
+    maxFontSize: TextUnit = 20.sp,
+    minFontSize: TextUnit = 12.sp
+) {
+    var fontSize by remember { mutableStateOf(maxFontSize) }
+    Text(
+        text = text,
+        fontFamily = fontFamily,
+        fontWeight = fontWeight,
+        fontSize = fontSize,
+        color = color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier,
+        onTextLayout = { textLayoutResult ->
+            if (textLayoutResult.hasVisualOverflow && fontSize > minFontSize) {
+                fontSize = fontSize.times(0.9f)
+            }
+        }
+    )
 }
 
 @Preview
