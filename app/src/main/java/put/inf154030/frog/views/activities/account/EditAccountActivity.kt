@@ -48,7 +48,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class EditAccountActivity : ComponentActivity() {
-    // Getting user data from current session
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
 
@@ -96,6 +95,16 @@ fun EditAccountScreen (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        var name by remember { mutableStateOf(userName ?: "") }
+        var email by remember { mutableStateOf(userEmail ?: "") }
+        // Using derivedStateOf to check if the email address is valid
+        val emailValid = remember {
+            derivedStateOf {
+                Patterns.EMAIL_ADDRESS.matcher(email).matches()
+            }
+        }
+        val canSave = name.isNotBlank() && email.isNotBlank() && emailValid.value
+
         Column {
             TopHeaderBar(
                 title = "Account"
@@ -103,20 +112,12 @@ fun EditAccountScreen (
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
             
-            var name by remember { mutableStateOf(userName) }
-            var email by remember { mutableStateOf(userEmail) }
-            // Using derivedStateOf to check if the email address is valid
-            val emailValid = remember {
-                derivedStateOf {
-                    Patterns.EMAIL_ADDRESS.matcher(email!!).matches()
-                }
-            }
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 BasicTextField(
-                    value = name!!,
+                    value = name,
                     onValueChange = { newValue -> name = newValue },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -134,8 +135,12 @@ fun EditAccountScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name!!.isEmpty()) {
-                                Text(userName!!, fontFamily = PoppinsFamily)
+                            if (name.isEmpty()) {
+                                Text(
+                                    text = "Name",
+                                    color = Color.Gray,
+                                    fontFamily = PoppinsFamily
+                                )
                             }
                             innerTextField()
                         }
@@ -143,7 +148,7 @@ fun EditAccountScreen (
                 )
                 Spacer(modifier = Modifier.size(32.dp))
                 BasicTextField(
-                    value = email!!,
+                    value = email,
                     onValueChange = { newValue -> email = newValue },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -161,14 +166,18 @@ fun EditAccountScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (email!!.isEmpty()) {
-                                Text(userEmail!!, fontFamily = PoppinsFamily)
+                            if (email.isEmpty()) {
+                                Text(
+                                    text = "Email",
+                                    color = Color.Gray,
+                                    fontFamily = PoppinsFamily
+                                )
                             }
                             innerTextField()
                         }
                     }
                 )
-                if (email!!.isNotEmpty() && !emailValid.value) {
+                if (email.isNotEmpty() && !emailValid.value) {
                     Text(
                         text = "Enter valid email address.",
                         color = Color.Red,
@@ -187,8 +196,9 @@ fun EditAccountScreen (
             ) {
                 Button(
                     onClick = {
-                        onSaveClick(name!!, email!!)
+                        onSaveClick(name, email)
                     },
+                    enabled = canSave,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .fillMaxWidth(0.65f),
