@@ -21,20 +21,23 @@ import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
+// Main activity for the About screen
 class AboutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Set the content of the activity using Jetpack Compose
         setContent {
-            FrogTheme {
+            FrogTheme { // Apply custom theme
                 AboutScreen(
-                    onBackClick = { finish() }
+                    onBackClick = { finish() } // Close activity on back
                 )
             }
         }
     }
 }
 // TODO("Napisać ładnie o aplikacji")
+// Composable function that defines the UI for the About screen
 @Composable
 fun AboutScreen (
     onBackClick: () -> Unit
@@ -45,9 +48,9 @@ fun AboutScreen (
     ) {
         Column {
             TopHeaderBar(
-                title = "About"
+                title = "About" // Show header bar with title
             )
-            BackButton { onBackClick() }
+            BackButton { onBackClick() } // Show back button
             Box (
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -67,6 +70,7 @@ fun AboutScreen (
     }
 }
 
+// Preview function for the AboutScreen composable in Android Studio
 @Preview
 @Composable
 fun AboutActivityPreview () {
