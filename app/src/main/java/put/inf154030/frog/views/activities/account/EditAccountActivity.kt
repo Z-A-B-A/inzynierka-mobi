@@ -48,6 +48,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for editing user account information
 class EditAccountActivity : ComponentActivity() {
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
@@ -57,8 +58,9 @@ class EditAccountActivity : ComponentActivity() {
         setContent {
             FrogTheme {
                 EditAccountScreen(
-                    onBackClick = { finish() },
+                    onBackClick = { finish() }, // Close activity on back
                     onSaveClick = { name, email, onResult ->
+                        // Make API call to update user info
                         val userUpdateRequest = UserUpdateRequest(name = name, email = email)
 
                         ApiClient.apiService.updateUser(userUpdateRequest).enqueue(object : Callback<UserResponse> {
@@ -86,16 +88,17 @@ class EditAccountActivity : ComponentActivity() {
     }
 }
 
+// Composable for editing account info
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSaveClick: (String, String, (Boolean, String?) -> Unit) -> Unit, // callback for loading/error
+    onSaveClick: (String, String, (Boolean, String?) -> Unit) -> Unit, // Save callback
     userName: String?,
     userEmail: String?
 ) {
     var name by remember { mutableStateOf(userName ?: "") }
     var email by remember { mutableStateOf(userEmail ?: "") }
-    // Using derivedStateOf to check if the email address is valid
+    // Validate email format
     val emailValid = remember { derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email).matches() } }
     val canSave = name.isNotBlank() && email.isNotBlank() && emailValid.value
 
@@ -107,16 +110,16 @@ fun EditAccountScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Account"
-            )
-            BackButton { onBackClick() }
+            TopHeaderBar( title = "Account" ) // Header bar
+            BackButton { onBackClick() } // Back button
             Spacer(modifier = Modifier.size(64.dp))
             
+            // Input fields and error messages
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                // Name label and input
                 Text(
                     text = "Name",
                     fontFamily = PoppinsFamily,
@@ -149,6 +152,8 @@ fun EditAccountScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(32.dp))
+
+                // Email label and input
                 Text(
                     text = "Email",
                     fontFamily = PoppinsFamily,
@@ -181,6 +186,8 @@ fun EditAccountScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
+
+                // Show email validation error
                 if (email.isNotEmpty() && !emailValid.value) {
                     Text(
                         text = "Enter valid email address.",
@@ -193,6 +200,7 @@ fun EditAccountScreen (
                     )
                 }
 
+                // Show general error message
                 errorMessage?.let {
                     Spacer(modifier = Modifier.size(8.dp))
                     Text(
@@ -205,6 +213,9 @@ fun EditAccountScreen (
                     )
                 }
             }
+            Spacer(modifier = Modifier.size(32.dp))
+
+            // Save button and loading indicator at the bottom
             Column (
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -241,6 +252,7 @@ fun EditAccountScreen (
     }
 }
 
+// Preview for EditAccountScreen
 @Preview
 @Composable
 fun EditAccountActivityPreview () {
