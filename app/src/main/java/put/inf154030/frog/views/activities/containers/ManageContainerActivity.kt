@@ -191,11 +191,12 @@ fun ManageContainerScreen(
             Column (
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 32.dp)
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row (
-                    modifier = Modifier.fillMaxWidth(0.8f),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -233,7 +234,7 @@ fun ManageContainerScreen(
                 }
                 HorizontalDivider(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
@@ -292,7 +293,8 @@ fun ManageContainerScreen(
                 }
                 Spacer(modifier = Modifier.size(64.dp))
                 Row (
-                    modifier = Modifier.fillMaxWidth(0.8f),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -331,7 +333,7 @@ fun ManageContainerScreen(
                 }
                 HorizontalDivider(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary

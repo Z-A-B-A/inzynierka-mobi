@@ -48,7 +48,7 @@ fun EditSpeciesRow (
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row (
-            modifier = Modifier.fillMaxWidth(0.8f),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -107,7 +107,7 @@ fun EditSpeciesRow (
         }
         HorizontalDivider(
             modifier = Modifier
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth()
                 .padding(vertical = 8.dp),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.secondary
