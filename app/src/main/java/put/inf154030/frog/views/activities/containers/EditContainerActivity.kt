@@ -185,7 +185,7 @@ fun EditContainerScreen(
             // State for location selection
             var isLocationDropdownExpanded by remember { mutableStateOf(false) }
             var locations by remember { mutableStateOf(listOf<Location>()) }
-            var selectedLocation by remember { mutableStateOf<Location?>(null) }
+            var selectedLocation by remember { mutableStateOf<Location?>(null) } // TODO("Dodać, żeby ustawiała się aktualna")
             var isLoading by remember { mutableStateOf(true) }
 
             // Load locations when the screen is created
@@ -203,9 +203,20 @@ fun EditContainerScreen(
             }
 
             Column (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = "Name",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = name!!,
                     onValueChange = { newValue ->
@@ -213,7 +224,7 @@ fun EditContainerScreen(
                         errorMessageName = null
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -245,6 +256,15 @@ fun EditContainerScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Description",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = description!!,
                     onValueChange = { newValue ->
@@ -252,7 +272,7 @@ fun EditContainerScreen(
                         errorMessageDescription = null
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(240.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -283,9 +303,18 @@ fun EditContainerScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "Lokalizacja",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)

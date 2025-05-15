@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -106,7 +107,9 @@ fun AddContainerNextStepScreen (
             )
             BackButton { onBackClick() }
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
@@ -116,6 +119,15 @@ fun AddContainerNextStepScreen (
                 var errorMessageName by remember { mutableStateOf<String?>(null) }
                 var errorMessageDescription by remember { mutableStateOf<String?>(null) }
 
+                Text(
+                    text = "Name",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
@@ -123,7 +135,7 @@ fun AddContainerNextStepScreen (
                         errorMessageName = null
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -138,9 +150,6 @@ fun AddContainerNextStepScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text("Name")
-                            }
                             innerTextField()
                         }
                     }
@@ -155,6 +164,15 @@ fun AddContainerNextStepScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(24.dp))
+                Text(
+                    text = "Description",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = description,
                     onValueChange = { newValue ->
@@ -162,7 +180,7 @@ fun AddContainerNextStepScreen (
                         errorMessageDescription = null
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(240.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -177,9 +195,6 @@ fun AddContainerNextStepScreen (
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
                             contentAlignment = Alignment.TopStart
                         ) {
-                            if (description.isEmpty()) {
-                                Text("Description")
-                            }
                             innerTextField()
                         }
                     }

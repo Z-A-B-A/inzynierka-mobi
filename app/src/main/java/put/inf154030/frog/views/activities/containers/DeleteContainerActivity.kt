@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -91,7 +93,9 @@ fun DeleteContainerScreen(
                 title = "Delete Container"
             )
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -112,7 +116,8 @@ fun DeleteContainerScreen(
                 Spacer(modifier = Modifier.size(64.dp))
                 Row {
                     Button(
-                        modifier = Modifier.fillMaxWidth(0.3f),
+                        modifier = Modifier
+                            .width((128.dp)),
                         onClick = { onYesClick() }
                     ) {
                         Text(
@@ -122,7 +127,8 @@ fun DeleteContainerScreen(
                     }
                     Spacer(modifier = Modifier.size(32.dp))
                     Button(
-                        modifier = Modifier.fillMaxWidth(0.5f),
+                        modifier = Modifier
+                            .width(128.dp),
                         onClick = { onNoClick() }
                     ) {
                         Text(
