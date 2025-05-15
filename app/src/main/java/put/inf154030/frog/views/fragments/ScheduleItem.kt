@@ -49,8 +49,7 @@ fun ScheduleItem (
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box (
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = scheduleName,
@@ -75,14 +74,14 @@ fun ScheduleItem (
         }
         HorizontalDivider(
             modifier = Modifier
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth()
                 .padding(bottom = 4.dp),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.secondary
         )
         if (frequency == "daily") {
             Row (
-                modifier = Modifier.fillMaxWidth(0.8f),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -106,7 +105,7 @@ fun ScheduleItem (
             val days = weekDays.split(",").map { it.toInt() }
 
             Column(
-                modifier = Modifier.fillMaxWidth(0.8f),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 days.forEach { day ->

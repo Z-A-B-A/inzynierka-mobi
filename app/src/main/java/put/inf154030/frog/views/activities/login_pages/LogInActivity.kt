@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -79,16 +80,19 @@ fun LogInScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.size(64.dp))
+            Spacer(modifier = Modifier.size(128.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App logo",
                 modifier = Modifier
-                    .fillMaxWidth(0.75f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
                     .height(128.dp)
             )
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
@@ -96,11 +100,20 @@ fun LogInScreen(
                 val emailValid = remember {
                     derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
                 }
+                Text(
+                    text = "Email",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = email,
                     onValueChange = { newValue -> email = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -115,20 +128,26 @@ fun LogInScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (email.isEmpty()) {
-                                Text("E-mail")
-                            }
                             innerTextField()
                         }
                     }
                 )
                 Spacer(modifier = Modifier.size(16.dp))
                 var password by remember { mutableStateOf("") }
+                Text(
+                    text = "Password",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = password,
                     onValueChange = { newValue -> password = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -144,9 +163,6 @@ fun LogInScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (password.isEmpty()) {
-                                Text("Password")
-                            }
                             innerTextField()
                         }
                     }

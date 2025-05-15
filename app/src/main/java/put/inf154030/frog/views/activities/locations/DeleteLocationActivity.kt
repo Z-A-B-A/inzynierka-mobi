@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -56,7 +58,9 @@ fun DeleteLocationScreen (
                 title = "Delete Location"
             )
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -77,7 +81,7 @@ fun DeleteLocationScreen (
                 Spacer(modifier = Modifier.size(64.dp))
                 Row {
                     Button(
-                        modifier = Modifier.fillMaxWidth(0.3f),
+                        modifier = Modifier.width(128.dp),
                         onClick = {
                             onYesClick()
                             TODO("Waiting for API request")
@@ -90,7 +94,7 @@ fun DeleteLocationScreen (
                     }
                     Spacer(modifier = Modifier.size(32.dp))
                     Button(
-                        modifier = Modifier.fillMaxWidth(0.5f),
+                        modifier = Modifier.width(128.dp),
                         onClick = { onNoClick() }
                     ) {
                         Text(
