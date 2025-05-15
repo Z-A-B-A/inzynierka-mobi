@@ -143,6 +143,7 @@ fun ScheduleScreen(
             Column (
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 32.dp)
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

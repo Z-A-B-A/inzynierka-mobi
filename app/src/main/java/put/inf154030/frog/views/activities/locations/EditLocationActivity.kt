@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -86,7 +87,9 @@ fun EditLocationScreen (
             )
             BackButton { onBackClick() }
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
@@ -94,17 +97,28 @@ fun EditLocationScreen (
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
 
-                // Character count display
-                Text(
-                    text = "${name.length}/32 characters",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
-                        .padding(bottom = 4.dp),
-                    fontFamily = PoppinsFamily
-                )
-
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Name",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    // Character count display
+                    Text(
+                        text = "${name.length}/32 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
@@ -115,7 +129,7 @@ fun EditLocationScreen (
                         }
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -130,9 +144,6 @@ fun EditLocationScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text("Name")
-                            }
                             innerTextField()
                         }
                     }

@@ -127,14 +127,24 @@ fun CreateScheduleScreen(
             Column (
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 32.dp)
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = "Name",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue -> name = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -149,9 +159,6 @@ fun CreateScheduleScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text("Name", fontFamily = PoppinsFamily)
-                            }
                             innerTextField()
                         }
                     }
@@ -168,7 +175,7 @@ fun CreateScheduleScreen(
                 Row (
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = "daily",
@@ -199,8 +206,7 @@ fun CreateScheduleScreen(
                 if (execution) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .padding(8.dp),
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         days.forEachIndexed { index, day ->
@@ -276,7 +282,7 @@ fun CreateScheduleScreen(
                 // Time picker button
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.5f)
+                        .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)

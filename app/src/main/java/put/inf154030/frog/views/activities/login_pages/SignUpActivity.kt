@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -83,7 +84,7 @@ fun SignUpScreen (
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.size(64.dp))
+            Spacer(modifier = Modifier.size(128.dp))
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App logo",
@@ -92,16 +93,27 @@ fun SignUpScreen (
                     .height(128.dp)
             )
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
                 var name by remember { mutableStateOf("") }
+                Text(
+                    text = "Name",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue -> name = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -116,9 +128,6 @@ fun SignUpScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text("Name", fontFamily = PoppinsFamily)
-                            }
                             innerTextField()
                         }
                     }
@@ -130,11 +139,20 @@ fun SignUpScreen (
                         Patterns.EMAIL_ADDRESS.matcher(email).matches()
                     }
                 }
+                Text(
+                    text = "Email",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = email,
                     onValueChange = { newValue -> email = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -149,9 +167,6 @@ fun SignUpScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (email.isEmpty()) {
-                                Text("E-mail", fontFamily = PoppinsFamily)
-                            }
                             innerTextField()
                         }
                     }
@@ -177,11 +192,20 @@ fun SignUpScreen (
                                 && password.any { it.isDigit() }
                     }
                 }
+                Text(
+                    text = "Password",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = password,
                     onValueChange = { newValue -> password = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -198,9 +222,6 @@ fun SignUpScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (password.isEmpty()) {
-                                Text("Password", fontFamily = PoppinsFamily)
-                            }
                             innerTextField()
                         }
                     }
@@ -221,11 +242,20 @@ fun SignUpScreen (
                 val passwordsMatch = remember {
                     derivedStateOf { password == passwordConfirmation }
                 }
+                Text(
+                    text = "Confirm password",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, bottom = 4.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 BasicTextField(
                     value = passwordConfirmation,
                     onValueChange = { newValue -> passwordConfirmation = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -242,9 +272,6 @@ fun SignUpScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (passwordConfirmation.isEmpty()) {
-                                Text("Confirm password", fontFamily = PoppinsFamily)
-                            }
                             innerTextField()
                         }
                     }

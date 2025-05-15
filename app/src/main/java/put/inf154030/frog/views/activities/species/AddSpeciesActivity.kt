@@ -166,10 +166,10 @@ fun AddSpeciesScreen(
             Column (
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 32.dp)
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(
                     text = "-- filters --",
@@ -180,10 +180,9 @@ fun AddSpeciesScreen(
                 Spacer(modifier = Modifier.size(8.dp))
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .padding(bottom = 16.dp)
                 ) {
-
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -220,7 +219,7 @@ fun AddSpeciesScreen(
                 }
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)
@@ -272,7 +271,7 @@ fun AddSpeciesScreen(
                 if (selectedSpecies != null) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.Start
                     ) {
@@ -289,7 +288,6 @@ fun AddSpeciesScreen(
                                 color = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -341,6 +339,7 @@ fun AddSpeciesScreen(
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.size(16.dp))
                         Text(
                             text = "Category: ${selectedSpecies!!.category}",
                             fontFamily = PoppinsFamily,
@@ -369,7 +368,9 @@ fun AddSpeciesScreen(
 
             Spacer(modifier = Modifier.size(32.dp))
             Column (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {

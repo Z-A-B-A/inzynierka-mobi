@@ -115,7 +115,9 @@ fun EditAccountScreen (
             
             // Input fields and error messages
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Name label and input
@@ -124,7 +126,7 @@ fun EditAccountScreen (
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .padding(start = 8.dp, bottom = 4.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -132,7 +134,7 @@ fun EditAccountScreen (
                     value = name,
                     onValueChange = { newValue -> name = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -159,7 +161,7 @@ fun EditAccountScreen (
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .padding(start = 8.dp, bottom = 4.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -167,7 +169,7 @@ fun EditAccountScreen (
                     value = email,
                     onValueChange = { newValue -> email = newValue },
                     modifier = Modifier
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth()
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -214,7 +216,6 @@ fun EditAccountScreen (
                     )
                 }
             }
-            Spacer(modifier = Modifier.size(32.dp))
 
             // Save button and loading indicator at the bottom
             Column (

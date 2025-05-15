@@ -2,13 +2,18 @@ package put.inf154030.frog.views.activities.login_pages
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -55,15 +60,26 @@ fun InitialScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "App logo",
+            Column (
                 modifier = Modifier
-                    .fillMaxSize(0.75f)
-            )
+                    .fillMaxSize()
+                    .weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "App logo",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(128.dp)
+                )
+            }
             Button(
                 onClick = { onLoginClick() },
                 modifier = Modifier
@@ -86,6 +102,7 @@ fun InitialScreen (
                     fontFamily = PoppinsFamily
                 )
             }
+            Spacer(modifier = Modifier.size(64.dp))
         }
     }
 }
