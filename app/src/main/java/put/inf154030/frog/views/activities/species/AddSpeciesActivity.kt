@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -79,11 +80,11 @@ class AddSpeciesActivity : ComponentActivity() {
             FrogTheme {
                 AddSpeciesScreen(
                     onBackClick = { finish() },
-                    onSaveClick = { selectedSpecies ->
+                    onSaveClick = { selectedSpecies, speciesCount ->
                         if (selectedSpecies == null) {
                             Toast.makeText(this, "No species selected!", Toast.LENGTH_LONG).show()
                         } else {
-                            val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, 1)
+                            val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, speciesCount)
 
                             ApiClient.apiService.addSpeciesToContainer(containerId, addSpeciesRequest)
                                 .enqueue(object: Callback<ContainerSpeciesItemResponse> {
@@ -92,7 +93,6 @@ class AddSpeciesActivity : ComponentActivity() {
                                         response: Response<ContainerSpeciesItemResponse>
                                     ) {
                                         finish()
-                                        TODO("Not yet implemented")
                                     }
 
                                     override fun onFailure(
@@ -143,7 +143,7 @@ class AddSpeciesActivity : ComponentActivity() {
 @Composable
 fun AddSpeciesScreen(
     onBackClick: () -> Unit,
-    onSaveClick: (Species?) -> Unit,
+    onSaveClick: (Species?, Int) -> Unit,
     speciesList: List<Species>,
     onFilterSelected: (String?) -> Unit
 ) {
@@ -151,6 +151,8 @@ fun AddSpeciesScreen(
     var selectedSpecies by remember { mutableStateOf<Species?>(null) }
     val categories = listOf("none", "reptile", "amphibian", "invertebrate", "fish", "aquatic invertebrate")
     var selectedCategory by remember { mutableStateOf("none") }
+    var speciesCount by remember { mutableIntStateOf(1) }
+    var isCountDropdownExpanded by remember { mutableStateOf(false) }
 
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -265,6 +267,7 @@ fun AddSpeciesScreen(
                         }
                     }
                 }
+
                 Spacer(modifier = Modifier.size(4.dp))
                 if (selectedSpecies != null) {
                     Column(
@@ -273,6 +276,71 @@ fun AddSpeciesScreen(
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.Start
                     ) {
+                        // Species count picker
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = "Species Count:",
+                                fontFamily = PoppinsFamily,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .clickable { isCountDropdownExpanded = true }
+                                    .padding(16.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = speciesCount.toString(),
+                                        fontFamily = PoppinsFamily
+                                    )
+
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Expand count"
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = isCountDropdownExpanded,
+                                    onDismissRequest = { isCountDropdownExpanded = false },
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .fillMaxWidth(0.8f)
+                                ) {
+                                    // Create dropdown with numbers 1-100
+                                    (1..100).forEach { count ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = count.toString(),
+                                                    fontFamily = PoppinsFamily
+                                                )
+                                            },
+                                            onClick = {
+                                                speciesCount = count
+                                                isCountDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         Text(
                             text = "Category: ${selectedSpecies!!.category}",
                             fontFamily = PoppinsFamily,
@@ -298,7 +366,7 @@ fun AddSpeciesScreen(
                     }
                 }
             }
-//            TODO("Dodać species count")
+
             Spacer(modifier = Modifier.size(32.dp))
             Column (
                 modifier = Modifier.fillMaxWidth(),
@@ -306,7 +374,7 @@ fun AddSpeciesScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Button(
-                    onClick = { onSaveClick(selectedSpecies) },
+                    onClick = { onSaveClick(selectedSpecies, speciesCount) },
                     modifier = Modifier
                         .fillMaxWidth(0.65f)
                 ) {
@@ -327,7 +395,7 @@ fun AddSpeciesActivityPreview () {
     FrogTheme {
         AddSpeciesScreen(
             onBackClick = {  },
-            onSaveClick = { _ -> },
+            onSaveClick = { _, _ -> },
             speciesList = listOf(
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
                 Species(2, "FROG2", "FROG2", "frog2", "amphibians", true)
