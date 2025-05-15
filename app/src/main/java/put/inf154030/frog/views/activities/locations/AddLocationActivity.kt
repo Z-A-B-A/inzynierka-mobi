@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,16 +79,29 @@ fun AddLocationScreen (
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
 
-                // Character count display
-                Text(
-                    text = "${name.length}/32 characters",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                Row (
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
-                        .padding(bottom = 4.dp),
-                    fontFamily = PoppinsFamily
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Name",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${name.length}/32 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
 
                 BasicTextField(
                     value = name,
@@ -98,7 +113,8 @@ fun AddLocationScreen (
                         }
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,
@@ -113,9 +129,6 @@ fun AddLocationScreen (
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name.isEmpty()) {
-                                Text("Name")
-                            }
                             innerTextField()
                         }
                     }
