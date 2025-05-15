@@ -24,11 +24,12 @@ fun SpeciesItem(
     speciesCount: Int
 ) {
     Column (
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row (
-            modifier = Modifier.fillMaxWidth(0.8f),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -49,7 +50,7 @@ fun SpeciesItem(
         }
         HorizontalDivider(
             modifier = Modifier
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth()
                 .padding(vertical = 4.dp),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.secondary
