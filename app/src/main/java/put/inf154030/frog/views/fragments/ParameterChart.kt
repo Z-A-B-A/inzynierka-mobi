@@ -1,5 +1,6 @@
 package put.inf154030.frog.views.fragments
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,7 @@ fun ParameterChart(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
+            .background(MaterialTheme.colorScheme.primary),
     ) {
         Text(
             text = parameter.name,

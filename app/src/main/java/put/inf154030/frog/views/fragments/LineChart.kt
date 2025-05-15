@@ -27,7 +27,7 @@ fun LineChart(
     modifier: Modifier = Modifier
 ) {
     // Capture theme colors at the Composable level
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
 
     val values = data.map { it.value }
     val minValue = values.minOrNull() ?: 0.0
@@ -44,13 +44,13 @@ fun LineChart(
 
         // Draw axes
         drawLine(
-            color = Color.Gray,
+            color = secondaryColor,
             start = Offset(padding, padding),
             end = Offset(padding, canvasHeight - padding),
             strokeWidth = 2f
         )
         drawLine(
-            color = Color.Gray,
+            color = secondaryColor,
             start = Offset(padding, canvasHeight - padding),
             end = Offset(canvasWidth - padding, canvasHeight - padding),
             strokeWidth = 2f
@@ -75,7 +75,7 @@ fun LineChart(
 
                 // Draw point
                 drawCircle(
-                    color = primaryColor,
+                    color = Color.Red,
                     radius = 6f,
                     center = Offset(x, y)
                 )
@@ -84,28 +84,28 @@ fun LineChart(
             // Draw line connecting points
             drawPath(
                 path = path,
-                color = primaryColor,
+                color = Color.Red,
                 style = Stroke(width = 3f)
             )
 
             // Draw min, max values as text
             drawContext.canvas.nativeCanvas.let { nativeCanvas ->
                 val textPaint = Paint().apply {
-                    color = android.graphics.Color.GRAY
+                    color = android.graphics.Color.WHITE
                     textSize = 12.sp.toPx()
                 }
 
                 nativeCanvas.drawText(
                     String.format(Locale.US, "%.1f %s", maxValue, parameter.unit),
-                    padding - 5,
                     padding + 10,
+                    padding + 25,
                     textPaint
                 )
 
                 nativeCanvas.drawText(
                     String.format(Locale.US, "%.1f %s", minValue, parameter.unit),
-                    padding - 5,
-                    canvasHeight - padding + 20,
+                    padding + 10,
+                    canvasHeight - padding + 30,
                     textPaint
                 )
             }

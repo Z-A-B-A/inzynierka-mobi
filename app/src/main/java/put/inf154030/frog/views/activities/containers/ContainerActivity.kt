@@ -315,7 +315,8 @@ fun ContainerScreen (
                 Column {
                     Row (
                         modifier = Modifier
-                            .fillMaxWidth(0.8f),
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
@@ -335,8 +336,8 @@ fun ContainerScreen (
                     }
                     HorizontalDivider(
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(vertical = 8.dp),
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
                         thickness = 1.dp,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -365,7 +366,7 @@ fun ContainerScreen (
                     }
                 }
                 Spacer(modifier = Modifier.size(32.dp))
-
+                
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
