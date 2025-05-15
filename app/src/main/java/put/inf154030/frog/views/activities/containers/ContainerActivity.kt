@@ -70,17 +70,28 @@ class ContainerActivity : ComponentActivity() {
 
     // Calculate date ranges based on timeframe
     private fun getDateRangeForTimeframe(timeframe: String): Pair<String, String> {
-        val now = ZonedDateTime.now(ZoneOffset.UTC)
-        val toDate = now.format(DateTimeFormatter.ISO_INSTANT)
+        // Get the actual UTC time (13:00)
+        val utcNow = ZonedDateTime.now(ZoneOffset.UTC)
 
-        val fromDate = when(timeframe) {
-            "1h" -> now.minusHours(1)
-            "6h" -> now.minusHours(6)
-            "12h" -> now.minusHours(12)
-            "24h" -> now.minusDays(1)
-            else -> now.minusHours(1) // Default to 1 hour
-        }.format(DateTimeFormatter.ISO_INSTANT)
+        // Add 2 hours to make it match your local time (15:00)
+        val shiftedNow = utcNow.plusHours(2)
 
+        // Calculate the from time and also shift it by 2 hours
+        val shiftedFromDate = when(timeframe) {
+            "1h" -> shiftedNow.minusHours(1)
+            "6h" -> shiftedNow.minusHours(6)
+            "12h" -> shiftedNow.minusHours(12)
+            "24h" -> shiftedNow.minusDays(1)
+            else -> shiftedNow.minusHours(1)
+        }
+
+        // Format both as UTC timestamps
+        val fromDate = shiftedFromDate.format(DateTimeFormatter.ISO_INSTANT)
+        val toDate = shiftedNow.format(DateTimeFormatter.ISO_INSTANT)
+
+        println("Shifted time as UTC: $shiftedNow")
+        println("Shifted from time as UTC: $fromDate")
+        println("Shifted to time as UTC: $toDate")
         return Pair(fromDate, toDate)
     }
 
@@ -268,154 +279,167 @@ fun ContainerScreen (
                         .padding(16.dp)
                 )
             }
-            Column (
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                Text(
-                    text = "-- description --",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Text(
-                    text = containerDescription,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Thin,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.size(32.dp))
-                if (parametersList.isEmpty()) {
-                    Text(
-                        text = "-- no parameters --",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-                else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 4.dp)
-                    ) {
-                        items(parametersList) { parameter ->
-                            ParameterItem(
-                                parameterName = parameter.name,
-                                currentValue = parameter.current_value ?: 0.0,
-                                unit = parameter.unit
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.size(32.dp))
-                Column {
-                    Row (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                // Description Section
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Species",
+                            text = "-- description --",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Count",
+                            text = containerDescription,
                             fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Thin,
                             color = MaterialTheme.colorScheme.secondary
                         )
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-                if (speciesList.isEmpty()) {
-                    Text(
-                        text = "-- no species --",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-                else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 4.dp)
-                    ) {
-                        items(speciesList) { species ->
-                            SpeciesItem(
-                                speciesName = species.name,
-                                speciesCount = species.count
-                            )
-                        }
+                        Spacer(modifier = Modifier.size(32.dp))
                     }
                 }
-                Spacer(modifier = Modifier.size(32.dp))
-                
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Parameter History",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
 
-                    // Time filter chips
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                    ) {
-                        TimeFilterChip("1h", "Last Hour", selectedTimeframe, onTimeframeSelected)
-                        TimeFilterChip("6h", "Last 6 Hours", selectedTimeframe, onTimeframeSelected)
-                        TimeFilterChip("12h", "Last 12 Hours", selectedTimeframe, onTimeframeSelected)
-                        TimeFilterChip("24h", "Last Day", selectedTimeframe, onTimeframeSelected)
-                    }
-
-                    // Charts for each parameter
-                    if (parametersList.isNotEmpty() && parameterHistoryData.isNotEmpty()) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(vertical = 8.dp)
+                // Parameters Section
+                item {
+                    if (parametersList.isEmpty()) {
+                        Text(
+                            text = "-- no parameters --",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(parametersList) { parameter ->
-                                ParameterChart(
-                                    parameter = parameter,
-                                    historyData = parameterHistoryData[parameter.id] ?: emptyList()
+                            parametersList.forEach { parameter ->
+                                ParameterItem(
+                                    parameterName = parameter.name,
+                                    currentValue = parameter.current_value ?: 0.0,
+                                    unit = parameter.unit
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
-                    } else {
-                        Text(
-                            text = "No history data available",
-                            fontFamily = PoppinsFamily,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.padding(top = 16.dp)
+                    }
+                    Spacer(modifier = Modifier.size(32.dp))
+                }
+
+                // Species Header
+                item {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Species",
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(
+                                text = "Count",
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.secondary
                         )
+                    }
+                }
+
+                // Species List
+                item {
+                    if (speciesList.isEmpty()) {
+                        Text(
+                            text = "-- no species --",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            speciesList.forEach { species ->
+                                SpeciesItem(
+                                    speciesName = species.name,
+                                    speciesCount = species.count
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(32.dp))
+                }
+
+                // Parameter History Section
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Parameter History",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        // Time filter chips
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                        ) {
+                            TimeFilterChip("1h", "Last Hour", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip("6h", "Last 6 Hours", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip("12h", "Last 12 Hours", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip("24h", "Last Day", selectedTimeframe, onTimeframeSelected)
+                        }
+
+                        // History availability message
+                        if (parametersList.isEmpty() || parameterHistoryData.isEmpty()) {
+                            Text(
+                                text = "No history data available",
+                                fontFamily = PoppinsFamily,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(top = 16.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Parameter Charts
+                if (parametersList.isNotEmpty() && parameterHistoryData.isNotEmpty()) {
+                    items(parametersList) { parameter ->
+                        ParameterChart(
+                            parameter = parameter,
+                            historyData = parameterHistoryData[parameter.id] ?: emptyList()
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
