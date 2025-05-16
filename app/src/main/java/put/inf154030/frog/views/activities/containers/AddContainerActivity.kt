@@ -1,24 +1,19 @@
 package put.inf154030.frog.views.activities.containers
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
-import android.util.Size
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,19 +38,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.utils.QrCodeAnalyzer
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 
 class AddContainerActivity : AppCompatActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
@@ -103,9 +93,9 @@ class AddContainerActivity : AppCompatActivity() {
 
 @Composable
 fun AddContainerScreen (
-    onBackClick: () -> Unit = {},
+    onBackClick: () -> Unit,
     onCodeScanned: (String, String) -> Unit,
-    requestCameraPermission: () -> Unit = {}
+    requestCameraPermission: () -> Unit
 ) {
     val context = LocalContext.current
     var code by remember { mutableStateOf("") }
@@ -114,12 +104,17 @@ fun AddContainerScreen (
     var showCamera by remember { mutableStateOf(false) }
 
     // Check for camera permission
-    val cameraPermission = remember {
-        context.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
     }
 
     LaunchedEffect(key1 = true) {
-        if (!cameraPermission) {
+        if (!hasCameraPermission) {
             requestCameraPermission()
         }
     }
@@ -133,75 +128,58 @@ fun AddContainerScreen (
                 title = "New Container"
             )
             BackButton { onBackClick() }
-            Column (
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                if (showCamera && cameraPermission) {
-                    // Camera preview for QR scanning
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(16.dp)
-                    ) {
-                        CameraPreview(
-                            onBarcodeDetected = { barcode ->
-                                showCamera = false
-                                // Process the barcode and navigate
-                                barcode?.let {
-                                    val type = if (it.endsWith("1")) "aquarium" else "terrarium"
-                                    onCodeScanned(it, type)
-                                }
-                            }
-                        )
-
-                        // Scanning overlay and close button
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp)
-                        ) {
-                            // QR scanning frame
-                            Box(
-                                modifier = Modifier
-                                    .size(250.dp)
-                                    .align(Alignment.Center)
-                                    .border(
-                                        width = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = RoundedCornerShape(16.dp)
-                                    )
-                            )
-
-                            // Close button
-                            IconButton(
-                                onClick = { showCamera = false },
-                                modifier = Modifier.align(Alignment.TopEnd)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close camera",
-                                    tint = MaterialTheme.colorScheme.onBackground
+            if (hasCameraPermission) {
+                val cameraProviderFuture = remember {
+                    ProcessCameraProvider.getInstance(context)
+                }
+                val lifecycleOwner = LocalLifecycleOwner.current
+                Column {
+                    AndroidView(
+                        modifier = Modifier.weight(1f),
+                        factory = { context ->
+                            val previewView = PreviewView(context)
+                            val preview = androidx.camera.core.Preview.Builder().build()
+                            val selector = CameraSelector.Builder()
+                                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                                .build()
+                            preview.surfaceProvider = previewView.surfaceProvider
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                                .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                             imageAnalysis.setAnalyzer(
+                                 ContextCompat.getMainExecutor(context),
+                                 QrCodeAnalyzer { result ->
+                                     code = result
+                                     val type = if (code.endsWith("a")) {
+                                         "aquarium"
+                                     } else if (code.endsWith("t")) {
+                                         "terrarium"
+                                     } else {
+                                         "invalid_code"
+                                     }
+                                     onCodeScanned(code, type)
+                                 }
+                             )
+                            try {
+                                cameraProviderFuture.get().bindToLifecycle(
+                                    lifecycleOwner,
+                                    selector,
+                                    preview,
+                                    imageAnalysis
                                 )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-
-                            Text(
-                                text = "Align QR code within frame",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontFamily = PoppinsFamily,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(bottom = 32.dp)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                } else {
+                            previewView
+                        })
+                }
+            } else {
+                Column (
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom
+                ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -210,7 +188,7 @@ fun AddContainerScreen (
                         // QR Scanner button
                         Button(
                             onClick = {
-                                if (cameraPermission) {
+                                if (hasCameraPermission) {
                                     showCamera = true
                                 } else {
                                     requestCameraPermission()
@@ -283,32 +261,35 @@ fun AddContainerScreen (
                                 fontFamily = PoppinsFamily
                             )
                         }
+                    }
+                }
+                Column (
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.size(24.dp))
 
-                        Spacer(modifier = Modifier.size(24.dp))
+                    Button(
+                        onClick = {
+                            if (code.trim().isEmpty()) {
+                                errorMessage = "Container code cannot be empty"
+                                return@Button
+                            }
 
-                        Button(
-                            onClick = {
-                                if (code.trim().isEmpty()) {
-                                    errorMessage = "Container code cannot be empty"
-                                    return@Button
-                                }
+                            isLoading = true
+                            errorMessage = null
 
-                                isLoading = true
-                                errorMessage = null
+                            val type = if (code.endsWith("1")) "aquarium" else "terrarium"
 
-                                val type = if (code.endsWith("1")) "aquarium" else "terrarium"
-
-                                // Process manual code
-                                onCodeScanned(code, type)
-                            },
-                            modifier = Modifier.fillMaxWidth(0.65f),
-                            enabled = !isLoading
-                        ) {
-                            Text(
-                                text = if (isLoading) "Wait..." else "Next",
-                                fontFamily = PoppinsFamily
-                            )
-                        }
+                            // Process manual code
+                            onCodeScanned(code, type)
+                        },
+                        modifier = Modifier.fillMaxWidth(0.65f),
+                        enabled = !isLoading
+                    ) {
+                        Text(
+                            text = if (isLoading) "Wait..." else "Next",
+                            fontFamily = PoppinsFamily
+                        )
                     }
                 }
             }
@@ -316,105 +297,14 @@ fun AddContainerScreen (
     }
 }
 
-@SuppressLint("RestrictedApi")
+@androidx.compose.ui.tooling.preview.Preview
 @Composable
-fun CameraPreview(
-    onBarcodeDetected: (String?) -> Unit
-) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-
-    AndroidView(
-        factory = { ctx ->
-            val previewView = PreviewView(ctx).apply {
-                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                scaleType = PreviewView.ScaleType.FILL_CENTER
-            }
-
-            val executor = ContextCompat.getMainExecutor(ctx)
-
-            cameraProviderFuture.addListener({
-                val cameraProvider = cameraProviderFuture.get()
-
-                // Setup image analysis for barcode scanning
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                    .setDefaultResolution(Size(1280, 720))  // Set a reasonable default resolution
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also {
-                        it.setAnalyzer(executor, BarcodeAnalyzer { barcode ->
-                            onBarcodeDetected(barcode)
-                        })
-                    }
-
-                // Preview use case
-                val preview = Preview.Builder().build()
-
-                // Select back camera
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                try {
-                    // Unbind any bound use cases before rebinding
-                    cameraProvider.unbindAll()
-
-                    // Bind use cases to camera
-                    cameraProvider.bindToLifecycle(
-                        lifecycleOwner,
-                        cameraSelector,
-                        preview,
-                        imageAnalysis
-                    )
-
-                    preview.setSurfaceProvider(previewView.surfaceProvider)
-                } catch (e: Exception) {
-                    Log.e("CameraX", "Use case binding failed", e)
-                }
-            }, executor)
-
-            previewView
-        },
-        modifier = Modifier.fillMaxSize()
-    )
-}
-
-class BarcodeAnalyzer(private val onBarcodeDetected: (String?) -> Unit) : ImageAnalysis.Analyzer {
-    private val scanner = BarcodeScanning.getClient()
-    private var isScanning = true
-
-    override fun analyze(imageProxy: ImageProxy) {
-        if (!isScanning) {
-            imageProxy.close()
-            return
-        }
-
-        @androidx.camera.core.ExperimentalGetImage
-        val mediaImage = imageProxy.image
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-            scanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        // QR codes will be in the rawValue
-                        val rawValue = barcode.rawValue
-                        if (!rawValue.isNullOrEmpty()) {
-                            isScanning = false
-                            onBarcodeDetected(rawValue)
-                            break
-                        }
-                    }
-                }
-                .addOnFailureListener {
-                    // Handle any errors
-                    Log.e("BarcodeAnalyzer", "Barcode scanning failed", it)
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } else {
-            imageProxy.close()
-        }
+fun AddContainerActivityPreview () {
+    FrogTheme {
+        AddContainerScreen(
+            onBackClick = {},
+            onCodeScanned = { _, _ -> },
+            requestCameraPermission = {}
+        )
     }
 }
