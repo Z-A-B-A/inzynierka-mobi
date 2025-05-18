@@ -102,9 +102,11 @@ fun AddContainerScreen (
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showCamera by remember { mutableStateOf(false) }
+    // Add a flag to prevent multiple scans
+    var isScanning by remember { mutableStateOf(false) }
 
     // Check for camera permission
-    var hasCameraPermission by remember {
+    val hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
@@ -128,14 +130,21 @@ fun AddContainerScreen (
                 title = "New Container"
             )
             BackButton { onBackClick() }
-            if (hasCameraPermission) {
+            if (showCamera) {
                 val cameraProviderFuture = remember {
                     ProcessCameraProvider.getInstance(context)
                 }
                 val lifecycleOwner = LocalLifecycleOwner.current
-                Column {
+                Column (
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     AndroidView(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(64.dp)
+                            .weight(1f),
                         factory = { context ->
                             val previewView = PreviewView(context)
                             val preview = androidx.camera.core.Preview.Builder().build()
@@ -150,6 +159,9 @@ fun AddContainerScreen (
                              imageAnalysis.setAnalyzer(
                                  ContextCompat.getMainExecutor(context),
                                  QrCodeAnalyzer { result ->
+                                     // Add a guard to prevent multiple scans
+                                     if (isScanning) return@QrCodeAnalyzer
+
                                      code = result
                                      val type = if (code.endsWith("a")) {
                                          "aquarium"
@@ -158,7 +170,14 @@ fun AddContainerScreen (
                                      } else {
                                          "invalid_code"
                                      }
-                                     onCodeScanned(code, type)
+                                     println("$code, $type")
+                                     if (type == "invalid_code") {
+                                         errorMessage = "Invalid code"
+                                     } else {
+                                         // Set scanning flag to prevent multiple triggers
+                                         isScanning = true
+                                        onCodeScanned(code, type)
+                                     }
                                  }
                              )
                             try {
@@ -176,12 +195,16 @@ fun AddContainerScreen (
                 }
             } else {
                 Column (
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -224,7 +247,7 @@ fun AddContainerScreen (
                                 errorMessage = null
                             },
                             modifier = Modifier
-                                .fillMaxWidth(0.65f)
+                                .fillMaxWidth()
                                 .height(48.dp)
                                 .background(
                                     color = MaterialTheme.colorScheme.secondary,
@@ -262,34 +285,41 @@ fun AddContainerScreen (
                             )
                         }
                     }
-                }
-                Column (
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Spacer(modifier = Modifier.size(24.dp))
+                    Column {
+                        Button(
+                            onClick = {
+                                if (code.trim().isEmpty()) {
+                                    errorMessage = "Container code cannot be empty"
+                                    return@Button
+                                }
 
-                    Button(
-                        onClick = {
-                            if (code.trim().isEmpty()) {
-                                errorMessage = "Container code cannot be empty"
-                                return@Button
-                            }
+                                isLoading = true
+                                errorMessage = null
 
-                            isLoading = true
-                            errorMessage = null
+                                val type = if (code.endsWith("a")) {
+                                    "aquarium"
+                                } else if (code.endsWith("t")) {
+                                    "terrarium"
+                                } else {
+                                    "invalid_code"
+                                }
 
-                            val type = if (code.endsWith("1")) "aquarium" else "terrarium"
-
-                            // Process manual code
-                            onCodeScanned(code, type)
-                        },
-                        modifier = Modifier.fillMaxWidth(0.65f),
-                        enabled = !isLoading
-                    ) {
-                        Text(
-                            text = if (isLoading) "Wait..." else "Next",
-                            fontFamily = PoppinsFamily
-                        )
+                                if (type == "invalid_code") {
+                                    errorMessage = "Invalid code"
+                                } else {
+                                    // Process manual code
+                                    onCodeScanned(code, type)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(0.65f),
+                            enabled = !isLoading
+                        ) {
+                            Text(
+                                text = if (isLoading) "Wait..." else "Next",
+                                fontFamily = PoppinsFamily
+                            )
+                        }
+                        Spacer(modifier = Modifier.size(64.dp))
                     }
                 }
             }
