@@ -43,16 +43,7 @@
             android:name=".views.activities.schedule.ScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".views.activities.species.CreateSpeciesActivity"
-            android:exported="false" />
-        <activity
             android:name=".views.activities.species.AddSpeciesActivity"
-            android:exported="false" />
-        <activity
-            android:name=".views.activities.parameters.CreateParameterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".views.activities.parameters.AddParameterActivity"
             android:exported="false" />
         <activity
             android:name=".views.activities.containers.ManageContainerActivity"
