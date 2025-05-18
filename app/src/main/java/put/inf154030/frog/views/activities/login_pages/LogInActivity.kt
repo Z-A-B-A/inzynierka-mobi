@@ -180,6 +180,19 @@ fun LogInScreen(
                 Spacer(modifier = Modifier.size(32.dp))
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
+
+                // Error message display
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                // Login button with loading indicator
                 Button(
                     onClick = {
                         if (email.isNotEmpty() && password.isNotEmpty() && emailValid.value) {
@@ -191,8 +204,10 @@ fun LogInScreen(
                                 password = password
                             )
 
-                            ApiClient.apiService.loginUser(loginRequest).enqueue(object :
-                                Callback<AuthResponse> {
+                            // Set a timeout for the API call
+                            val call = ApiClient.apiService.loginUser(loginRequest)
+
+                            call.enqueue(object : Callback<AuthResponse> {
                                 override fun onResponse(
                                     call: Call<AuthResponse>,
                                     response: Response<AuthResponse>
@@ -200,10 +215,10 @@ fun LogInScreen(
                                     isLoading = false
                                     if (response.isSuccessful) {
                                         response.body()?.let { authResponse ->
-                                            // Save token in SessionManager - updated to use the singleton object
+                                            // Save token in SessionManager
                                             SessionManager.saveAuthToken(authResponse.token)
 
-                                            // Optionally, save user info if needed
+                                            // Save user info if needed
                                             authResponse.user.let { user ->
                                                 SessionManager.saveUserInfo(
                                                     user.id.toString(),
@@ -228,9 +243,19 @@ fun LogInScreen(
 
                                 override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                                     isLoading = false
-                                    errorMessage = "Network error: ${t.message}"
+                                    errorMessage = "Network error: Cannot connect to server"
                                 }
                             })
+
+                            // Set a timeout to prevent indefinite waiting
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                if (isLoading) {
+                                    call.cancel()
+                                    isLoading = false
+                                    errorMessage = "Connection timeout. Please try again."
+                                }
+                            }, 10000) // 10 second timeout
+
                         } else if (!emailValid.value) {
                             errorMessage = "Please enter a valid email address"
                         } else {
@@ -238,13 +263,20 @@ fun LogInScreen(
                         }
                     },
                     modifier = Modifier
-                        .fillMaxWidth(0.65f),
-                    enabled = !isLoading
+                        .fillMaxWidth(0.65f)
                 ) {
-                    Text(
-                        text = if (isLoading) "Logging in..." else "Log In",
-                        fontFamily = PoppinsFamily
-                    )
+                    if (isLoading) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Log In",
+                            fontFamily = PoppinsFamily
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.size(64.dp))
             }
