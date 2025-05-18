@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -143,93 +144,93 @@ fun LocationsScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TopNavigationBar(
-                    title = "Hi, $userName!",
-                    onMenuClick = { showMenu = !showMenu }
-                )
+            TopNavigationBar(
+                title = "Hi, $userName!",
+                onMenuClick = { showMenu = !showMenu }
+            )
 
-                // Show loading indicator if needed
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
-                    }
+            // Show loading indicator if needed
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
                 }
-                // Show error message if any
-                else if (errorMessage != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                // This is the scrollable content
-                if (locations.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No locations added yet",
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                } else {
-//                    TODO("Wyjazd za ekran")
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(locations) { location ->
-                            LocationCard(
-                                locationName = location.name,
-                                onEditClick = { onEditClick(location) },
-                                onClick = { onLocationClick(location) }
-                            )
-                        }
-                    }
+            }
+            // Show error message if any
+            else if (errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
-            // Floating action button
-            IconButton(
-                onClick = { onAddLocationClick() },
-                modifier = Modifier
-                    .padding(bottom = 48.dp, end = 32.dp)
-                    .align(Alignment.BottomEnd)
+            // This is the scrollable content
+            if (locations.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No locations added yet",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            } else {
+//                    TODO("Wyjazd za ekran")
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    items(locations) { location ->
+                        LocationCard(
+                            locationName = location.name,
+                            onEditClick = { onEditClick(location) },
+                            onClick = { onLocationClick(location) }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(16.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add_buton),
-                    contentDescription = "Add new location",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(48.dp)
-                )
+                // Floating action button
+                IconButton(
+                    onClick = { onAddLocationClick() },
+                    modifier = Modifier
+                        .padding(bottom = 48.dp, end = 32.dp)
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_buton),
+                        contentDescription = "Add new location",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
         }
 
@@ -249,8 +250,14 @@ fun LocationsActivityPreview () {
         LocationsScreen(
             userName = "Bartosz",
             locations = listOf(
-                Location(1, "Sklep", ""),
-                Location(2, "Zoo", "")
+                Location(1, "Sklep1", ""),
+                Location(2, "Zoo1", ""),
+                Location(3, "Sklep2", ""),
+                Location(4, "Zoo2", ""),
+                Location(5, "Sklep3", ""),
+                Location(6, "Zoo3", ""),
+                Location(7, "Sklep4", ""),
+                Location(8, "Zoo4", "")
             ),
             isLoading = false,
             errorMessage = null,
