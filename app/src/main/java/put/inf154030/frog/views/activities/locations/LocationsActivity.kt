@@ -197,6 +197,7 @@ fun LocationsScreen(
                         )
                     }
                 } else {
+//                    TODO("Wyjazd za ekran")
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
