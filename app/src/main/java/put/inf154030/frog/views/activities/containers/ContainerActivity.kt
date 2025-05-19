@@ -134,6 +134,7 @@ class ContainerActivity : ComponentActivity() {
         }
     }
 
+//    TODO("parametry i species można dostać jednym strzałem z api GET /api/containers/{id}")
     private fun loadParameters() {
         if (containerId == -1) {
             errorMessageParams = "Invalid container ID"

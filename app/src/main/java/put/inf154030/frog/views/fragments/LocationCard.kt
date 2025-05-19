@@ -23,6 +23,7 @@ fun LocationCard(
     onEditClick: () -> Unit,
     onClick: () -> Unit
 ) {
+//    TODO("Jak lokalizacja ma ponad 16 znaków to niech się dzieli na 2 wiersze")
     Card(
         modifier = Modifier
             .fillMaxWidth()

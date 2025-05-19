@@ -219,7 +219,9 @@ fun EditAccountScreen (
 
             // Save button and loading indicator at the bottom
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

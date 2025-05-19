@@ -162,7 +162,7 @@ fun EditContainerScreen(
     containerName: String?,
     containerDescription: String?,
     locationId: Int,
-    locationsList: List<Location> = emptyList()
+    locationsList: List<Location>
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -185,7 +185,7 @@ fun EditContainerScreen(
             // State for location selection
             var isLocationDropdownExpanded by remember { mutableStateOf(false) }
             var locations by remember { mutableStateOf(listOf<Location>()) }
-            var selectedLocation by remember { mutableStateOf<Location?>(null) } // TODO("Dodać, żeby ustawiała się aktualna")
+            var selectedLocation by remember { mutableStateOf<Location?>(null) }
             var isLoading by remember { mutableStateOf(true) }
 
             // Load locations when the screen is created
@@ -416,7 +416,11 @@ fun EditContainerActivityPreview () {
             onDeleteContainerClick = {  },
             containerName = "Akwarium",
             containerDescription = "leleleleisonrgjnbtehib",
-            locationId = 1
+            locationId = 1,
+            locationsList = listOf(
+                Location(1, "Sklep", ""),
+                Location(2, "Zoo", "")
+            )
         )
     }
 }

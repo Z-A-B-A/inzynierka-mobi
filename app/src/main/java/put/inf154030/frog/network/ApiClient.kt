@@ -1,6 +1,5 @@
 package put.inf154030.frog.network
 
-import android.se.omapi.Session
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
+import put.inf154030.frog.models.Container
+import put.inf154030.frog.models.responses.ContainersResponse
+import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.containers.AddContainerActivity
 import put.inf154030.frog.views.activities.containers.ContainerActivity
 import put.inf154030.frog.views.activities.containers.EditContainerActivity
@@ -43,11 +49,6 @@ import put.inf154030.frog.views.fragments.ContainerCard
 import put.inf154030.frog.views.fragments.FilterButtonsRow
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
-import put.inf154030.frog.models.Container
-import put.inf154030.frog.models.responses.ContainersResponse
-import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.theme.FrogTheme
-import put.inf154030.frog.theme.PoppinsFamily
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -165,105 +166,106 @@ fun LocationScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+            TopNavigationBar(
+                title = locationName,
+                onMenuClick = { showMenu = !showMenu }
+            )
+            Box (
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterStart
             ) {
-                TopNavigationBar(
-                    title = locationName,
-                    onMenuClick = { showMenu = !showMenu }
-                )
-                Box (
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterStart
+                BackButton { onBackClick() }
+            }
+
+            FilterButtonsRow(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { filter -> selectedFilter = filter }
+            )
+
+            // Show loading indicator if needed
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
                 ) {
-                    BackButton { onBackClick() }
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
                 }
-
-                FilterButtonsRow(
-                    selectedFilter = selectedFilter,
-                    onFilterSelected = { filter -> selectedFilter = filter }
-                )
-
-                // Show loading indicator if needed
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
-                    }
-                }
-                // Show error message if any
-                else if (errorMessage != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                // This is the scrollable content
-                else if (filteredContainers.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (containers.isEmpty()) "No containers added yet"
-                            else "No ${selectedFilter.dropLast(1)}s in this location",
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        items(filteredContainers) { container ->
-                            ContainerCard(
-                                containerName = container.name,
-                                containerType = container.type,
-                                onEditClick = { onEditClick(container) },
-                                onClick = { onContainerClick(container) }
-                            )
-                        }
-                    }
+            }
+            // Show error message if any
+            else if (errorMessage != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
-            // Floating action button
-            IconButton(
-                onClick = onAddContainerClick,
+            // This is the scrollable content
+            else if (filteredContainers.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (containers.isEmpty()) "No containers added yet"
+                        else "No ${selectedFilter.dropLast(1)}s in this location",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    items(filteredContainers) { container ->
+                        ContainerCard(
+                            containerName = container.name,
+                            containerType = container.type,
+                            onEditClick = { onEditClick(container) },
+                            onClick = { onContainerClick(container) }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(16.dp))
+            Box (
                 modifier = Modifier
-                    .padding(bottom = 48.dp, end = 32.dp)
-                    .align(Alignment.BottomEnd)
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add_buton),
-                    contentDescription = "Add new container",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(48.dp)
-                )
+                // Floating action button
+                IconButton(
+                    onClick = onAddContainerClick,
+                    modifier = Modifier
+                        .padding(bottom = 48.dp, end = 32.dp)
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_buton),
+                        contentDescription = "Add new container",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
         }
 
@@ -284,7 +286,9 @@ fun LocationActivityPreview () {
             locationName = "Lokacja 1",
             containers = listOf(
                 Container(1, "ASDF1", "aquarium", null, true, ""),
-                Container(2, "ASDF2", "terrarium", null, true, "")
+                Container(2, "ASDF2", "terrarium", null, true, ""),
+                Container(3, "ASDF3", "aquarium", null, true, ""),
+                Container(4, "ASDF4", "terrarium", null, true, "")
             ),
             isLoading = false,
             errorMessage = null,

@@ -2,7 +2,6 @@ package put.inf154030.frog.views.activities.login_pages
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image

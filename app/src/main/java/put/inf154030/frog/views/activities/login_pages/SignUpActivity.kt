@@ -307,7 +307,9 @@ fun SignUpScreen (
                                 password = password
                             )
 
-                            ApiClient.apiService.registerUser(registerRequest).enqueue(object : Callback<RegisterResponse> {
+                            val call = ApiClient.apiService.registerUser(registerRequest)
+
+                            call.enqueue(object : Callback<RegisterResponse> {
                                 override fun onResponse(
                                     call: Call<RegisterResponse>,
                                     response: Response<RegisterResponse>
@@ -321,7 +323,6 @@ fun SignUpScreen (
                                         ).show()
 
                                         onSignUpSuccess()
-
                                     } else {
                                         errorMessage = try {
                                             response.errorBody()?.string() ?: "Registration failed"
@@ -336,20 +337,34 @@ fun SignUpScreen (
                                     t: Throwable
                                 ) {
                                     isLoading = false
-                                    errorMessage = "Network error: ${t.message}"
+                                    errorMessage = "Network error: Cannot connect to server"
                                 }
-
                             })
+
+                            // Set a timeout to prevent indefinite waiting
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                if (isLoading) {
+                                    call.cancel()
+                                    isLoading = false
+                                    errorMessage = "Connection timeout. Please try again."
+                                }
+                            }, 10000) // 10 second timeout
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f),
-                    enabled = !isLoading
+                    modifier = Modifier.fillMaxWidth(0.65f)
                 ) {
-                    Text(
-                        text = if (isLoading) "Registering..." else "Sign Up",
-                        fontFamily = PoppinsFamily
-                    )
+                    if (isLoading) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Sign Up",
+                            fontFamily = PoppinsFamily
+                        )
+                    }
                 }
                 errorMessage?.let { error ->
                     Spacer(modifier = Modifier.size(8.dp))
