@@ -285,8 +285,8 @@ fun ManageContainerScreen(
                         items(parameters) { parameter ->
                             EditParameterRow (
                                 parameterName = parameter.name,
-                                parameterMin = parameter.min_value!!,
-                                parameterMax = parameter.max_value!!
+                                parameterMin = parameter.minValue!!,
+                                parameterMax = parameter.maxValue!!
                             )
                         }
                     }

@@ -292,7 +292,7 @@ fun ContainerScreen (
                             parametersList.forEach { parameter ->
                                 ParameterItem(
                                     parameterName = parameter.name,
-                                    currentValue = parameter.current_value ?: 0.0,
+                                    currentValue = parameter.currentValue ?: 0.0,
                                     unit = parameter.unit
                                 )
                             }
