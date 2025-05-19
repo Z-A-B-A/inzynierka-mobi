@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,8 +56,9 @@ fun LocationCard(
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = if (locationName.length <= 16) 28.sp else 24.sp,
+                fontSize = if (locationName.length <= 16) 28.sp else 20.sp,
                 maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

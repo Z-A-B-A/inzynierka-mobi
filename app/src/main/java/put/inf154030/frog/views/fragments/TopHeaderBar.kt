@@ -36,7 +36,7 @@ fun TopHeaderBar(
                     )
                 )
             ),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.BottomCenter
     ) {
         Text(
             text = title,
@@ -46,7 +46,7 @@ fun TopHeaderBar(
             fontSize = if (title.length <= 16) 28.sp else 24.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
         )
     }
 }
