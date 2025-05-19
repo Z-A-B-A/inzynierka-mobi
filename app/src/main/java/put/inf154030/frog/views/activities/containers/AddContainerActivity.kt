@@ -278,7 +278,15 @@ private fun ManualEntrySection(
             Spacer(modifier = Modifier.size(32.dp))
 
             // Manual code entry field
-            // TODO("Dodać placeholder")
+            Text(
+                text = "Enter code manually",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, bottom = 4.dp),
+                color = MaterialTheme.colorScheme.secondary
+            )
             BasicTextField(
                 value = code,
                 onValueChange = onCodeChange,
@@ -299,9 +307,6 @@ private fun ManualEntrySection(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
-                        if (code.isEmpty()) {
-                            Text("Enter code manually")
-                        }
                         innerTextField()
                     }
                 }
