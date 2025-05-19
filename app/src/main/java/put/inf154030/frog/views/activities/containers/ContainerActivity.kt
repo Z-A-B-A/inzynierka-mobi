@@ -37,9 +37,8 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.ParameterHistoryEntry
-import put.inf154030.frog.models.responses.ContainerSpeciesResponse
+import put.inf154030.frog.models.responses.ContainerDetailResponse
 import put.inf154030.frog.models.responses.ParameterHistoryResponse
-import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
@@ -60,10 +59,8 @@ import java.time.format.DateTimeFormatter
 class ContainerActivity : ComponentActivity() {
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
     private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
-    private var isLoadingParams by mutableStateOf(false)
-    private var isLoadingSpecies by mutableStateOf(false)
-    private var errorMessageParams by mutableStateOf<String?>(null)
-    private var errorMessageSpecies by mutableStateOf<String?>(null)
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
     private var containerId = -1
     private var parameterHistoryData by mutableStateOf<Map<Int, List<ParameterHistoryEntry>>>(emptyMap())
     private var selectedTimeframe by mutableStateOf("1h")
@@ -134,66 +131,37 @@ class ContainerActivity : ComponentActivity() {
         }
     }
 
-//    TODO("parametry i species można dostać jednym strzałem z api GET /api/containers/{id}")
-    private fun loadParameters() {
+    private fun loadContainerDetails() {
         if (containerId == -1) {
-            errorMessageParams = "Invalid container ID"
+            errorMessage = "Invalid container ID"
             return
         }
 
-        isLoadingParams = true
-        errorMessageParams = null
+        isLoading = true
+        errorMessage = null
 
-        ApiClient.apiService.getParameters(containerId)
-            .enqueue(object: Callback<ParametersResponse> {
+        ApiClient.apiService.getContainerDetails(containerId)
+            .enqueue(object: Callback<ContainerDetailResponse> {
                 override fun onResponse(
-                    call: Call<ParametersResponse>,
-                    response: Response<ParametersResponse>
+                    call: Call<ContainerDetailResponse>,
+                    response: Response<ContainerDetailResponse>
                 ) {
-                    isLoadingParams = false
+                    isLoading = false
 
                     if (response.isSuccessful) {
                         parametersList = response.body()?.parameters ?: emptyList()
+                        speciesList = response.body()?.species ?: emptyList()
                         loadParameterHistory(selectedTimeframe)
                     } else {
-                        errorMessageParams = "Failed to load parameters: ${response.message()}"
+                        errorMessage = "Failed to load container details: ${response.message()}"
                     }
                 }
 
-                override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
-                    isLoadingParams = false
-                    errorMessageParams = "Network error: ${t.message}"
-                }
-            })
-    }
-
-    private fun loadSpecies() {
-        if (containerId == -1) {
-            errorMessageParams = "Invalid container ID"
-            return
-        }
-
-        isLoadingSpecies = true
-        errorMessageSpecies = null
-
-        ApiClient.apiService.getContainerSpecies(containerId)
-            .enqueue(object: Callback<ContainerSpeciesResponse> {
-                override fun onResponse(
-                    call: Call<ContainerSpeciesResponse>,
-                    response: Response<ContainerSpeciesResponse>
-                ) {
-                    isLoadingSpecies = false
-                    if (response.isSuccessful) {
-                        speciesList = response.body()?.species ?: emptyList()
-                    } else {
-                        errorMessageParams = "Failed to load species: ${response.message()}"
-                    }
+                override fun onFailure(call: Call<ContainerDetailResponse>, t: Throwable) {
+                    isLoading = false
+                    errorMessage = "Network error: ${t.message}"
                 }
 
-                override fun onFailure(call: Call<ContainerSpeciesResponse>, t: Throwable) {
-                    isLoadingSpecies = false
-                    errorMessageSpecies = "Network error: ${t.message}"
-                }
             })
     }
 
@@ -232,14 +200,12 @@ class ContainerActivity : ComponentActivity() {
                 )
             }
         }
-        loadParameters()
-        loadSpecies()
+        loadContainerDetails()
     }
 
     override fun onResume() {
         super.onResume()
-        loadParameters()
-        loadSpecies()
+        loadContainerDetails()
     }
 }
 
