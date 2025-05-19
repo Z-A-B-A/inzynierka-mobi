@@ -42,6 +42,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for the second step of adding a container (name & description)
 class AddContainerNextStepActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,23 +53,31 @@ class AddContainerNextStepActivity : ComponentActivity() {
 
         setContent {
             FrogTheme {
+                // Main screen composable for this step
                 AddContainerNextStepScreen(
                     onBackClick = { finish() },
-                    onFinishClick = { name, description ->
+                    onFinishClick = { 
+                        name, 
+                        description,
+                        setLoading,
+                        setErrorName,
+                        setErrorDescription ->
+                        // Prepare request object
                         val containerCreateRequest = ContainerCreateRequest(name, containerType!!, description)
 
+                        setLoading(true)
+                        // Make API call to create the container
                         ApiClient.apiService.createContainer(locationId, containerCreateRequest)
                             .enqueue(object : Callback<ContainerResponse> {
                                 override fun onResponse(
                                     call: Call<ContainerResponse>,
                                     response: Response<ContainerResponse>
                                 ) {
-                                    if (!response.isSuccessful) {
-                                        Toast.makeText(
-                                            this@AddContainerNextStepActivity,
-                                            "Failed to create location: ${response.message()}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                    setLoading(false)
+                                    if (response.isSuccessful) {
+                                        finish()
+                                    } else {
+                                        setErrorName("Failed to create container: ${response.message()}")
                                     }
                                 }
 
@@ -76,15 +85,10 @@ class AddContainerNextStepActivity : ComponentActivity() {
                                     call: Call<ContainerResponse>,
                                     t: Throwable
                                 ) {
-                                    Toast.makeText(
-                                        this@AddContainerNextStepActivity,
-                                        "Network error: ${t.message}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    setLoading(false)
+                                    setErrorName("Network error: ${t.message}")
                                 }
-
                             })
-                        finish()
                     }
                 )
             }
@@ -92,20 +96,25 @@ class AddContainerNextStepActivity : ComponentActivity() {
     }
 }
 
+// Composable for entering container name and description
 @Composable
 fun AddContainerNextStepScreen (
     onBackClick: () -> Unit = {},
-    onFinishClick: (String, String) -> Unit
+    onFinishClick: (
+        String, 
+        String,
+        (Boolean) -> Unit,
+        (String?) -> Unit,
+        (String?) -> Unit
+    ) -> Unit
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "New Container"
-            )
-            BackButton { onBackClick() }
+            TopHeaderBar( title = "New Container" ) // Header bar
+            BackButton { onBackClick() } // Back button
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -113,12 +122,14 @@ fun AddContainerNextStepScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                // State for form fields and errors
                 var name by remember { mutableStateOf("") }
                 var description by remember { mutableStateOf("") }
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessageName by remember { mutableStateOf<String?>(null) }
                 var errorMessageDescription by remember { mutableStateOf<String?>(null) }
 
+                // Name label and input
                 Text(
                     text = "Name",
                     fontFamily = PoppinsFamily,
@@ -142,9 +153,7 @@ fun AddContainerNextStepScreen (
                             shape = RoundedCornerShape(16.dp)
                         ),
                     singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = 16.sp
-                    ),
+                    textStyle = TextStyle( fontSize = 16.sp ),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -155,7 +164,7 @@ fun AddContainerNextStepScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                // Error message
+                // Error message for name
                 errorMessageName?.let {
                     Text(
                         text = it,
@@ -164,6 +173,8 @@ fun AddContainerNextStepScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(24.dp))
+
+                // Description label and input
                 Text(
                     text = "Description",
                     fontFamily = PoppinsFamily,
@@ -173,6 +184,8 @@ fun AddContainerNextStepScreen (
                         .padding(start = 8.dp, bottom = 4.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
+                // TODO("Dać limit na znaki")
+                // Multiline description field
                 BasicTextField(
                     value = description,
                     onValueChange = { newValue ->
@@ -186,10 +199,8 @@ fun AddContainerNextStepScreen (
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)
                         ),
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = 16.sp
-                    ),
+                    singleLine = false,
+                    textStyle = TextStyle( fontSize = 16.sp ),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -200,7 +211,9 @@ fun AddContainerNextStepScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                errorMessageName?.let {
+
+                // Error message for description
+                errorMessageDescription?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
@@ -208,23 +221,38 @@ fun AddContainerNextStepScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(54.dp))
+                // Loading spinner while submitting
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
+                }
+
+                // Finish button
                 Button(
                     onClick = {
+                        var hasError = false
+                        // Validate name
                         if (name.trim().isEmpty()) {
                             errorMessageName = "Container name cannot be empty"
-                            return@Button
+                            hasError = true
                         }
-
+                        // Validate description
                         if (description.trim().isEmpty()) {
-                            errorMessageDescription = "Container name cannot be empty"
-                            return@Button
+                            errorMessageDescription = "Description cannot be empty"
+                            hasError = true
                         }
+                        if (hasError) return@Button
 
-                        isLoading = true
+                        // Clear errors and call finish
                         errorMessageName = null
                         errorMessageDescription = null
 
-                        onFinishClick(name, description)
+                        onFinishClick(
+                            name, 
+                            description,
+                            { loading -> isLoading = loading },
+                            { err -> errorMessageName = err },
+                            { err -> errorMessageDescription = err }
+                        )
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
@@ -240,13 +268,14 @@ fun AddContainerNextStepScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun AddContainerNextStepActivityPreview () {
     FrogTheme {
         AddContainerNextStepScreen(
             onBackClick = {  },
-            onFinishClick = { _, _ ->  }
+            onFinishClick = { _, _, _, _, _ -> }
         )
     }
 }
