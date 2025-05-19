@@ -5,36 +5,24 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -51,30 +39,30 @@ import put.inf154030.frog.utils.QrCodeAnalyzer
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 
-class AddContainerActivity : AppCompatActivity() {
+// Activity for adding a new container (aquarium/terrarium)
+class AddContainerActivity : ComponentActivity() {
+    // Launcher for requesting camera permission
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            // Permission granted, proceed with camera
-        } else {
+        if (!isGranted) {
             Toast.makeText(this, "Camera permission is required to scan QR codes", Toast.LENGTH_LONG).show()
         }
     }
 
     private var locationId: Int = -1
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         locationId = intent.getIntExtra("LOCATION_ID", -1)
 
         setContent {
             FrogTheme {
+                // Main screen composable
                 AddContainerScreen(
                     onBackClick = { finish() },
                     onCodeScanned = { code, type ->
-                        // Navigate to next activity with container data
+                        // Navigate to next step with scanned/entered code and type
                         val intent = Intent(this, AddContainerNextStepActivity::class.java)
                         intent.putExtra("CONTAINER_CODE", code)
                         intent.putExtra("CONTAINER_TYPE", type)
@@ -91,8 +79,9 @@ class AddContainerActivity : AppCompatActivity() {
     }
 }
 
+// Main screen composable for adding a container
 @Composable
-fun AddContainerScreen (
+fun AddContainerScreen(
     onBackClick: () -> Unit,
     onCodeScanned: (String, String) -> Unit,
     requestCameraPermission: () -> Unit
@@ -102,234 +91,279 @@ fun AddContainerScreen (
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showCamera by remember { mutableStateOf(false) }
-    // Add a flag to prevent multiple scans
-    var isScanning by remember { mutableStateOf(false) }
+    var isScanning by remember { mutableStateOf(false) } // To prevent multiple scans
 
-    // Check for camera permission
-    val hasCameraPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        )
+    // Check if camera permission is granted
+    val hasCameraPermission = remember {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
-    LaunchedEffect(key1 = true) {
+    // Request camera permission on first launch if not granted
+    LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             requestCameraPermission()
         }
     }
 
-    Surface (
+    Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "New Container"
-            )
+            TopHeaderBar(title = "New Container")
             BackButton { onBackClick() }
             if (showCamera) {
-                val cameraProviderFuture = remember {
-                    ProcessCameraProvider.getInstance(context)
-                }
-                val lifecycleOwner = LocalLifecycleOwner.current
-                Column (
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    AndroidView(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(64.dp)
-                            .weight(1f),
-                        factory = { context ->
-                            val previewView = PreviewView(context)
-                            val preview = androidx.camera.core.Preview.Builder().build()
-                            val selector = CameraSelector.Builder()
-                                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                                .build()
-                            preview.surfaceProvider = previewView.surfaceProvider
-                            val imageAnalysis = ImageAnalysis.Builder()
-                                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                                .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
-                                .build()
-                             imageAnalysis.setAnalyzer(
-                                 ContextCompat.getMainExecutor(context),
-                                 QrCodeAnalyzer { result ->
-                                     // Add a guard to prevent multiple scans
-                                     if (isScanning) return@QrCodeAnalyzer
-
-                                     code = result
-                                     val type = if (code.endsWith("a")) {
-                                         "aquarium"
-                                     } else if (code.endsWith("t")) {
-                                         "terrarium"
-                                     } else {
-                                         "invalid_code"
-                                     }
-                                     println("$code, $type")
-                                     if (type == "invalid_code") {
-                                         errorMessage = "Invalid code"
-                                     } else {
-                                         // Set scanning flag to prevent multiple triggers
-                                         isScanning = true
-                                        onCodeScanned(code, type)
-                                     }
-                                 }
-                             )
-                            try {
-                                cameraProviderFuture.get().bindToLifecycle(
-                                    lifecycleOwner,
-                                    selector,
-                                    preview,
-                                    imageAnalysis
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                            previewView
-                        })
-                }
+                // Show camera preview for QR scanning
+                CameraPreviewSection(
+                    onCodeDetected = { scannedCode ->
+                        if (isScanning) return@CameraPreviewSection
+                        code = scannedCode
+                        val type = detectContainerType(code)
+                        if (type == "invalid_code") {
+                            errorMessage = "Invalid code"
+                        } else {
+                            isScanning = true
+                            onCodeScanned(code, type)
+                        }
+                    }
+                )
             } else {
-                Column (
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        // QR Scanner button
-                        Button(
-                            onClick = {
-                                if (hasCameraPermission) {
-                                    showCamera = true
-                                } else {
-                                    requestCameraPermission()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth(0.65f)
-                                .padding(vertical = 16.dp)
-                        ) {
-                            Text(
-                                text = "Scan QR Code",
-                                fontFamily = PoppinsFamily
-                            )
+                // Show manual entry section
+                ManualEntrySection(
+                    code = code,
+                    onCodeChange = {
+                        code = it
+                        errorMessage = null
+                    },
+                    errorMessage = errorMessage,
+                    isLoading = isLoading,
+                    onScanClick = {
+                        // Handle scan button click and permission check
+                        val permissionGranted = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (permissionGranted) {
+                            showCamera = true
+                            isScanning = false // Reset scanning state
+                            errorMessage = null // Clear error
+                        } else {
+                            requestCameraPermission()
                         }
-
-                        Spacer(modifier = Modifier.size(32.dp))
-
-                        Text(
-                            text = "-- or --",
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontSize = 24.sp,
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.size(32.dp))
-
-                        // Manual code entry section
-                        BasicTextField(
-                            value = code,
-                            onValueChange = { newValue ->
-                                code = newValue
-                                errorMessage = null
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    shape = RoundedCornerShape(16.dp)
-                                ),
-                            singleLine = true,
-                            textStyle = TextStyle(
-                                fontSize = 16.sp,
-                                fontFamily = PoppinsFamily
-                            ),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    if (code.isEmpty()) {
-                                        Text(
-                                            "Enter code manually"
-                                        )
-                                    }
-                                    innerTextField()
-                                }
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.size(8.dp))
-
-                        // Error message
-                        errorMessage?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 14.sp,
-                                fontFamily = PoppinsFamily
-                            )
+                    },
+                    onNextClick = {
+                        // Handle next button click for manual code entry
+                        if (code.trim().isEmpty()) {
+                            errorMessage = "Container code cannot be empty"
+                            return@ManualEntrySection
+                        }
+                        isLoading = true
+                        errorMessage = null
+                        val type = detectContainerType(code)
+                        if (type == "invalid_code") {
+                            errorMessage = "Invalid code"
+                            isLoading = false
+                        } else {
+                            onCodeScanned(code, type)
                         }
                     }
-                    Column {
-                        Button(
-                            onClick = {
-                                if (code.trim().isEmpty()) {
-                                    errorMessage = "Container code cannot be empty"
-                                    return@Button
-                                }
-
-                                isLoading = true
-                                errorMessage = null
-
-                                val type = if (code.endsWith("a")) {
-                                    "aquarium"
-                                } else if (code.endsWith("t")) {
-                                    "terrarium"
-                                } else {
-                                    "invalid_code"
-                                }
-
-                                if (type == "invalid_code") {
-                                    errorMessage = "Invalid code"
-                                } else {
-                                    // Process manual code
-                                    onCodeScanned(code, type)
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(0.65f),
-                            enabled = !isLoading
-                        ) {
-                            Text(
-                                text = if (isLoading) "Wait..." else "Next",
-                                fontFamily = PoppinsFamily
-                            )
-                        }
-                        Spacer(modifier = Modifier.size(64.dp))
-                    }
-                }
+                )
             }
         }
     }
 }
 
+// Camera preview composable for QR code scanning
+@Composable
+private fun CameraPreviewSection(
+    onCodeDetected: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        AndroidView(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(64.dp)
+                .weight(1f),
+            factory = { ctx ->
+                val previewView = PreviewView(ctx)
+                val preview = androidx.camera.core.Preview.Builder().build()
+                val selector = CameraSelector.Builder()
+                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                    .build()
+                preview.surfaceProvider = previewView.surfaceProvider
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                    .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                imageAnalysis.setAnalyzer(
+                    ContextCompat.getMainExecutor(ctx),
+                    QrCodeAnalyzer { result ->
+                        onCodeDetected(result)
+                    }
+                )
+                try {
+                    cameraProviderFuture.get().bindToLifecycle(
+                        lifecycleOwner,
+                        selector,
+                        preview,
+                        imageAnalysis
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                previewView
+            }
+        )
+    }
+}
+
+// Manual entry section for entering container code
+@Composable
+private fun ManualEntrySection(
+    code: String,
+    onCodeChange: (String) -> Unit,
+    errorMessage: String?,
+    isLoading: Boolean,
+    onScanClick: () -> Unit,
+    onNextClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Button to open camera for QR scanning
+            Button(
+                onClick = onScanClick,
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    .padding(vertical = 16.dp)
+            ) {
+                Text(
+                    text = "Scan QR Code",
+                    fontFamily = PoppinsFamily
+                )
+            }
+
+            Spacer(modifier = Modifier.size(32.dp))
+
+            Text(
+                text = "-- or --",
+                color = MaterialTheme.colorScheme.secondary,
+                fontSize = 24.sp,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.size(32.dp))
+
+            // Manual code entry field
+            // TODO("Dodać placeholder")
+            BasicTextField(
+                value = code,
+                onValueChange = onCodeChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondary,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                singleLine = true,
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    fontFamily = PoppinsFamily
+                ),
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (code.isEmpty()) {
+                            Text("Enter code manually")
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.size(8.dp))
+
+            // Show error message if present
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    fontFamily = PoppinsFamily
+                )
+            }
+        }
+        // Action buttons (Next, loading indicator)
+        ActionButtonsSection(
+            isLoading = isLoading,
+            onNextClick = onNextClick
+        )
+    }
+}
+
+// Section for Next button and loading indicator
+@Composable
+private fun ActionButtonsSection(
+    isLoading: Boolean,
+    onNextClick: () -> Unit
+) {
+    Column {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+        }
+        Button(
+            onClick = onNextClick,
+            modifier = Modifier.fillMaxWidth(0.65f),
+            enabled = !isLoading
+        ) {
+            Text(
+                text = if (isLoading) "Wait..." else "Next",
+                fontFamily = PoppinsFamily
+            )
+        }
+        Spacer(modifier = Modifier.size(64.dp))
+    }
+}
+
+// Helper function for container type detection based on code suffix
+private fun detectContainerType(code: String): String = when {
+    code.endsWith("a") -> "aquarium"
+    code.endsWith("t") -> "terrarium"
+    else -> "invalid_code"
+}
+
+// Preview for Compose UI
 @androidx.compose.ui.tooling.preview.Preview
 @Composable
-fun AddContainerActivityPreview () {
+fun AddContainerActivityPreview() {
     FrogTheme {
         AddContainerScreen(
             onBackClick = {},
