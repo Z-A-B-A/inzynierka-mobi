@@ -54,8 +54,4 @@ object SessionManager {
         editor.clear()
         editor.apply()
     }
-
-    fun isLoggedIn(): Boolean {
-        return getToken() != null
-    }
 }

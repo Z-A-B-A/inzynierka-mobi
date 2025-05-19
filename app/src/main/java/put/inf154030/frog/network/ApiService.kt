@@ -1,6 +1,5 @@
 package put.inf154030.frog.network
 
-import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.models.requests.AddSpeciesRequest
 import put.inf154030.frog.models.requests.ContainerCreateRequest
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
@@ -28,6 +27,7 @@ import put.inf154030.frog.models.responses.LocationDetailResponse
 import put.inf154030.frog.models.responses.LocationResponse
 import put.inf154030.frog.models.responses.LocationUpdateResponse
 import put.inf154030.frog.models.responses.LocationsResponse
+import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
 import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
