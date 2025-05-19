@@ -110,7 +110,6 @@ class EditContainerActivity : ComponentActivity() {
                                     errorMessage = "Network error: ${t.message}"
                                 }
                             })
-                        finish()
                     },
                     onDeleteContainerClick = {
                         val intent = Intent(this, DeleteContainerActivity::class.java)
