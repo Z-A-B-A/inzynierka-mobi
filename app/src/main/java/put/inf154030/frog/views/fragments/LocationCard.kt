@@ -1,8 +1,20 @@
 package put.inf154030.frog.views.fragments
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,8 +26,6 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun LocationCard(
@@ -23,7 +33,6 @@ fun LocationCard(
     onEditClick: () -> Unit,
     onClick: () -> Unit
 ) {
-//    TODO("Jak lokalizacja ma ponad 16 znaków to niech się dzieli na 2 wiersze")
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,7 +46,7 @@ fun LocationCard(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -46,9 +55,8 @@ fun LocationCard(
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 28.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                fontSize = if (locationName.length <= 16) 28.sp else 24.sp,
+                maxLines = 2,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -74,7 +82,7 @@ fun LocationCard(
 fun LocationCardPreview() {
     FrogTheme {
         LocationCard(
-            locationName = "Politechnika Poznańska",
+            locationName = "mkjhuygftdrxcvh njhuytdrxcvbhgyf",
             onEditClick = {  },
             onClick = {  }
         )

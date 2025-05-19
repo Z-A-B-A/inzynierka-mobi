@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,10 +43,12 @@ fun TopNavigationBar(
             ) {
                 Text(
                     text = title,
-                    fontSize = 28.sp,
+                    fontSize = if (title.length <= 16) 28.sp else 24.sp,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         },
@@ -80,7 +83,7 @@ fun TopNavigationBar(
                     )
                 )
             )
-            .height(128.dp)
+            .height(156.dp)
     )
 }
 
@@ -89,7 +92,7 @@ fun TopNavigationBar(
 fun TopNavigationBarPreview() {
     FrogTheme {
         TopNavigationBar(
-            title = "Locations",
+            title = "arsfaerviubheut vnjmcewanfvuyteb",
             onMenuClick = {}
         )
     }

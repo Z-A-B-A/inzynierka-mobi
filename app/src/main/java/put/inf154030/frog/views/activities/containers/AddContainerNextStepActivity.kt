@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -128,20 +129,34 @@ fun AddContainerNextStepScreen (
                 var errorMessageDescription by remember { mutableStateOf<String?>(null) }
 
                 // Name label and input
-                Text(
-                    text = "Name",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Name",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${name.length}/32 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
-                        name = newValue
-                        errorMessageName = null
+                        if (newValue.length <= 32) {
+                            name = newValue
+                            errorMessageName = null
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -173,22 +188,35 @@ fun AddContainerNextStepScreen (
                 Spacer(modifier = Modifier.size(24.dp))
 
                 // Description label and input
-                Text(
-                    text = "Description",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                // TODO("Dać limit na znaki")
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Description",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${description.length}/300 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 // Multiline description field
                 BasicTextField(
                     value = description,
                     onValueChange = { newValue ->
-                        description = newValue
-                        errorMessageDescription = null
+                        if (newValue.length <= 300) {
+                            description = newValue
+                            errorMessageDescription = null
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

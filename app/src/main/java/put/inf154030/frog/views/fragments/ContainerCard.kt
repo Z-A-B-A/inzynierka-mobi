@@ -87,6 +87,7 @@ fun ContainerCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .weight(0.3f),
                 contentAlignment = Alignment.Center
             ) {
@@ -109,7 +110,7 @@ fun ContainerCard(
 fun ContainerCardPreview() {
     FrogTheme {
         ContainerCard(
-            containerName = "Aquarium",
+            containerName = "arsfaerviubheuthvnjmcewanfvuyteb",
             containerType = "aquarium",
             onEditClick = {  },
             onClick = {  }
