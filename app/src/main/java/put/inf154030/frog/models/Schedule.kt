@@ -1,12 +1,14 @@
 package put.inf154030.frog.models
 
+import com.google.gson.annotations.SerializedName
+
 data class Schedule(
     val id: Int,
     val name: String,
-    val start_date: String,
+    @SerializedName("start_date") val startDate: String,
     val frequency: String,
     val weekdays: String,
-    val execution_time: String,
-    val last_executed: String?,
-    val created_at: String
+    @SerializedName("execution_time") val executionTime: String,
+    @SerializedName("last_executed") val lastExecuted: String?,
+    @SerializedName("created_at") val createdAt: String
 )

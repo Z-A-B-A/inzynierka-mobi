@@ -1,6 +1,8 @@
 package put.inf154030.frog.models.responses
 
+import com.google.gson.annotations.SerializedName
+
 data class RegisterResponse(
     val message: String,
-    val user_id: Int
+    @SerializedName("user_id") val userId: Int
 )

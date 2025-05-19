@@ -1,7 +1,8 @@
 package put.inf154030.frog.models.responses
 
+import com.google.gson.annotations.SerializedName
 import put.inf154030.frog.models.UpcomingEvent
 
 data class UpcomingEventsResponse(
-    val upcoming_events: List<UpcomingEvent>
+    @SerializedName("upcoming_events") val upcomingEvents: List<UpcomingEvent>
 )

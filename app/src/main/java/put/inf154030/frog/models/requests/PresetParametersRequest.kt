@@ -1,5 +1,7 @@
 package put.inf154030.frog.models.requests
 
+import com.google.gson.annotations.SerializedName
+
 data class PresetParametersRequest(
-    val container_type: String
+    @SerializedName("container_type") val containerType: String
 )

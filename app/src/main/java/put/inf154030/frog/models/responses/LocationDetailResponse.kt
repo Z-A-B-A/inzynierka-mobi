@@ -1,8 +1,10 @@
 package put.inf154030.frog.models.responses
 
+import com.google.gson.annotations.SerializedName
+
 data class LocationDetailResponse(
     val id: Int,
     val name: String,
-    val created_at: String,
-    val containers_count: Int
+    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("containers_count") val containersCount: Int
 )

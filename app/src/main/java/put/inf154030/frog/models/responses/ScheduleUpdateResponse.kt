@@ -1,9 +1,11 @@
 package put.inf154030.frog.models.responses
 
+import com.google.gson.annotations.SerializedName
+
 data class ScheduleUpdateResponse(
     val id: Int,
     val name: String,
-    val execution_time: String,
+    @SerializedName("execution_time") val executionTime: String,
     val active: Boolean,
-    val updatedAt: String
+    @SerializedName("updated_at") val updatedAt: String
 )
