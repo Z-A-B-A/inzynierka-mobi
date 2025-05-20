@@ -2,6 +2,7 @@ package put.inf154030.frog.views.activities.containers
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.responses.ContainerSpeciesResponse
+import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -88,8 +90,25 @@ class ManageContainerActivity : ComponentActivity() {
                         intent.putExtra("CONTAINER_ID", containerId)
                         activityResultLauncher.launch(intent)
                     },
-                    onRemoveSpeciesClick = { TODO() },
-                    onSaveClick = { TODO() },
+                    onRemoveSpeciesClick = { speciesId ->
+                        ApiClient.apiService.deleteSpeciesFromContainer(containerId, speciesId)
+                            .enqueue(object : Callback<MessageResponse> {
+                                override fun onResponse(
+                                    call: Call<MessageResponse>,
+                                    response: Response<MessageResponse>
+                                ) {
+                                    Toast.makeText(this@ManageContainerActivity, "Species removed from container", Toast.LENGTH_LONG).show()
+                                    loadSpecies(containerId)
+                                }
+
+                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
+                                    errorMessageSpecies = t.message
+                                }
+                            })
+                    },
+                    onSaveClick = {
+
+                    },
                     isLoadingParams = isLoadingParams,
                     isLoadingSpecies = isLoadingSpecies,
                     errorMessageParams = errorMessageParams,
@@ -169,7 +188,7 @@ class ManageContainerActivity : ComponentActivity() {
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
     onAddSpeciesClick: () -> Unit,
-    onRemoveSpeciesClick: (ContainerSpecies) -> Unit,
+    onRemoveSpeciesClick: (Int) -> Unit,
     onSaveClick: () -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
@@ -385,7 +404,7 @@ fun ManageContainerScreen(
                             EditSpeciesRow(
                                 speciesName = species.name,
                                 speciesCount = species.count,
-                                onDeleteClick = { onRemoveSpeciesClick(species) }
+                                onDeleteClick = { onRemoveSpeciesClick(species.speciesId) }
                             )
                         }
                     }

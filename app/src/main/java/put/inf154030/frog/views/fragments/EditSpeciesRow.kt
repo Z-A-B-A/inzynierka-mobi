@@ -94,13 +94,12 @@ fun EditSpeciesRow (
                 Spacer(modifier = Modifier.size(16.dp))
                 IconButton(
                     onClick = { onDeleteClick() },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = "Add parameter",
-                        tint = Color.Red,
-                        modifier = Modifier.fillMaxSize(0.8f)
+                        tint = Color.Red
                     )
                 }
             }
