@@ -74,7 +74,7 @@ class ScheduleActivity : ComponentActivity() {
                     onEditScheduleClick = { schedule ->
                         val intent = Intent(this, EditScheduleActivity::class.java)
                         intent.putExtra("SCHEDULE_ID", schedule.id)
-                        intent.putExtra("SCHEDULE_EXEC_TIME", schedule.execution_time)
+                        intent.putExtra("SCHEDULE_EXEC_TIME", schedule.executionTime)
                         activityResultLauncher.launch(intent)
                     },
                     schedulesList = schedulesList,
@@ -196,7 +196,7 @@ fun ScheduleScreen(
                                 scheduleName = schedule.name,
                                 frequency = schedule.frequency,
                                 weekDays = schedule.weekdays,
-                                executionTime = schedule.execution_time
+                                executionTime = schedule.executionTime
                             )
                             Spacer(modifier = Modifier.size(16.dp))
                         }

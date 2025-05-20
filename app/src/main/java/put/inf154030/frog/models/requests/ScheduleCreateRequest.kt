@@ -1,9 +1,11 @@
 package put.inf154030.frog.models.requests
 
+import com.google.gson.annotations.SerializedName
+
 data class ScheduleCreateRequest(
     val name: String,
-    val start_date: String,
+    @SerializedName("start_date") val startDate: String,
     val frequency: String,
     val weekdays: String,
-    val execution_time: String
+    @SerializedName("execution_time") val executionTime: String
 )

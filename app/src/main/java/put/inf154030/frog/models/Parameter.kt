@@ -1,14 +1,16 @@
 package put.inf154030.frog.models
 
+import com.google.gson.annotations.SerializedName
+
 data class Parameter(
     val id: Int,
     val name: String,
-    val current_value: Double?,
+    @SerializedName("current_value") val currentValue: Double?,
     val unit: String,
-    val min_value: Double?,
-    val max_value: Double?,
-    val is_controlled: Boolean,
-    val control_device: String?,
-    val updated_at: String?,
-    val parameter_type: String?
+    @SerializedName("min_value") val minValue: Double?,
+    @SerializedName("max_value") val maxValue: Double?,
+    @SerializedName("is_controlled") val isControlled: Boolean,
+    @SerializedName("control_device") val controlDevice: String?,
+    @SerializedName("updated_at") val updatedAt: String?,
+    @SerializedName("parameter_type") val parameterType: String?
 )

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,8 +38,10 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun EditSpeciesRow (
+    speciesId: Int,
     speciesName: String,
     speciesCount: Int,
+    onCountChanged: (Int, String) -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Column (
@@ -56,7 +57,7 @@ fun EditSpeciesRow (
                 text = speciesName,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
             Row (
@@ -68,6 +69,7 @@ fun EditSpeciesRow (
                     value = countValue,
                     onValueChange = { newValue ->
                             countValue = newValue
+                            onCountChanged(speciesId, newValue)
                     },
                     modifier = Modifier
                         .width(72.dp)
@@ -94,13 +96,12 @@ fun EditSpeciesRow (
                 Spacer(modifier = Modifier.size(16.dp))
                 IconButton(
                     onClick = { onDeleteClick() },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = "Add parameter",
-                        tint = Color.Red,
-                        modifier = Modifier.fillMaxSize(0.8f)
+                        tint = Color.Red
                     )
                 }
             }
@@ -120,8 +121,10 @@ fun EditSpeciesRow (
 fun EditSpeciesRowPreview () {
     FrogTheme {
         EditSpeciesRow(
+            speciesId = 1,
             speciesName = "FROG",
             speciesCount = 5,
+            onCountChanged = { _, _ -> },
             onDeleteClick = {  }
         )
     }

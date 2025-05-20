@@ -66,8 +66,8 @@ class EditContainerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
-        val containerName = intent.getStringExtra("CONTAINER_NAME")
-        val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION")
+        val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "Couldn't load container name"
+        val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "Couldn't load container description"
 
         val locationId = intent.getIntExtra("LOCATION_ID", -1)
 
@@ -110,7 +110,6 @@ class EditContainerActivity : ComponentActivity() {
                                     errorMessage = "Network error: ${t.message}"
                                 }
                             })
-                        finish()
                     },
                     onDeleteContainerClick = {
                         val intent = Intent(this, DeleteContainerActivity::class.java)
@@ -159,8 +158,8 @@ fun EditContainerScreen(
     onBackClick: () -> Unit,
     onSaveClick: (String, String, Int) -> Unit,
     onDeleteContainerClick: () -> Unit,
-    containerName: String?,
-    containerDescription: String?,
+    containerName: String,
+    containerDescription: String,
     locationId: Int,
     locationsList: List<Location>
 ) {
@@ -208,20 +207,34 @@ fun EditContainerScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Name",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Name",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${name.length}/32 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 BasicTextField(
-                    value = name!!,
+                    value = name,
                     onValueChange = { newValue ->
-                        name = newValue
-                        errorMessageName = null
+                        if (newValue.length <= 32) {
+                            name = newValue
+                            errorMessageName = null
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -239,9 +252,6 @@ fun EditContainerScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            if (name!!.isEmpty()) {
-                                Text("Name")
-                            }
                             innerTextField()
                         }
                     }
@@ -256,20 +266,34 @@ fun EditContainerScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
-                Text(
-                    text = "Description",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Description",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${description.length}/300 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 BasicTextField(
-                    value = description!!,
+                    value = description,
                     onValueChange = { newValue ->
-                        description = newValue
-                        errorMessageDescription = null
+                        if (newValue.length <= 300) {
+                            description = newValue
+                            errorMessageDescription = null
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -278,7 +302,7 @@ fun EditContainerScreen(
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)
                         ),
-                    singleLine = true,
+                    singleLine = false,
                     textStyle = TextStyle(
                         fontSize = 16.sp
                     ),
@@ -287,15 +311,12 @@ fun EditContainerScreen(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
                             contentAlignment = Alignment.TopStart
                         ) {
-                            if (description!!.isEmpty()) {
-                                Text("Description")
-                            }
                             innerTextField()
                         }
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                errorMessageName?.let {
+                errorMessageDescription?.let {
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.error,
@@ -382,12 +403,12 @@ fun EditContainerScreen(
                 Spacer(modifier = Modifier.size(16.dp))
                 Button(
                     onClick = {
-                        if (name.isNullOrBlank()) {
+                        if (name.isBlank()) {
                             errorMessageName = "Name cannot be empty"
                         } else if (selectedLocation == null) {
                             errorMessage = "Please select a location"
                         } else {
-                            onSaveClick(name!!, description ?: "", selectedLocation!!.id)
+                            onSaveClick(name, description, selectedLocation!!.id)
                         }
                     },
                     modifier = Modifier

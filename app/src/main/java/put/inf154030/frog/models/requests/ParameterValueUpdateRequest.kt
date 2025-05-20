@@ -1,6 +1,8 @@
 package put.inf154030.frog.models.requests
 
+import com.google.gson.annotations.SerializedName
+
 data class ParameterValueUpdateRequest(
     val value: Double,
-    val device_id: String
+    @SerializedName("device_id") val deviceId: String
 )
