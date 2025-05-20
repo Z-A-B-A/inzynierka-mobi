@@ -43,8 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
+import put.inf154030.frog.models.requests.ParameterUpdateRequest
+import put.inf154030.frog.models.requests.UpdateSpeciesCountRequest
 import put.inf154030.frog.models.responses.ContainerSpeciesResponse
+import put.inf154030.frog.models.responses.ContainerSpeciesUpdateResponse
 import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.models.responses.ParameterResponse
 import put.inf154030.frog.models.responses.ParametersResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -67,6 +71,17 @@ class ManageContainerActivity : ComponentActivity() {
     private var errorMessageParams by mutableStateOf<String?>(null)
     private var errorMessageSpecies by mutableStateOf<String?>(null)
     private var containerId = -1
+
+    // Maps to store the updated values
+    private var parameterMinValues = mutableMapOf<Int, String>()
+    private var parameterMaxValues = mutableMapOf<Int, String>()
+    private var speciesCounts = mutableMapOf<Int, String>()
+
+    // Flags to track save status
+    private var isSaving by mutableStateOf(false)
+    private var saveErrorCount = 0
+    private var totalSaveRequests = 0
+    private var completedRequests = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,7 +122,17 @@ class ManageContainerActivity : ComponentActivity() {
                             })
                     },
                     onSaveClick = {
-
+                        saveChanges()
+                        finish()
+                    },
+                    onParameterMinValueChanged = { parameterId, value ->
+                        parameterMinValues[parameterId] = value
+                    },
+                    onParameterMaxValueChanged = { parameterId, value ->
+                        parameterMaxValues[parameterId] = value
+                    },
+                    onSpeciesCountChanged = { speciesId, value ->
+                        speciesCounts[speciesId] = value
                     },
                     isLoadingParams = isLoadingParams,
                     isLoadingSpecies = isLoadingSpecies,
@@ -122,6 +147,125 @@ class ManageContainerActivity : ComponentActivity() {
 
         loadParameters(containerId = containerId)
         loadSpecies(containerId = containerId)
+    }
+
+    private fun saveChanges() {
+        if (isSaving) return // Prevent duplicate requests
+
+        isSaving = true
+        saveErrorCount = 0
+        completedRequests = 0
+
+        // Build the list of parameter update requests
+        val parameterUpdates = parametersList.mapNotNull { parameter ->
+            val minValueStr = parameterMinValues[parameter.id]
+            val maxValueStr = parameterMaxValues[parameter.id]
+
+            // Skip if no changes
+            if (minValueStr == null && maxValueStr == null) return@mapNotNull null
+
+            val minValue = minValueStr?.toDoubleOrNull() ?: parameter.minValue
+            val maxValue = maxValueStr?.toDoubleOrNull() ?: parameter.maxValue
+
+            // Create update request
+            val parameterRequest = ParameterUpdateRequest(
+                name = null, // We're not updating the name
+                minValue = minValue,
+                maxValue = maxValue,
+                isControlled = null // We're not updating this either
+            )
+
+            Pair(parameter.id, parameterRequest)
+        }
+
+        // Build the list of species update requests
+        val speciesUpdates = speciesList.mapNotNull { species ->
+            val countStr = speciesCounts[species.speciesId] ?: return@mapNotNull null
+
+            val count = countStr.toIntOrNull() ?: species.count
+
+            // Skip if no actual change
+            if (count == species.count) return@mapNotNull null
+
+            // Create update request
+            val speciesRequest = UpdateSpeciesCountRequest(count = count)
+
+            Pair(species.speciesId, speciesRequest)
+        }
+
+        totalSaveRequests = parameterUpdates.size + speciesUpdates.size
+
+        // If nothing to update, just return
+        if (totalSaveRequests == 0) {
+            Toast.makeText(this, "No changes to save", Toast.LENGTH_SHORT).show()
+            isSaving = false
+            return
+        }
+
+        // Process parameter updates
+        for ((parameterId, updateRequest) in parameterUpdates) {
+            ApiClient.apiService.updateParameter(parameterId, updateRequest)
+                .enqueue(object : Callback<ParameterResponse> {
+                    override fun onResponse(call: Call<ParameterResponse>, response: Response<ParameterResponse>) {
+                        completedRequests++
+                        if (!response.isSuccessful) {
+                            saveErrorCount++
+                        }
+                        checkSaveCompletion()
+                    }
+
+                    override fun onFailure(call: Call<ParameterResponse>, t: Throwable) {
+                        completedRequests++
+                        saveErrorCount++
+                        checkSaveCompletion()
+                    }
+                })
+        }
+
+        // Process species updates
+        for ((speciesId, updateRequest) in speciesUpdates) {
+            ApiClient.apiService.updateContainerSpecies(containerId, speciesId, updateRequest)
+                .enqueue(object : Callback<ContainerSpeciesUpdateResponse> {
+                    override fun onResponse(
+                        call: Call<ContainerSpeciesUpdateResponse>,
+                        response: Response<ContainerSpeciesUpdateResponse>
+                    ) {
+                        completedRequests++
+                        if (!response.isSuccessful) {
+                            saveErrorCount++
+                        }
+                        checkSaveCompletion()
+                    }
+
+                    override fun onFailure(call: Call<ContainerSpeciesUpdateResponse>, t: Throwable) {
+                        completedRequests++
+                        saveErrorCount++
+                        checkSaveCompletion()
+                    }
+                })
+        }
+    }
+
+    private fun checkSaveCompletion() {
+        if (completedRequests >= totalSaveRequests) {
+            // All requests completed
+            isSaving = false
+
+            if (saveErrorCount > 0) {
+                Toast.makeText(this,
+                    "Not all changes were saved (${saveErrorCount} errors)",
+                    Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "All changes saved successfully", Toast.LENGTH_SHORT).show()
+                finish() // Return to previous screen on success
+            }
+
+            // Reload data if not finishing
+            if (saveErrorCount > 0) {
+                loadParameters(containerId)
+                loadSpecies(containerId)
+            }
+        }
     }
 
     override fun onResume() {
@@ -190,6 +334,9 @@ fun ManageContainerScreen(
     onAddSpeciesClick: () -> Unit,
     onRemoveSpeciesClick: (Int) -> Unit,
     onSaveClick: () -> Unit,
+    onParameterMinValueChanged: (Int, String) -> Unit,
+    onParameterMaxValueChanged: (Int, String) -> Unit,
+    onSpeciesCountChanged: (Int, String) -> Unit,
     isLoadingParams: Boolean,
     isLoadingSpecies: Boolean,
     errorMessageParams: String?,
@@ -302,10 +449,13 @@ fun ManageContainerScreen(
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
                         items(parameters) { parameter ->
-                            EditParameterRow (
+                            EditParameterRow(
+                                parameterId = parameter.id,
                                 parameterName = parameter.name,
-                                parameterMin = parameter.minValue!!,
-                                parameterMax = parameter.maxValue!!
+                                parameterMin = parameter.minValue ?: 0.0,
+                                parameterMax = parameter.maxValue ?: 0.0,
+                                onMinValueChanged = onParameterMinValueChanged,
+                                onMaxValueChanged = onParameterMaxValueChanged
                             )
                         }
                     }
@@ -402,8 +552,10 @@ fun ManageContainerScreen(
                     ) {
                         items(species) { species ->
                             EditSpeciesRow(
+                                speciesId = species.speciesId,
                                 speciesName = species.name,
                                 speciesCount = species.count,
+                                onCountChanged = onSpeciesCountChanged,
                                 onDeleteClick = { onRemoveSpeciesClick(species.speciesId) }
                             )
                         }
@@ -440,6 +592,9 @@ fun ManageContainerActivityPreview () {
             onAddSpeciesClick = {  },
             onRemoveSpeciesClick = {  },
             onSaveClick = {  },
+            onParameterMaxValueChanged = { _, _ -> },
+            onParameterMinValueChanged = { _, _ -> },
+            onSpeciesCountChanged = { _, _ -> },
             isLoadingParams = false,
             isLoadingSpecies = false,
             errorMessageParams = null,

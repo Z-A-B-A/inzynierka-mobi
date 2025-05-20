@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,8 +38,10 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun EditSpeciesRow (
+    speciesId: Int,
     speciesName: String,
     speciesCount: Int,
+    onCountChanged: (Int, String) -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Column (
@@ -68,6 +69,7 @@ fun EditSpeciesRow (
                     value = countValue,
                     onValueChange = { newValue ->
                             countValue = newValue
+                            onCountChanged(speciesId, newValue)
                     },
                     modifier = Modifier
                         .width(72.dp)
@@ -119,8 +121,10 @@ fun EditSpeciesRow (
 fun EditSpeciesRowPreview () {
     FrogTheme {
         EditSpeciesRow(
+            speciesId = 1,
             speciesName = "FROG",
             speciesCount = 5,
+            onCountChanged = { _, _ -> },
             onDeleteClick = {  }
         )
     }
