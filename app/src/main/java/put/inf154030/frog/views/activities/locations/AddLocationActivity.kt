@@ -71,7 +71,9 @@ fun AddLocationScreen (
             )
             BackButton { onBackClick() }
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
@@ -80,9 +82,7 @@ fun AddLocationScreen (
                 var errorMessage by remember { mutableStateOf<String?>(null) }
 
                 Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
@@ -114,7 +114,6 @@ fun AddLocationScreen (
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
                         .size(40.dp)
                         .background(
                             color = MaterialTheme.colorScheme.secondary,

@@ -131,18 +131,35 @@ fun CreateScheduleScreen(
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Name",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
+                Row (
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, bottom = 4.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Name",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 4.dp),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "${name.length}/32 characters",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp, end = 8.dp),
+                        fontFamily = PoppinsFamily
+                    )
+                }
                 BasicTextField(
                     value = name,
-                    onValueChange = { newValue -> name = newValue },
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 32) {
+                            name = newValue
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .size(40.dp)
@@ -314,7 +331,9 @@ fun CreateScheduleScreen(
                 }
             }
             Column (
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {

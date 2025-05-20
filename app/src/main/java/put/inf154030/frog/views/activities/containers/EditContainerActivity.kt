@@ -385,7 +385,9 @@ fun EditContainerScreen(
             }
             Spacer(modifier = Modifier.size(16.dp))
             Column (
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
