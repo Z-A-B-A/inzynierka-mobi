@@ -142,7 +142,7 @@ interface ApiService {
     fun updateContainerSpecies(@Path("container_id") containerId: Int, @Path("species_id") speciesId: Int, @Body request: UpdateSpeciesCountRequest): Call<ContainerSpeciesUpdateResponse>
 
     @DELETE("containers/{container_id}/species/{species_id}")
-    fun removeSpeciesFromContainer(@Path("container_id") containerId: Int, @Path("species_id") speciesId: Int): Call<MessageResponse>
+    fun deleteSpeciesFromContainer(@Path("container_id") containerId: Int, @Path("species_id") speciesId: Int): Call<MessageResponse>
 
     // Notification Endpoints
     @GET("notifications")
