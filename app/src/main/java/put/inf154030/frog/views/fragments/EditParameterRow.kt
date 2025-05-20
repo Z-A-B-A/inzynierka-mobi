@@ -51,7 +51,7 @@ fun EditParameterRow(
                 text = parameterName,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
