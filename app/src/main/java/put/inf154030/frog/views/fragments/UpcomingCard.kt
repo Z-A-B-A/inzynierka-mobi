@@ -27,7 +27,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun NotificationCard (
+fun UpcomingCard (
     containerName: String,
     eventName: String,
     scheduledFor: String
@@ -100,7 +100,7 @@ fun NotificationCard (
 @Composable
 fun NotificationCardPreview () {
     FrogTheme {
-        NotificationCard(
+        UpcomingCard(
             containerName = "Terrarium Gekona",
             eventName = "Karmienie",
             scheduledFor = "2025-03-23T18:00:00Z"
