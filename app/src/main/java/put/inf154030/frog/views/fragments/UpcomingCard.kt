@@ -98,7 +98,7 @@ fun UpcomingCard (
 
 @Preview
 @Composable
-fun NotificationCardPreview () {
+fun UpcomingCardPreview () {
     FrogTheme {
         UpcomingCard(
             containerName = "Terrarium Gekona",
