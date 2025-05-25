@@ -32,18 +32,18 @@ import java.time.format.DateTimeFormatter
 fun NotificationCard (
     eventName: String,
     containerName: String,
-    scheduledFor: String,
+//    scheduledFor: String,
     onMarkAsReadClick: () -> Unit
 ) {
-    val formattedDate = try {
-        val formatter = DateTimeFormatter.ISO_DATE_TIME
-        val parsed = OffsetDateTime.parse(scheduledFor, formatter)
-        val outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")
-        parsed.format(outputFormatter)
-    } catch (e: Exception) {
-        // Fallback to original string if parsing fails
-        scheduledFor
-    }
+//    val formattedDate = try {
+//        val formatter = DateTimeFormatter.ISO_DATE_TIME
+//        val parsed = OffsetDateTime.parse(scheduledFor, formatter)
+//        val outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")
+//        parsed.format(outputFormatter)
+//    } catch (e: Exception) {
+//        // Fallback to original string if parsing fails
+//        scheduledFor
+//    }
 
     Card (
         modifier = Modifier
@@ -101,15 +101,15 @@ fun NotificationCard (
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = formattedDate,
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+//                Text(
+//                    text = formattedDate,
+//                    color = MaterialTheme.colorScheme.secondary,
+//                    fontFamily = PoppinsFamily,
+//                    fontWeight = FontWeight.Medium,
+//                    fontSize = 16.sp,
+//                    maxLines = 1,
+//                    overflow = TextOverflow.Ellipsis
+//                )
             }
         }
     }
@@ -122,7 +122,7 @@ fun NotificationCardPreview () {
         NotificationCard(
             eventName = "Karmienie",
             containerName = "Terrarium Gekona",
-            scheduledFor = "2025-03-23T18:00:00Z",
+//            scheduledFor = "2025-03-23T18:00:00Z",
             onMarkAsReadClick = {}
         )
     }

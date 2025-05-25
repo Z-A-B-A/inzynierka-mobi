@@ -17,24 +17,24 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun NotificationSetting (
-    notificationName: String,
     isOn: Boolean
 ) {
+    var switchOn = isOn
     Row (
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = notificationName,
+            text = "Allow notifications",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             color = MaterialTheme.colorScheme.secondary
         )
         Switch(
-            checked = isOn,
-            onCheckedChange = {  }
+            checked = switchOn,
+            onCheckedChange = { switchOn = !switchOn }
         )
     }
 }
@@ -44,7 +44,6 @@ fun NotificationSetting (
 fun NotificationSettingPreview() {
     FrogTheme {
         NotificationSetting(
-            notificationName = "Karmienie",
             isOn = true
         )
     }
