@@ -30,6 +30,7 @@ import put.inf154030.frog.theme.PoppinsFamily
 class InitialActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             FrogTheme {
                 InitialScreen(

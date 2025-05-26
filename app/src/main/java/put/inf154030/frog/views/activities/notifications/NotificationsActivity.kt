@@ -47,7 +47,6 @@ import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
 import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
 import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.services.NotificationManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
@@ -69,7 +68,6 @@ class NotificationsActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var notificationsEnabled by mutableStateOf(true)
-    private val notificationManager by lazy { NotificationManager(this) }
     private lateinit var updateReceiver: BroadcastReceiver
 
     // Modern permission request launcher
@@ -77,20 +75,10 @@ class NotificationsActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         notificationsEnabled = isGranted
-        notificationManager.setNotificationsEnabled(isGranted)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Check notification permission on first run
-        if (notificationManager.isFirstRun()) {
-            checkNotificationPermission()
-            notificationManager.setFirstRunCompleted()
-        }
-
-        // Get current notification setting
-        notificationsEnabled = notificationManager.areNotificationsEnabled()
 
         // Register for notification updates
         updateReceiver = object : BroadcastReceiver() {
@@ -126,7 +114,6 @@ class NotificationsActivity : ComponentActivity() {
                     notificationsEnabled = notificationsEnabled,
                     onNotificationsToggle = { enabled ->
                         notificationsEnabled = enabled
-                        notificationManager.setNotificationsEnabled(enabled)
                     },
                     onMarkAllAsReadClick = { markAllAsRead() },
                     onMarkAsReadClick = { id -> markAsRead(id) }

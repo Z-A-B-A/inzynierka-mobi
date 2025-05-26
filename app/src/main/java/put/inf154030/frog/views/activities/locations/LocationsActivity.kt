@@ -35,6 +35,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.views.fragments.LocationCard
 import put.inf154030.frog.views.fragments.SideMenu
@@ -43,6 +46,7 @@ import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.services.NotificationService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import retrofit2.Call
@@ -65,6 +69,11 @@ class LocationsActivity : ComponentActivity() {
         ) {
             // When returning from AddLocationActivity, refresh the locations
             loadLocations()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val service = NotificationService(applicationContext)
+            service.showNotification()
         }
 
         setContent {
