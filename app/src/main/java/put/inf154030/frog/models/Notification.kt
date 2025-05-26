@@ -7,6 +7,7 @@ data class Notification(
     val message: String,
     val read: Boolean,
     @SerializedName("created_at") val createdAt: String,
+    @SerializedName("execution_time") val executionTime: String,
     @SerializedName("schedule_id") val scheduleId: Int?,
     val schedule: ScheduleReference?,
     val container: ContainerReference?

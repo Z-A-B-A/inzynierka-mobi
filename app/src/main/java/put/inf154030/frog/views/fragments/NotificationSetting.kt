@@ -17,10 +17,10 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun NotificationSetting (
-    isOn: Boolean
+    isOn: Boolean,
+    onToggle: (Boolean) -> Unit
 ) {
-    var switchOn = isOn
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -33,8 +33,8 @@ fun NotificationSetting (
             color = MaterialTheme.colorScheme.secondary
         )
         Switch(
-            checked = switchOn,
-            onCheckedChange = { switchOn = !switchOn }
+            checked = isOn,
+            onCheckedChange = { onToggle(it) }
         )
     }
 }
@@ -44,7 +44,8 @@ fun NotificationSetting (
 fun NotificationSettingPreview() {
     FrogTheme {
         NotificationSetting(
-            isOn = true
+            isOn = true,
+            onToggle = {}
         )
     }
 }

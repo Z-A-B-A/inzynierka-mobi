@@ -32,23 +32,23 @@ import java.time.format.DateTimeFormatter
 fun NotificationCard (
     eventName: String,
     containerName: String,
-//    scheduledFor: String,
+    executionTime: String,
     onMarkAsReadClick: () -> Unit
 ) {
-//    val formattedDate = try {
-//        val formatter = DateTimeFormatter.ISO_DATE_TIME
-//        val parsed = OffsetDateTime.parse(scheduledFor, formatter)
-//        val outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")
-//        parsed.format(outputFormatter)
-//    } catch (e: Exception) {
-//        // Fallback to original string if parsing fails
-//        scheduledFor
-//    }
+    val formattedDate = try {
+        val formatter = DateTimeFormatter.ISO_DATE_TIME
+        val parsed = OffsetDateTime.parse(executionTime, formatter)
+        val outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")
+        parsed.format(outputFormatter)
+    } catch (e: Exception) {
+        // Fallback to original string if parsing fails
+        executionTime
+    }
 
     Card (
         modifier = Modifier
             .fillMaxWidth()
-            .height(96.dp),
+            .height(64.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary
@@ -69,7 +69,7 @@ fun NotificationCard (
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -79,14 +79,14 @@ fun NotificationCard (
                     color = MaterialTheme.colorScheme.tertiary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable { onMarkAsReadClick() }
                 )
             }
-            Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(4.dp))
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -96,20 +96,20 @@ fun NotificationCard (
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-//                Text(
-//                    text = formattedDate,
-//                    color = MaterialTheme.colorScheme.secondary,
-//                    fontFamily = PoppinsFamily,
-//                    fontWeight = FontWeight.Medium,
-//                    fontSize = 16.sp,
-//                    maxLines = 1,
-//                    overflow = TextOverflow.Ellipsis
-//                )
+                Text(
+                    text = formattedDate,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
@@ -122,7 +122,7 @@ fun NotificationCardPreview () {
         NotificationCard(
             eventName = "Karmienie",
             containerName = "Terrarium Gekona",
-//            scheduledFor = "2025-03-23T18:00:00Z",
+            executionTime = "2025-03-23T18:00:00Z",
             onMarkAsReadClick = {}
         )
     }
