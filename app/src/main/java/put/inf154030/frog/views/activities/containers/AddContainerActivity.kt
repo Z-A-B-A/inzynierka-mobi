@@ -61,11 +61,10 @@ class AddContainerActivity : ComponentActivity() {
                 // Main screen composable
                 AddContainerScreen(
                     onBackClick = { finish() },
-                    onCodeScanned = { code, type ->
+                    onCodeScanned = { code ->
                         // Navigate to next step with scanned/entered code and type
                         val intent = Intent(this, AddContainerNextStepActivity::class.java)
                         intent.putExtra("CONTAINER_CODE", code)
-                        intent.putExtra("CONTAINER_TYPE", type)
                         intent.putExtra("LOCATION_ID", locationId)
                         startActivity(intent)
                         finish()
@@ -83,7 +82,7 @@ class AddContainerActivity : ComponentActivity() {
 @Composable
 fun AddContainerScreen(
     onBackClick: () -> Unit,
-    onCodeScanned: (String, String) -> Unit,
+    onCodeScanned: (String) -> Unit,
     requestCameraPermission: () -> Unit
 ) {
     val context = LocalContext.current
@@ -121,13 +120,8 @@ fun AddContainerScreen(
                     onCodeDetected = { scannedCode ->
                         if (isScanning) return@CameraPreviewSection
                         code = scannedCode
-                        val type = detectContainerType(code)
-                        if (type == "invalid_code") {
-                            errorMessage = "Invalid code"
-                        } else {
-                            isScanning = true
-                            onCodeScanned(code, type)
-                        }
+                        isScanning = true
+                        onCodeScanned(code)
                     }
                 )
             } else {
@@ -160,15 +154,10 @@ fun AddContainerScreen(
                             errorMessage = "Container code cannot be empty"
                             return@ManualEntrySection
                         }
+
                         isLoading = true
                         errorMessage = null
-                        val type = detectContainerType(code)
-                        if (type == "invalid_code") {
-                            errorMessage = "Invalid code"
-                            isLoading = false
-                        } else {
-                            onCodeScanned(code, type)
-                        }
+                        onCodeScanned(code)
                     }
                 )
             }
@@ -358,13 +347,6 @@ private fun ActionButtonsSection(
     }
 }
 
-// Helper function for container type detection based on code suffix
-private fun detectContainerType(code: String): String = when {
-    code.endsWith("a") -> "aquarium"
-    code.endsWith("t") -> "terrarium"
-    else -> "invalid_code"
-}
-
 // Preview for Compose UI
 @androidx.compose.ui.tooling.preview.Preview
 @Composable
@@ -372,7 +354,7 @@ fun AddContainerActivityPreview() {
     FrogTheme {
         AddContainerScreen(
             onBackClick = {},
-            onCodeScanned = { _, _ -> },
+            onCodeScanned = { _ -> },
             requestCameraPermission = {}
         )
     }
