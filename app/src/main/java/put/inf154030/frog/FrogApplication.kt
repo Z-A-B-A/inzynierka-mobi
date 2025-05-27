@@ -16,6 +16,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import put.inf154030.frog.local_notification_base.AppDatabase
 import put.inf154030.frog.services.NotificationService
 import put.inf154030.frog.workers.NotificationWorker
 import java.time.Duration
@@ -26,23 +27,14 @@ class FrogApplication : Application() {
         super.onCreate()
         SessionManager.init(applicationContext)
 
+        // Initialize database
+        AppDatabase.getDatabase(applicationContext)
+
+        // Create notification channel
         createNotificationChannel()
 
-        val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(
-            repeatInterval = 5,
-            repeatIntervalTimeUnit = TimeUnit.MINUTES,
-            flexTimeInterval = 1,
-            flexTimeIntervalUnit = TimeUnit.MINUTES
-        ).setBackoffCriteria(
-            backoffPolicy = BackoffPolicy.LINEAR,
-            duration = Duration.ofSeconds(15)
-        ).build()
-        val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueueUniquePeriodicWork(
-            "notificationWork",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
+        // Schedule periodic worker for checking notifications
+        scheduleNotificationWorker()
     }
 
     private fun createNotificationChannel() {
@@ -54,5 +46,36 @@ class FrogApplication : Application() {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun scheduleNotificationWorker() {
+        // Constraints to run the worker
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // Create a periodic work request that runs every 15 minutes
+        val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(
+            5, TimeUnit.MINUTES,  // Repeat interval
+            30, TimeUnit.SECONDS    // Flex interval
+        )
+            .setConstraints(constraints)
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                Duration.ofMinutes(1)
+            )
+            .build()
+
+        // Schedule the work
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniquePeriodicWork(
+                "notification_work",
+                ExistingPeriodicWorkPolicy.KEEP,
+                periodicWorkRequest
+            )
+
+        // For immediate tasks like showing already saved notifications when app starts
+        val oneTimeWorkRequest = OneTimeWorkRequestBuilder<NotificationWorker>().build()
+        WorkManager.getInstance(applicationContext).enqueue(oneTimeWorkRequest)
     }
 }

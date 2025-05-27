@@ -1,0 +1,30 @@
+package put.inf154030.frog.local_notification_base
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import put.inf154030.frog.local_notification_base.dao.NotificationDao
+import put.inf154030.frog.local_notification_base.model.PendingNotification
+
+@Database(entities = [PendingNotification::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun notificationDao(): NotificationDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "frog_database"
+                ).build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}
