@@ -1,6 +1,5 @@
 package put.inf154030.frog.views.fragments
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,26 +27,25 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun NotificationCard (
-    eventName: String,
+fun UpcomingCard (
     containerName: String,
-    executionTime: String,
-    onMarkAsReadClick: () -> Unit
+    eventName: String,
+    scheduledFor: String
 ) {
     val formattedDate = try {
         val formatter = DateTimeFormatter.ISO_DATE_TIME
-        val parsed = OffsetDateTime.parse(executionTime, formatter)
+        val parsed = OffsetDateTime.parse(scheduledFor, formatter)
         val outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")
         parsed.format(outputFormatter)
     } catch (e: Exception) {
         // Fallback to original string if parsing fails
-        executionTime
+        scheduledFor
     }
 
     Card (
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp),
+            .height(96.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary
@@ -60,6 +57,18 @@ fun NotificationCard (
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center
         ) {
+            Text(
+                text = containerName,
+                color = MaterialTheme.colorScheme.secondary,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.size(16.dp))
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -68,45 +77,17 @@ fun NotificationCard (
                     text = eventName,
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "mark as read",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable { onMarkAsReadClick() }
-                )
-            }
-            Spacer(modifier = Modifier.size(4.dp))
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = containerName,
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = formattedDate,
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
+                    fontSize = 16.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -117,13 +98,12 @@ fun NotificationCard (
 
 @Preview
 @Composable
-fun NotificationCardPreview () {
+fun UpcomingCardPreview () {
     FrogTheme {
-        NotificationCard(
-            eventName = "Karmienie",
+        UpcomingCard(
             containerName = "Terrarium Gekona",
-            executionTime = "2025-03-23T18:00:00Z",
-            onMarkAsReadClick = {}
+            eventName = "Karmienie",
+            scheduledFor = "2025-03-23T18:00:00Z"
         )
     }
 }

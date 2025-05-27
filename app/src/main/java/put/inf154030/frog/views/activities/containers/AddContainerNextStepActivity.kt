@@ -49,8 +49,7 @@ class AddContainerNextStepActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val locationId = intent.getIntExtra("LOCATION_ID", -1)
-//        val containerCode = intent.getStringExtra("CONTAINER_CODE")
-        val containerType = intent.getStringExtra("CONTAINER_TYPE")
+        val containerCode = intent.getStringExtra("CONTAINER_CODE") ?: "Invalid Code"
 
         setContent {
             FrogTheme {
@@ -63,7 +62,7 @@ class AddContainerNextStepActivity : ComponentActivity() {
                         setLoading,
                         setErrorName->
                         // Prepare request object
-                        val containerCreateRequest = ContainerCreateRequest(name, containerType!!, description)
+                        val containerCreateRequest = ContainerCreateRequest(name, description, containerCode)
 
                         setLoading(true)
                         // Make API call to create the container

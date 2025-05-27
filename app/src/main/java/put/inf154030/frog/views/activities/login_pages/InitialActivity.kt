@@ -1,6 +1,8 @@
 package put.inf154030.frog.views.activities.login_pages
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,6 +32,7 @@ import put.inf154030.frog.theme.PoppinsFamily
 class InitialActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             FrogTheme {
                 InitialScreen(

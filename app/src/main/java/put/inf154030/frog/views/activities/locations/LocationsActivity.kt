@@ -1,7 +1,9 @@
 package put.inf154030.frog.views.activities.locations
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,15 +38,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
-import put.inf154030.frog.views.fragments.LocationCard
-import put.inf154030.frog.views.fragments.SideMenu
-import put.inf154030.frog.views.fragments.TopNavigationBar
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.LocationCard
+import put.inf154030.frog.views.fragments.SideMenu
+import put.inf154030.frog.views.fragments.TopNavigationBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -56,8 +58,19 @@ class LocationsActivity : ComponentActivity() {
     private var errorMessage by mutableStateOf<String?>(null)
     private val userName = SessionManager.getUserName()
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _: Boolean ->
+        // Optional: handle the result if needed
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Request notification permission (API 33+)
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         // Initialize activity result launcher
         addLocationLauncher = registerForActivityResult(
