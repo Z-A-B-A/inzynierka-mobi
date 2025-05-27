@@ -3,6 +3,7 @@ package put.inf154030.frog.network
 import put.inf154030.frog.models.requests.AddSpeciesRequest
 import put.inf154030.frog.models.requests.ContainerCreateRequest
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
+import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.requests.LocationCreateRequest
 import put.inf154030.frog.models.requests.LocationUpdateRequest
 import put.inf154030.frog.models.requests.LoginRequest
@@ -60,6 +61,9 @@ interface ApiService {
 
     @POST("auth/register")
     fun registerUser(@Body registerRequest: RegisterRequest): Call<RegisterResponse>
+
+    @POST("auth/device-token")
+    fun updateDeviceToken(@Body request: DeviceTokenRequest): Call<MessageResponse>
 
     // Location Endpoints
     @GET("locations")

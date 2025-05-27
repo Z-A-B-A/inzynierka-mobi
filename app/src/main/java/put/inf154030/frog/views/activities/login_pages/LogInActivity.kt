@@ -2,6 +2,7 @@ package put.inf154030.frog.views.activities.login_pages
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,17 +40,24 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.views.activities.locations.LocationsActivity
 import put.inf154030.frog.models.requests.LoginRequest
 import put.inf154030.frog.models.responses.AuthResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.utils.dataStore
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlinx.coroutines.flow.first
+import put.inf154030.frog.models.requests.DeviceTokenRequest
+import put.inf154030.frog.models.responses.MessageResponse
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +66,7 @@ class LogInActivity : ComponentActivity() {
             FrogTheme {
                 LogInScreen(
                     onLoginSuccess = {
+                        sendFcmTokenToServer()
                         val intent = Intent(this, LocationsActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -66,11 +75,39 @@ class LogInActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun sendFcmTokenToServer() {
+        lifecycleScope.launch {
+            val token = applicationContext.dataStore.data.first()[FrogFirebaseMessagingService.FCM_TOKEN_KEY]
+            token?.let {
+                try {
+                    // Create a proper request body with the device_token field
+                    val tokenRequest = DeviceTokenRequest(deviceToken = it)
+
+                    ApiClient.apiService.updateDeviceToken(tokenRequest).enqueue(object : Callback<MessageResponse> {
+                        override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
+                            if (response.isSuccessful) {
+                                Log.d("FCM", "Token sent to server successfully")
+                            } else {
+                                Log.e("FCM", "Failed to send token: ${response.errorBody()?.string()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
+                            Log.e("FCM", "Failed to send token to server", t)
+                        }
+                    })
+                } catch (e: Exception) {
+                    Log.e("FCM", "Error setting up token request", e)
+                }
+            }
+        }
+    }
 }
 
 @Composable
 fun LogInScreen(
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -226,7 +263,6 @@ fun LogInScreen(
                                                     user.email
                                                 )
                                             }
-
                                             onLoginSuccess()
 
                                         } ?: run {
