@@ -38,7 +38,11 @@ class FrogApplication : Application() {
             duration = Duration.ofSeconds(15)
         ).build()
         val workManager = WorkManager.getInstance(applicationContext)
-        workManager.enqueue(workRequest)
+        workManager.enqueueUniquePeriodicWork(
+            "notificationWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
     private fun createNotificationChannel() {
