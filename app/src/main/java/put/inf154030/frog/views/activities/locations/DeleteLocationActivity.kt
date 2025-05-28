@@ -25,37 +25,88 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.TopHeaderBar
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.network.ApiClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class DeleteLocationActivity : AppCompatActivity() {
+// Activity for confirming and executing location deletion
+class DeleteLocationActivity : ComponentActivity() {
+    // State for loading and error message
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
-
+        
+        // Get the location ID from intent
         val locationId = intent.getIntExtra("LOCATION_ID", -1)
 
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
                 DeleteLocationScreen(
-                    onYesClick = { finish() },
-                    onNoClick = { finish() }
+                    onYesClick = { 
+                        isLoading = true
+                        errorMessage = null
+                        // Call API to delete location
+                        ApiClient.apiService.deleteLocation(locationId)
+                            .enqueue(object : Callback<MessageResponse> {
+                                override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish() // Close activity on success
+                                    } else {
+                                        // Show error from API
+                                        errorMessage = "Failed to delete location: ${response.message()}"
+                                    }
+                                }
+                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
+                                    isLoading = false
+                                    // Show network error
+                                    errorMessage = "Network error: ${t.message}"
+                                }
+                            })
+                     },
+                    onNoClick = { finish() }, // Cancel and close activity
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 }
 
+// Composable for the delete confirmation UI
 @Composable
 fun DeleteLocationScreen (
     onYesClick: () -> Unit,
-    onNoClick: () -> Unit
+    onNoClick: () -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // Show loading spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            return
+        }
         Column {
-            TopHeaderBar(
-                title = "Delete Location"
-            )
+            TopHeaderBar(title = "Delete Location")
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -63,6 +114,16 @@ fun DeleteLocationScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                // Show error message if present
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+                // Confirmation question
                 Text(
                     text = "Are you sure?",
                     color = MaterialTheme.colorScheme.secondary,
@@ -70,6 +131,7 @@ fun DeleteLocationScreen (
                     fontWeight = FontWeight.Bold,
                     fontSize = 36.sp,
                 )
+                // Warning about irreversibility
                 Text(
                     text = "This operation can not be undone",
                     color = MaterialTheme.colorScheme.secondary,
@@ -78,13 +140,12 @@ fun DeleteLocationScreen (
                     fontSize = 14.sp,
                 )
                 Spacer(modifier = Modifier.size(64.dp))
+                // Yes/No buttons
                 Row {
                     Button(
                         modifier = Modifier.width(128.dp),
-                        onClick = {
-                            onYesClick()
-                            TODO("Waiting for API request")
-                        }
+                        onClick = { onYesClick() },
+                        enabled = !isLoading // Disable while loading
                     ) {
                         Text(
                             text = "Yes",
@@ -108,13 +169,16 @@ fun DeleteLocationScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun DeleteLocationPreview() {
     FrogTheme {
         DeleteLocationScreen(
             onYesClick = {  },
-            onNoClick = {  }
+            onNoClick = {  },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
