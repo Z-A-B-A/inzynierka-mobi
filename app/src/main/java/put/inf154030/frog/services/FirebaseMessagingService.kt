@@ -7,23 +7,21 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import put.inf154030.frog.R
-import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.utils.dataStore
-import put.inf154030.frog.views.activities.login_pages.InitialActivity
 import put.inf154030.frog.views.activities.login_pages.LogInActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class FrogFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token")
+        val NOTIFICATIONS_ENABLED_KEY = booleanPreferencesKey("notifications_enabled")
         private const val CHANNEL_ID = "frog_notifications"
         private const val NOTIFICATION_ID = 1
     }
@@ -43,6 +41,16 @@ class FrogFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d("FCM", "From: ${remoteMessage.from}")
+
+        // Check if notifications are enabled
+        val notificationsEnabled = runBlocking {
+            applicationContext.dataStore.data.first()[NOTIFICATIONS_ENABLED_KEY] ?: true
+        }
+
+        if (!notificationsEnabled) {
+            Log.d("FCM", "Notifications are disabled, ignoring message")
+            return
+        }
 
         // Log the data payload
         if (remoteMessage.data.isNotEmpty()) {

@@ -1,12 +1,10 @@
 package put.inf154030.frog.views.activities.notifications
 
 import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,7 +37,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.Notification
 import put.inf154030.frog.models.ScheduleReference
@@ -47,8 +46,10 @@ import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
 import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.NotificationCard
 import put.inf154030.frog.views.fragments.NotificationSetting
@@ -56,19 +57,12 @@ import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.time.Instant
 
 class NotificationsActivity : ComponentActivity() {
-
-    companion object {
-        const val ACTION_NOTIFICATION_UPDATED = "put.inf154030.frog.NOTIFICATION_UPDATED"
-    }
-
     private var notificationsList by mutableStateOf<List<Notification>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var notificationsEnabled by mutableStateOf(true)
-    private lateinit var updateReceiver: BroadcastReceiver
 
     // Modern permission request launcher
     private val requestPermissionLauncher = registerForActivityResult(
@@ -80,70 +74,63 @@ class NotificationsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Register for notification updates
-        updateReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == ACTION_NOTIFICATION_UPDATED) {
-                    loadNotifications()
-                }
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(
-                updateReceiver,
-                IntentFilter(ACTION_NOTIFICATION_UPDATED),
-                Context.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            ContextCompat.registerReceiver(
-                this,
-                updateReceiver,
-                IntentFilter(ACTION_NOTIFICATION_UPDATED),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-        }
-
+        checkNotificationPermission()
         loadNotifications()
 
         setContent {
             FrogTheme {
                 NotificationsScreen(
                     onBackClick = { finish() },
-                    notificationsList = filterNotifications(),
+                    notificationsList = notificationsList,
                     notificationsEnabled = notificationsEnabled,
                     onNotificationsToggle = { enabled ->
                         notificationsEnabled = enabled
+                        if (enabled) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        } else {
+                            // When toggling off, just update preference - can't revoke permission programmatically
+                            updateNotificationsEnabledPreference(false)
+
+                            // Optionally open app settings if you want user to manually revoke permission
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+//                                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+//                                PackageManager.PERMISSION_GRANTED) {
+//
+//                                // Optionally open settings
+//                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+//                                 val uri = Uri.fromParts("package", packageName, null)
+//                                 intent.data = uri
+//                                 startActivity(intent)
+//                            }
+                        }
                     },
-                    onMarkAllAsReadClick = { markAllAsRead() },
-                    onMarkAsReadClick = { id -> markAsRead(id) }
+                    onMarkAllAsReadClick = {
+                        markAllAsRead()
+                    },
+                    onMarkAsReadClick = { id ->
+                        markAsRead(id)
+                    }
                 )
             }
         }
     }
 
-    override fun onDestroy() {
-        try {
-            unregisterReceiver(updateReceiver)
-        } catch (e: Exception) {
-            // Handle possible IllegalArgumentException if receiver wasn't registered
-        }
-        super.onDestroy()
-    }
-
-    // Updated broadcast sending methods
-    private fun sendNotificationUpdateBroadcast() {
-        val intent = Intent(ACTION_NOTIFICATION_UPDATED).apply {
-            // Make the intent explicit by setting the package
-            setPackage(packageName)
-        }
-        sendBroadcast(intent)
-    }
-
     private fun checkNotificationPermission() {
-        // On Android 13+, request notification permission using the Activity Result API
+        // On Android 13+, check notification permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            notificationsEnabled = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED
+            updateNotificationsEnabledPreference(notificationsEnabled)
+        }
+    }
+
+    private fun updateNotificationsEnabledPreference(enabled: Boolean) = lifecycleScope.launch {
+        applicationContext.dataStore.updateData { preferences ->
+            val mutablePreferences = preferences.toMutablePreferences()
+            mutablePreferences[FrogFirebaseMessagingService.NOTIFICATIONS_ENABLED_KEY] = enabled
+            mutablePreferences
         }
     }
 
@@ -172,20 +159,6 @@ class NotificationsActivity : ComponentActivity() {
             })
     }
 
-    private fun filterNotifications(): List<Notification> {
-        val now = Instant.now()
-        return notificationsList.filter { notification ->
-            try {
-                // Only include notifications with execution time in past or present
-                val executionTime = Instant.parse(notification.executionTime)
-                !notification.read && !executionTime.isAfter(now)
-            } catch (e: Exception) {
-                // If we can't parse time, include it anyway
-                !notification.read
-            }
-        }
-    }
-
     private fun markAsRead(notificationId: Int) {
         ApiClient.apiService.markNotificationAsRead(notificationId)
             .enqueue(object : Callback<NotificationUpdateResponse> {
@@ -194,18 +167,7 @@ class NotificationsActivity : ComponentActivity() {
                     response: Response<NotificationUpdateResponse>
                 ) {
                     if (response.isSuccessful) {
-                        notificationsList = notificationsList.map {
-                            if (it.id == notificationId) it.copy(read = true) else it
-                        }
-
-                        // Use the helper method
-                        sendNotificationUpdateBroadcast()
-
-                        Toast.makeText(
-                            this@NotificationsActivity,
-                            "Notification marked as read",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        loadNotifications()
                     } else {
                         // Error handling...
                     }
@@ -226,20 +188,7 @@ class NotificationsActivity : ComponentActivity() {
                     response: Response<NotificationMarkAllReadResponse>
                 ) {
                     if (response.isSuccessful) {
-                        notificationsList = notificationsList.map { it.copy(read = true) }
-
-                        // Cancel all notifications in system tray
-                        val notificationManagerCompat = androidx.core.app.NotificationManagerCompat.from(this@NotificationsActivity)
-                        notificationManagerCompat.cancelAll()
-
-                        // Use the helper method
-                        sendNotificationUpdateBroadcast()
-
-                        Toast.makeText(
-                            this@NotificationsActivity,
-                            "All notifications marked as read",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        loadNotifications()
                     } else {
                         // Error handling...
                     }
