@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +20,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -118,6 +117,8 @@ class EditContainerActivity : ComponentActivity() {
                         startActivity(intent)
                         finish()
                     },
+                    setLoading = { loading -> isLoading = loading },
+                    setErrorMessage = { message -> errorMessage = message },
                     containerName = containerName,
                     containerDescription = containerDescription,
                     locationsList = locationsList,
@@ -164,6 +165,8 @@ fun EditContainerScreen(
     onBackClick: () -> Unit,
     onSaveClick: (String, String, Int) -> Unit,
     onDeleteContainerClick: () -> Unit,
+    setLoading: (Boolean) -> Unit,
+    setErrorMessage: (String) -> Unit,
     containerName: String,
     containerDescription: String,
     locationId: Int,
@@ -175,6 +178,16 @@ fun EditContainerScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // Local state for form fields and validation
+        var name by remember { mutableStateOf(containerName) }
+        var description by remember { mutableStateOf(containerDescription) }
+        var errorMessageName by remember { mutableStateOf<String?>(null) }
+        var errorMessageDescription by remember { mutableStateOf<String?>(null) }
+
+        // State for location selection
+        var isLocationDropdownExpanded by remember { mutableStateOf(false) }
+        var selectedLocation by remember { mutableStateOf<Location?>(null) }
+
         // Show loading spinner if loading
         if (isLoading) {
             Box(
@@ -183,26 +196,15 @@ fun EditContainerScreen(
             ) {
                 CircularProgressIndicator()
             }
-            return
         }
         Column {
             TopHeaderBar(title = "Edit Container")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(16.dp))
 
-            // Local state for form fields and validation
-            var name by remember { mutableStateOf(containerName) }
-            var description by remember { mutableStateOf(containerDescription) }
-            var errorMessageName by remember { mutableStateOf<String?>(null) }
-            var errorMessageDescription by remember { mutableStateOf<String?>(null) }
-
-            // State for location selection
-            var isLocationDropdownExpanded by remember { mutableStateOf(false) }
-            var selectedLocation by remember { mutableStateOf<Location?>(null) }
-
             // Load locations when the screen is created
             LaunchedEffect(locationsList) {
-                isLoading = false
+                setLoading(false)
                 val currentLocation = locationsList.find { it.id == locationId }
                 selectedLocation = currentLocation ?: locationsList.firstOrNull()
             }
@@ -436,7 +438,7 @@ fun EditContainerScreen(
                         } else if (description.isBlank()) {
                             errorMessageDescription = "Description cannot be empty"
                         } else if (selectedLocation == null) {
-                            errorMessage = "Please select a location"
+                            setErrorMessage("Please select a location")
                         } else {
                             errorMessageName = null
                             errorMessageDescription = null
@@ -469,13 +471,17 @@ fun EditContainerActivityPreview () {
             onBackClick = {  },
             onSaveClick = { _, _, _ -> },
             onDeleteContainerClick = {  },
+            setLoading = { _ -> },
+            setErrorMessage = { _ -> },
             containerName = "Akwarium",
             containerDescription = "leleleleisonrgjnbtehib",
             locationId = 1,
             locationsList = listOf(
                 Location(1, "Sklep", ""),
                 Location(2, "Zoo", "")
-            )
+            ),
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
