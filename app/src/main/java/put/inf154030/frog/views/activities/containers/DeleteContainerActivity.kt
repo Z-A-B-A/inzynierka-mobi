@@ -104,9 +104,7 @@ fun DeleteContainerScreen(
             return
         }
         Column {
-            TopHeaderBar(
-                title = "Delete Container"
-            )
+            TopHeaderBar(title = "Delete Container")
             Column (
                 modifier = Modifier
                     .fillMaxSize()
