@@ -62,23 +62,25 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for managing container parameters and species
 class ManageContainerActivity : ComponentActivity() {
-    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    // ActivityResultLauncher for adding species
+    private lateinit var speciesLauncher: ActivityResultLauncher<Intent>
+    // State for parameters and species
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
     private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
-    private var isLoadingParams by mutableStateOf(false)
-    private var isLoadingSpecies by mutableStateOf(false)
+    private var isLoading by mutableStateOf(false)
     private var errorMessageParams by mutableStateOf<String?>(null)
     private var errorMessageSpecies by mutableStateOf<String?>(null)
     private var containerId = -1
-
     // Maps to store the updated values
     private var parameterMinValues = mutableMapOf<Int, String>()
     private var parameterMaxValues = mutableMapOf<Int, String>()
     private var speciesCounts = mutableMapOf<Int, String>()
-
-    // Flags to track save status
-    private var isSaving by mutableStateOf(false)
+    // Sets to track invalid input fields
+    private var invalidParameterInputs = mutableSetOf<Int>()
+    private var invalidSpeciesInputs = mutableSetOf<Int>()
+    // Save status tracking
     private var saveErrorCount = 0
     private var totalSaveRequests = 0
     private var completedRequests = 0
@@ -89,10 +91,10 @@ class ManageContainerActivity : ComponentActivity() {
         containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
 
-        activityResultLauncher = registerForActivityResult(
+        // Register for result from AddSpeciesActivity
+        speciesLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            loadParameters(containerId = containerId)
             loadSpecies(containerId = containerId)
         }
 
@@ -103,16 +105,16 @@ class ManageContainerActivity : ComponentActivity() {
                     onAddSpeciesClick = {
                         val intent = Intent(this, AddSpeciesActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
-                        activityResultLauncher.launch(intent)
+                        speciesLauncher.launch(intent)
                     },
                     onRemoveSpeciesClick = { speciesId ->
+                        // Remove species from container
                         ApiClient.apiService.deleteSpeciesFromContainer(containerId, speciesId)
                             .enqueue(object : Callback<MessageResponse> {
                                 override fun onResponse(
                                     call: Call<MessageResponse>,
                                     response: Response<MessageResponse>
                                 ) {
-                                    Toast.makeText(this@ManageContainerActivity, "Species removed from container", Toast.LENGTH_LONG).show()
                                     loadSpecies(containerId)
                                 }
 
@@ -125,34 +127,53 @@ class ManageContainerActivity : ComponentActivity() {
                         saveChanges()
                         finish()
                     },
+                    // Handle parameter min value changes and validation
                     onParameterMinValueChanged = { parameterId, value ->
                         parameterMinValues[parameterId] = value
+                        if (value.isNotBlank() && value.toDoubleOrNull() == null) {
+                            invalidParameterInputs.add(parameterId)
+                        } else {
+                            invalidParameterInputs.remove(parameterId)
+                        }
                     },
+                    // Handle parameter max value changes and validation
                     onParameterMaxValueChanged = { parameterId, value ->
                         parameterMaxValues[parameterId] = value
+                        if (value.isNotBlank() && value.toDoubleOrNull() == null) {
+                            invalidParameterInputs.add(parameterId)
+                        } else {
+                            invalidParameterInputs.remove(parameterId)
+                        }
                     },
+                    // Handle species count changes and validation
                     onSpeciesCountChanged = { speciesId, value ->
                         speciesCounts[speciesId] = value
+                        if (value.isNotBlank() && value.toIntOrNull() == null) {
+                            invalidSpeciesInputs.add(speciesId)
+                        } else {
+                            invalidSpeciesInputs.remove(speciesId)
+                        }
                     },
-                    isLoadingParams = isLoadingParams,
-                    isLoadingSpecies = isLoadingSpecies,
+                    isLoading = isLoading,
                     errorMessageParams = errorMessageParams,
                     errorMessageSpecies = errorMessageSpecies,
+                    hasInvalidInput = invalidParameterInputs.isNotEmpty() || invalidSpeciesInputs.isNotEmpty(),
                     containerName = containerName,
                     parameters = parametersList,
                     species = speciesList
                 )
             }
         }
-
+        // Initial data load
         loadParameters(containerId = containerId)
         loadSpecies(containerId = containerId)
     }
 
+    // Save all changes to parameters and species
     private fun saveChanges() {
-        if (isSaving) return // Prevent duplicate requests
+        if (isLoading) return // Prevent duplicate requests
 
-        isSaving = true
+        isLoading = true
         saveErrorCount = 0
         completedRequests = 0
 
@@ -169,10 +190,10 @@ class ManageContainerActivity : ComponentActivity() {
 
             // Create update request
             val parameterRequest = ParameterUpdateRequest(
-                name = null, // We're not updating the name
+                name = null,
                 minValue = minValue,
                 maxValue = maxValue,
-                isControlled = null // We're not updating this either
+                isControlled = null
             )
 
             Pair(parameter.id, parameterRequest)
@@ -181,7 +202,6 @@ class ManageContainerActivity : ComponentActivity() {
         // Build the list of species update requests
         val speciesUpdates = speciesList.mapNotNull { species ->
             val countStr = speciesCounts[species.speciesId] ?: return@mapNotNull null
-
             val count = countStr.toIntOrNull() ?: species.count
 
             // Skip if no actual change
@@ -189,7 +209,6 @@ class ManageContainerActivity : ComponentActivity() {
 
             // Create update request
             val speciesRequest = UpdateSpeciesCountRequest(count = count)
-
             Pair(species.speciesId, speciesRequest)
         }
 
@@ -198,7 +217,7 @@ class ManageContainerActivity : ComponentActivity() {
         // If nothing to update, just return
         if (totalSaveRequests == 0) {
             Toast.makeText(this, "No changes to save", Toast.LENGTH_SHORT).show()
-            isSaving = false
+            isLoading = false
             return
         }
 
@@ -246,24 +265,21 @@ class ManageContainerActivity : ComponentActivity() {
         }
     }
 
+    // Called after each save request completes
     private fun checkSaveCompletion() {
         if (completedRequests >= totalSaveRequests) {
-            // All requests completed
-            isSaving = false
-
+            isLoading = false
             if (saveErrorCount > 0) {
-                Toast.makeText(this,
+                Toast.makeText(
+                    this,
                     "Not all changes were saved (${saveErrorCount} errors)",
-                    Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(this, "All changes saved successfully", Toast.LENGTH_SHORT).show()
-                finish() // Return to previous screen on success
-            }
-
-            // Reload data if not finishing
-            if (saveErrorCount > 0) {
+                    Toast.LENGTH_LONG
+                ).show()
+                // Reload data if not finishing
                 loadParameters(containerId)
                 loadSpecies(containerId)
+            } else {
+                finish() // Return to previous screen on success
             }
         }
     }
@@ -273,10 +289,11 @@ class ManageContainerActivity : ComponentActivity() {
         loadSpecies(containerId = containerId)
     }
 
+    // Load parameters from API
     private fun loadParameters(
         containerId: Int
     ) {
-        isLoadingParams = true
+        isLoading = true
         errorMessageParams = null
 
         ApiClient.apiService.getParameters(containerId).enqueue(object:
@@ -285,7 +302,7 @@ class ManageContainerActivity : ComponentActivity() {
                 call: Call<ParametersResponse>,
                 response: Response<ParametersResponse>
             ) {
-                isLoadingParams = false
+                isLoading = false
                 if (response.isSuccessful) {
                     parametersList = response.body()?.parameters ?: emptyList()
                 } else {
@@ -294,16 +311,17 @@ class ManageContainerActivity : ComponentActivity() {
             }
 
             override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
-                isLoadingParams = false
+                isLoading = false
                 errorMessageParams = "Network error: ${t.message}"
             }
         })
     }
 
+    // Load species from API
     private fun loadSpecies(
         containerId: Int
     ) {
-        isLoadingSpecies = true
+        isLoading = true
         errorMessageSpecies = null
 
         ApiClient.apiService.getContainerSpecies(containerId)
@@ -312,22 +330,23 @@ class ManageContainerActivity : ComponentActivity() {
                     call: Call<ContainerSpeciesResponse>,
                     response: Response<ContainerSpeciesResponse>
                 ) {
-                    isLoadingSpecies = false
+                    isLoading = false
                     if (response.isSuccessful) {
                         speciesList = response.body()?.species ?: emptyList()
                     } else {
-                        errorMessageParams = "Failed to load species: ${response.message()}"
+                        errorMessageSpecies = "Failed to load species: ${response.message()}"
                     }
                 }
 
                 override fun onFailure(call: Call<ContainerSpeciesResponse>, t: Throwable) {
-                    isLoadingSpecies = false
+                    isLoading = false
                     errorMessageSpecies = "Network error: ${t.message}"
                 }
             })
     }
 }
 
+// Composable for managing parameters and species in a container
 @Composable
 fun ManageContainerScreen(
     onBackClick: () -> Unit,
@@ -337,10 +356,10 @@ fun ManageContainerScreen(
     onParameterMinValueChanged: (Int, String) -> Unit,
     onParameterMaxValueChanged: (Int, String) -> Unit,
     onSpeciesCountChanged: (Int, String) -> Unit,
-    isLoadingParams: Boolean,
-    isLoadingSpecies: Boolean,
+    isLoading: Boolean,
     errorMessageParams: String?,
     errorMessageSpecies: String?,
+    hasInvalidInput: Boolean,
     containerName: String,
     parameters: List<Parameter>,
     species: List<ContainerSpecies>
@@ -350,9 +369,7 @@ fun ManageContainerScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = containerName,
-            )
+            TopHeaderBar(title = containerName)
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -361,6 +378,7 @@ fun ManageContainerScreen(
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Parameter section header
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -405,7 +423,8 @@ fun ManageContainerScreen(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
                 )
-                if (isLoadingParams) {
+                // Parameter list, loading, or error
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -461,9 +480,9 @@ fun ManageContainerScreen(
                     }
                 }
                 Spacer(modifier = Modifier.size(64.dp))
+                // Species section header
                 Row (
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -507,7 +526,8 @@ fun ManageContainerScreen(
                     thickness = 2.dp,
                     color = MaterialTheme.colorScheme.secondary
                 )
-                if (isLoadingSpecies) {
+                // Species list, loading, or error
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -562,6 +582,7 @@ fun ManageContainerScreen(
                     }
                 }
             }
+            // Save button and validation message
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -569,13 +590,21 @@ fun ManageContainerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                if (hasInvalidInput) {
+                    Text(
+                        text = "Please correct invalid parameter or species values.",
+                        color = MaterialTheme.colorScheme.error,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
                 Button(
                     onClick = { onSaveClick() },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading && !hasInvalidInput
                 ) {
                     Text(
-                        text = "Save",
+                        text = if (isLoading) "Saving..." else "Save",
                         fontFamily = PoppinsFamily
                     )
                 }
@@ -585,6 +614,7 @@ fun ManageContainerScreen(
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun ManageContainerActivityPreview () {
@@ -597,10 +627,10 @@ fun ManageContainerActivityPreview () {
             onParameterMaxValueChanged = { _, _ -> },
             onParameterMinValueChanged = { _, _ -> },
             onSpeciesCountChanged = { _, _ -> },
-            isLoadingParams = false,
-            isLoadingSpecies = false,
+            isLoading = false,
             errorMessageParams = null,
             errorMessageSpecies = null,
+            hasInvalidInput = false,
             containerName = "Container X",
             parameters = listOf(
                 Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
