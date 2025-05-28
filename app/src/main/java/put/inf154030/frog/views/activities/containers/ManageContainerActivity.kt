@@ -289,6 +289,7 @@ class ManageContainerActivity : ComponentActivity() {
         loadSpecies(containerId = containerId)
     }
 
+//    TODO("Naprawić requesty")
     // Load parameters from API
     private fun loadParameters(
         containerId: Int
