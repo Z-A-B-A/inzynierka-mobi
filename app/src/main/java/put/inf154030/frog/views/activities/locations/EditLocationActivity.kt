@@ -2,8 +2,8 @@ package put.inf154030.frog.views.activities.locations
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.LocationUpdateRequest
+import put.inf154030.frog.models.responses.LocationDetailResponse
 import put.inf154030.frog.models.responses.LocationUpdateResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
@@ -43,8 +45,8 @@ import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.Callback
+import retrofit2.Response
 
 // Activity for editing a location's name
 class EditLocationActivity : ComponentActivity() {
@@ -95,7 +97,7 @@ class EditLocationActivity : ComponentActivity() {
                                 }
                             })
                     },
-                    locationId = locationId,
+                    setErrorMessage = { message -> errorMessage = message },
                     locationName = locationName,
                     isLoading = isLoading,
                     errorMessage = errorMessage
@@ -109,8 +111,8 @@ class EditLocationActivity : ComponentActivity() {
     // Fetch location details from API
     private fun loadLocationData(locationId: Int) {
         isLoading = true
-        ApiClient.apiService.getLocation(locationId).enqueue(object : Callback<LocationResponse> {
-            override fun onResponse(call: Call<LocationResponse>, response: Response<LocationResponse>) {
+        ApiClient.apiService.getLocation(locationId).enqueue(object : Callback<LocationDetailResponse> {
+            override fun onResponse(call: Call<LocationDetailResponse>, response: Response<LocationDetailResponse>) {
                 isLoading = false
                 if (response.isSuccessful) {
                     locationName = response.body()?.name ?: ""
@@ -118,7 +120,7 @@ class EditLocationActivity : ComponentActivity() {
                     errorMessage = "Failed to load location: ${response.message()}"
                 }
             }
-            override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
+            override fun onFailure(call: Call<LocationDetailResponse>, t: Throwable) {
                 isLoading = false
                 errorMessage = "Network error: ${t.message}"
             }
@@ -132,7 +134,7 @@ fun EditLocationScreen (
     onBackClick: () -> Unit,
     onDeleteLocationClick: () -> Unit,
     onSaveClick: (String) -> Unit,
-    locationId: Int,
+    setErrorMessage: (String?) -> Unit,
     locationName: String,
     isLoading: Boolean,
     errorMessage: String?
@@ -151,7 +153,6 @@ fun EditLocationScreen (
             ) {
                 CircularProgressIndicator()
             }
-            return
         }
         Column {
             TopHeaderBar(title = "Edit Location")
@@ -193,7 +194,7 @@ fun EditLocationScreen (
                         val trimmed = newValue.trim()
                         if (trimmed.length <= 32) {
                             name = trimmed
-                            errorMessage = null
+                            setErrorMessage(null)
                         }
                     },
                     modifier = Modifier
@@ -243,13 +244,13 @@ fun EditLocationScreen (
                 Button(
                     onClick = {
                         if (name.isEmpty()) {
-                            errorMessage = "Location name cannot be empty"
+                            setErrorMessage("Location name cannot be empty")
                             return@Button
                         }
                         onSaveClick(name)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
-                    enabled = !isLoading && name.isNotEmpty() && name != locationName
+                    enabled = !isLoading
                 ) {
                     Text(
                         text = if (isLoading) "Saving..." else "Save",
@@ -270,8 +271,8 @@ fun EditLocationPreview() {
         EditLocationScreen(
             onBackClick = {  },
             onDeleteLocationClick = {},
-            onSaveClick = { _ -> },  
-            locationId = 1,
+            onSaveClick = { _ -> },
+            setErrorMessage = { _ -> },
             locationName = "Sample Location",
             isLoading = false,
             errorMessage = null
