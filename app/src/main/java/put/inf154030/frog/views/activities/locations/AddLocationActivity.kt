@@ -42,33 +42,69 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for adding a new location
 class AddLocationActivity : ComponentActivity() {
+    // State for loading and error message
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
+                // Main screen composable for adding a location
                 AddLocationScreen(
                     onBackClick = { finish() },
-                    onAddSuccess = { finish() }
+                    onAddClick = { name ->
+                        isLoading = true
+                        errorMessage = null
+
+                        // Prepare request and call API
+                        val locationCreateRequest = LocationCreateRequest(name = name.trim())
+                        ApiClient.apiService.createLocation(locationCreateRequest)
+                            .enqueue(object : Callback<LocationResponse> {
+                                override fun onResponse(
+                                    call: Call<LocationResponse>,
+                                    response: Response<LocationResponse>
+                                ) {
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish() // Close activity on success
+                                    } else {
+                                        errorMessage = "Failed to create location: ${response.message()}"
+                                    }
+                                }
+                                override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
+                                    isLoading = false
+                                    errorMessage = "Network error: ${t.message}"
+                                }
+                            })
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 }
 
+// Composable for the add location screen UI
 @Composable
 fun AddLocationScreen (
     onBackClick: () -> Unit,
-    onAddSuccess: () -> Unit
+    onAddClick: (String) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
+    // Local state for the name input
+    var name by remember { mutableStateOf("") }
+
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "New Location"
-            )
+            TopHeaderBar(title = "New Location")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -77,10 +113,7 @@ fun AddLocationScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                var name by remember { mutableStateOf("") }
-                var isLoading by remember { mutableStateOf(false) }
-                var errorMessage by remember { mutableStateOf<String?>(null) }
-
+                // Name label and character counter
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -103,15 +136,16 @@ fun AddLocationScreen (
                     )
                 }
 
+                // Name input field
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
-                        // Only update if within character limit
-                        if (newValue.length <= 32) {
-                            name = newValue
-                            errorMessage = null
+                        val trimmed = newValue.trim()
+                        if (trimmed.length <= 32) {
+                            name = trimmed
+                            errorMessage = null // Reset error on input
                         }
-                    },
+                    },      
                     modifier = Modifier
                         .fillMaxWidth()
                         .size(40.dp)
@@ -133,7 +167,7 @@ fun AddLocationScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                // Error message
+                // Error message display
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -142,40 +176,17 @@ fun AddLocationScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(56.dp))
+                // Add button
                 Button(
                     onClick = {
                         if (name.trim().isEmpty()) {
                             errorMessage = "Location name cannot be empty"
                             return@Button
                         }
-
-                        isLoading = true
-                        errorMessage = null
-
-                        val locationCreateRequest = LocationCreateRequest(name = name.trim())
-
-                        ApiClient.apiService.createLocation(locationCreateRequest).enqueue(object : Callback<LocationResponse> {
-                            override fun onResponse(
-                                call: Call<LocationResponse>,
-                                response: Response<LocationResponse>
-                            ) {
-                                isLoading = false
-                                if (response.isSuccessful) {
-                                    onAddSuccess()
-                                } else {
-                                    errorMessage =
-                                        "Failed to create location: ${response.message()}"
-                                }
-                            }
-
-                            override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
-                                isLoading = false
-                                errorMessage = "Network error: ${t.message}"
-                            }
-                        })
+                        onAddClick(name)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
-                    enabled = !isLoading
+                    enabled = !isLoading && name.trim().isNotEmpty()
                 ) {
                     Text(
                         text = if (isLoading) "Adding..." else "Add",
@@ -188,13 +199,16 @@ fun AddLocationScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun AddLocationActivityPreview() {
     FrogTheme {
         AddLocationScreen(
             onBackClick = {  },
-            onAddSuccess = {  }
+            onAddClick = { _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
