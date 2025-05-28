@@ -251,9 +251,7 @@ fun ContainerScreen (
             return
         }
         Column {
-            TopHeaderBar(
-                title = containerName,
-            )
+            TopHeaderBar(title = containerName,)
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
