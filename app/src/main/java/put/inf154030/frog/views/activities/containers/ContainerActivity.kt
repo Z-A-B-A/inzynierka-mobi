@@ -56,7 +56,16 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+// Timeframe constants for filtering parameter history
+companion object {
+    const val TIMEFRAME_1H = "1h"
+    const val TIMEFRAME_6H = "6h"
+    const val TIMEFRAME_12H = "12h"
+    const val TIMEFRAME_24H = "24h"
+}
+
 class ContainerActivity : ComponentActivity() {
+    // State variables for UI and data
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
     private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
     private var isLoading by mutableStateOf(false)
@@ -64,21 +73,18 @@ class ContainerActivity : ComponentActivity() {
     private var containerId = -1
     private var parameterHistoryData by mutableStateOf<Map<Int, List<ParameterHistoryEntry>>>(emptyMap())
     private var selectedTimeframe by mutableStateOf("1h")
+    private var shouldReloadOnResume = false
 
-    // Calculate date ranges based on timeframe
+    // Calculate date ranges for API requests based on selected timeframe
     private fun getDateRangeForTimeframe(timeframe: String): Pair<String, String> {
-        // Get the actual UTC time (13:00)
+        // Get the actual UTC time
         val utcNow = ZonedDateTime.now(ZoneOffset.UTC)
-
-        // Add 2 hours to make it match your local time (15:00)
-        val shiftedNow = utcNow.plusHours(2)
-
-        // Calculate the from time and also shift it by 2 hours
+        val shiftedNow = utcNow.plusHours(2) // Adjust for local time if needed
         val shiftedFromDate = when(timeframe) {
-            "1h" -> shiftedNow.minusHours(1)
-            "6h" -> shiftedNow.minusHours(6)
-            "12h" -> shiftedNow.minusHours(12)
-            "24h" -> shiftedNow.minusDays(1)
+            TIMEFRAME_1H -> shiftedNow.minusHours(1)
+            TIMEFRAME_6H -> shiftedNow.minusHours(6)
+            TIMEFRAME_12H -> shiftedNow.minusHours(12)
+            TIMEFRAME_24H -> shiftedNow.minusDays(1)
             else -> shiftedNow.minusHours(1)
         }
 
@@ -86,16 +92,12 @@ class ContainerActivity : ComponentActivity() {
         val fromDate = shiftedFromDate.format(DateTimeFormatter.ISO_INSTANT)
         val toDate = shiftedNow.format(DateTimeFormatter.ISO_INSTANT)
 
-        println("Shifted time as UTC: $shiftedNow")
-        println("Shifted from time as UTC: $fromDate")
-        println("Shifted to time as UTC: $toDate")
         return Pair(fromDate, toDate)
     }
 
-    // Load history for all parameters
+    // Load parameter history for all parameters in the selected timeframe
     private fun loadParameterHistory(timeframe: String = "1h") {
         if (parametersList.isEmpty()) return
-
         val (fromDate, toDate) = getDateRangeForTimeframe(timeframe)
         val tempHistoryData = mutableMapOf<Int, List<ParameterHistoryEntry>>()
         var loadingCount = parametersList.size
@@ -115,7 +117,6 @@ class ContainerActivity : ComponentActivity() {
 
                         loadingCount--
                         if (loadingCount == 0) {
-                            // All parameters loaded
                             parameterHistoryData = tempHistoryData
                         }
                     }
@@ -131,6 +132,7 @@ class ContainerActivity : ComponentActivity() {
         }
     }
 
+    // Load container details and update state
     private fun loadContainerDetails() {
         if (containerId == -1) {
             errorMessage = "Invalid container ID"
@@ -167,22 +169,25 @@ class ContainerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        // Read intent extras for container info
         containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "ERROR READING NAME"
         val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "ERROR READING DESCRIPTION"
 
         setContent {
             FrogTheme {
+                // Container screen composable
                 ContainerScreen(
                     onBackClick = { finish() },
                     onChangeClick = {
+                        shouldReloadOnResume = true
                         val intent = Intent(this, ManageContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
                         intent.putExtra("CONTAINER_NAME", containerName)
                         startActivity(intent)
                     },
                     onScheduleClick = {
+                        shouldReloadOnResume = true
                         val intent = Intent(this, ScheduleActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
                         startActivity(intent)
@@ -196,19 +201,26 @@ class ContainerActivity : ComponentActivity() {
                         selectedTimeframe = timeframe
                         loadParameterHistory(timeframe)
                     },
-                    selectedTimeframe = selectedTimeframe
+                    selectedTimeframe = selectedTimeframe,
+                    errorMessage = errorMessage,
+                    isLoading = isLoading
                 )
             }
         }
         loadContainerDetails()
     }
 
+    // Reload data only if needed (after returning from change/schedule screens)
     override fun onResume() {
         super.onResume()
-        loadContainerDetails()
+        if (shouldReloadOnResume) {
+            loadContainerDetails()
+            shouldReloadOnResume = false
+        }
     }
 }
 
+// Main UI composable for the container details screen
 @Composable
 fun ContainerScreen (
     onBackClick: () -> Unit,
@@ -220,12 +232,24 @@ fun ContainerScreen (
     speciesList: List<ContainerSpecies>,
     parameterHistoryData: Map<Int, List<ParameterHistoryEntry>>,
     onTimeframeSelected: (String) -> Unit,
-    selectedTimeframe: String
+    selectedTimeframe: String,
+    errorMessage: String?,
+    isLoading: Boolean
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // Show loading spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            return
+        }
         Column {
             TopHeaderBar(
                 title = containerName,
@@ -305,8 +329,7 @@ fun ContainerScreen (
                 item {
                     Column {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
@@ -361,8 +384,7 @@ fun ContainerScreen (
                 // Parameter History Section
                 item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
@@ -373,7 +395,7 @@ fun ContainerScreen (
                             color = MaterialTheme.colorScheme.secondary
                         )
 
-                        // Time filter chips
+                        // Time filter chips for selecting history range
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -381,13 +403,13 @@ fun ContainerScreen (
                                 .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                         ) {
-                            TimeFilterChip("1h", "Last Hour", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip("6h", "Last 6 Hours", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip("12h", "Last 12 Hours", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip("24h", "Last Day", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_1H, "Last Hour", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_6H, "Last 6 Hours", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_12H, "Last 12 Hours", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_24H, "Last Day", selectedTimeframe, onTimeframeSelected)
                         }
 
-                        // History availability message
+                        // Show message if no history data is available
                         if (parametersList.isEmpty() || parameterHistoryData.isEmpty()) {
                             Text(
                                 text = "No history data available",
@@ -399,7 +421,7 @@ fun ContainerScreen (
                     }
                 }
 
-                // Parameter Charts
+                // Parameter Charts for each parameter
                 if (parametersList.isNotEmpty() && parameterHistoryData.isNotEmpty()) {
                     items(parametersList) { parameter ->
                         ParameterChart(
@@ -416,6 +438,16 @@ fun ContainerScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                // Show error message if present
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                // Button to change container details
                 Button(
                     onClick = { onChangeClick() },
                     modifier = Modifier
@@ -432,6 +464,7 @@ fun ContainerScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun ContainerActivityPreview () {
@@ -468,7 +501,9 @@ fun ContainerActivityPreview () {
                 )
             ),
             onTimeframeSelected = {},
-            selectedTimeframe = "1h"
+            selectedTimeframe = "1h",
+            errorMessage = null,
+            isLoading = false
         )
     }
 }
