@@ -1,9 +1,10 @@
 package put.inf154030.frog.views.activities.locations
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,27 +13,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import put.inf154030.frog.theme.FrogTheme
-import put.inf154030.frog.theme.PoppinsFamily
-import put.inf154030.frog.views.fragments.TopHeaderBar
-import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -103,7 +103,6 @@ fun DeleteLocationScreen (
             ) {
                 CircularProgressIndicator()
             }
-            return
         }
         Column {
             TopHeaderBar(title = "Delete Location")
@@ -133,13 +132,14 @@ fun DeleteLocationScreen (
                 )
                 // Warning about irreversibility
                 Text(
-                    text = "This operation can not be undone",
+                    text = "Note: This operation deletes the location along with all containers, parameters, schedules, notifications and other related data",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.size(64.dp))
+                Spacer(modifier = Modifier.size(32.dp))
                 // Yes/No buttons
                 Row {
                     Button(
