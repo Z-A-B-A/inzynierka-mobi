@@ -80,6 +80,7 @@ class AddLocationActivity : ComponentActivity() {
                                 }
                             })
                     },
+                    setErrorMessage = { message -> errorMessage = message },
                     isLoading = isLoading,
                     errorMessage = errorMessage
                 )
@@ -93,6 +94,7 @@ class AddLocationActivity : ComponentActivity() {
 fun AddLocationScreen (
     onBackClick: () -> Unit,
     onAddClick: (String) -> Unit,
+    setErrorMessage: (String?) -> Unit,
     isLoading: Boolean,
     errorMessage: String?
 ) {
@@ -143,7 +145,7 @@ fun AddLocationScreen (
                         val trimmed = newValue.trim()
                         if (trimmed.length <= 32) {
                             name = trimmed
-                            errorMessage = null // Reset error on input
+                            setErrorMessage(null) // Reset error on input
                         }
                     },      
                     modifier = Modifier
@@ -179,14 +181,14 @@ fun AddLocationScreen (
                 // Add button
                 Button(
                     onClick = {
-                        if (name.trim().isEmpty()) {
-                            errorMessage = "Location name cannot be empty"
+                        if (name.isEmpty()) {
+                            setErrorMessage("Location name cannot be empty")
                             return@Button
                         }
                         onAddClick(name)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
-                    enabled = !isLoading && name.trim().isNotEmpty()
+                    enabled = !isLoading
                 ) {
                     Text(
                         text = if (isLoading) "Adding..." else "Add",
@@ -207,6 +209,7 @@ fun AddLocationActivityPreview() {
         AddLocationScreen(
             onBackClick = {  },
             onAddClick = { _ -> },
+            setErrorMessage = { _ -> },
             isLoading = false,
             errorMessage = null
         )
