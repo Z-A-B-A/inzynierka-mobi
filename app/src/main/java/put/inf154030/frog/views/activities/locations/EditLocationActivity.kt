@@ -46,45 +46,115 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Callback
 
-class EditLocationActivity : AppCompatActivity() {
+// Activity for editing a location's name
+class EditLocationActivity : ComponentActivity() {
+    // State for loading, error message, and location name
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+    private var locationName by mutableStateOf("")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        
+        // Get location ID from intent
         val locationId = intent.getIntExtra("LOCATION_ID", -1)
 
         setContent {
             FrogTheme {
                 EditLocationScreen(
                     onBackClick = { finish() },
+                    // Navigate to delete screen
                     onDeleteLocationClick = {
                         val intent = Intent(this, DeleteLocationActivity::class.java)
                         intent.putExtra("LOCATION_ID", locationId)
                         startActivity(intent)
                         finish()
                     },
-                    onEditSuccess = { finish() },
-                    locationId = locationId
+                    // Save changes to location name
+                    onSaveClick = { name ->
+                        isLoading = true
+                        errorMessage = null
+
+                        val locationUpdateRequest = LocationUpdateRequest(name = name)
+                        ApiClient.apiService.updateLocation(locationId, locationUpdateRequest)
+                            .enqueue(object : Callback<LocationUpdateResponse> {
+                                override fun onResponse(
+                                    call: Call<LocationUpdateResponse>,
+                                    response: Response<LocationUpdateResponse>
+                                ) {
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish()
+                                    } else {
+                                        errorMessage = "Failed to update location: ${response.message()}"
+                                    }
+                                }
+                                override fun onFailure(call: Call<LocationUpdateResponse>, t: Throwable) {
+                                    isLoading = false
+                                    errorMessage = "Network error: ${t.message}"
+                                }
+                            })
+                    },
+                    locationId = locationId,
+                    locationName = locationName,
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
+        // Load current location data on start
+        loadLocationData(locationId)
+    }
+
+    // Fetch location details from API
+    private fun loadLocationData(locationId: Int) {
+        isLoading = true
+        ApiClient.apiService.getLocation(locationId).enqueue(object : Callback<LocationResponse> {
+            override fun onResponse(call: Call<LocationResponse>, response: Response<LocationResponse>) {
+                isLoading = false
+                if (response.isSuccessful) {
+                    locationName = response.body()?.name ?: ""
+                } else {
+                    errorMessage = "Failed to load location: ${response.message()}"
+                }
+            }
+            override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
+                isLoading = false
+                errorMessage = "Network error: ${t.message}"
+            }
+        })
     }
 }
 
+// Composable for editing location UI
 @Composable
 fun EditLocationScreen (
     onBackClick: () -> Unit,
     onDeleteLocationClick: () -> Unit,
-    onEditSuccess: () -> Unit,
-    locationId: Int
+    onSaveClick: (String) -> Unit,
+    locationId: Int,
+    locationName: String,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
+    // Local state for the editable name field
+    var name by remember(locationName) { mutableStateOf(locationName) }
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // Show loading spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            return
+        }
         Column {
-            TopHeaderBar(
-                title = "Edit Location"
-            )
+            TopHeaderBar(title = "Edit Location")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -93,10 +163,7 @@ fun EditLocationScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                var name by remember { mutableStateOf("") }
-                var isLoading by remember { mutableStateOf(false) }
-                var errorMessage by remember { mutableStateOf<String?>(null) }
-
+                // Name label and character count
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -119,12 +186,13 @@ fun EditLocationScreen (
                         fontFamily = PoppinsFamily
                     )
                 }
+                // Editable name input
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
-                        // Only update if within character limit
-                        if (newValue.length <= 32) {
-                            name = newValue
+                        val trimmed = newValue.trim()
+                        if (trimmed.length <= 32) {
+                            name = trimmed
                             errorMessage = null
                         }
                     },
@@ -149,7 +217,7 @@ fun EditLocationScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                // Error message
+                // Error message display
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -158,6 +226,7 @@ fun EditLocationScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(56.dp))
+                // Delete location link
                 Text(
                     text = "delete location",
                     color = Color.Red,
@@ -170,40 +239,17 @@ fun EditLocationScreen (
                         .padding(end = 8.dp)
                 )
                 Spacer(modifier = Modifier.size(64.dp))
+                // Save button
                 Button(
                     onClick = {
-                        if (name.trim().isEmpty()) {
+                        if (name.isEmpty()) {
                             errorMessage = "Location name cannot be empty"
                             return@Button
                         }
-
-                        isLoading = true
-                        errorMessage = null
-
-                        val locationUpdateRequest = LocationUpdateRequest(name = name.trim())
-
-                        ApiClient.apiService.updateLocation(locationId, locationUpdateRequest).enqueue(object : Callback<LocationUpdateResponse> {
-                            override fun onResponse(
-                                call: Call<LocationUpdateResponse>,
-                                response: Response<LocationUpdateResponse>
-                            ) {
-                                isLoading = false
-                                if (response.isSuccessful) {
-                                    onEditSuccess()
-                                } else {
-                                    errorMessage =
-                                        "Failed to update location: ${response.message()}"
-                                }
-                            }
-
-                            override fun onFailure(call: Call<LocationUpdateResponse>, t: Throwable) {
-                                isLoading = false
-                                errorMessage = "Network error: ${t.message}"
-                            }
-                        })
+                        onSaveClick(name)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
-                    enabled = !isLoading
+                    enabled = !isLoading && name.isNotEmpty() && name != locationName
                 ) {
                     Text(
                         text = if (isLoading) "Saving..." else "Save",
@@ -216,6 +262,7 @@ fun EditLocationScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun EditLocationPreview() {
@@ -223,8 +270,11 @@ fun EditLocationPreview() {
         EditLocationScreen(
             onBackClick = {  },
             onDeleteLocationClick = {},
-            onEditSuccess = {  },
-            locationId = 1
+            onSaveClick = { _ -> },  
+            locationId = 1,
+            locationName = "Sample Location",
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
