@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.Notification
@@ -74,55 +73,53 @@ class NotificationsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        checkNotificationPermission()
-        loadNotifications()
-
-        setContent {
-            FrogTheme {
-                NotificationsScreen(
-                    onBackClick = { finish() },
-                    notificationsList = notificationsList,
-                    notificationsEnabled = notificationsEnabled,
-                    onNotificationsToggle = { enabled ->
-                        notificationsEnabled = enabled
-                        if (enabled) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        } else {
-                            // When toggling off, just update preference - can't revoke permission programmatically
-                            updateNotificationsEnabledPreference(false)
-
-                            // Optionally open app settings if you want user to manually revoke permission
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-//                                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-//                                PackageManager.PERMISSION_GRANTED) {
-//
-//                                // Optionally open settings
-//                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-//                                 val uri = Uri.fromParts("package", packageName, null)
-//                                 intent.data = uri
-//                                 startActivity(intent)
-//                            }
-                        }
-                    },
-                    onMarkAllAsReadClick = {
-                        markAllAsRead()
-                    },
-                    onMarkAsReadClick = { id ->
-                        markAsRead(id)
+        lifecycleScope.launch {
+            notificationsEnabled = applicationContext.dataStore.data.first()[FrogFirebaseMessagingService.NOTIFICATIONS_ENABLED_KEY] ?:
+                    // Default to true only if we don't have a saved preference
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    } else {
+                        true
                     }
-                )
+
+            // Update UI
+            setContent {
+                FrogTheme {
+                    NotificationsScreen(
+                        // Pass the loaded value
+                        notificationsEnabled = notificationsEnabled,
+                        // Rest of your parameters
+                        onBackClick = { finish() },
+                        notificationsList = notificationsList,
+                        onNotificationsToggle = { enabled ->
+                            toggleNotifications(enabled)
+                        },
+                        onMarkAllAsReadClick = { markAllAsRead() },
+                        onMarkAsReadClick = { id -> markAsRead(id) }
+                    )
+                }
             }
         }
     }
 
-    private fun checkNotificationPermission() {
-        // On Android 13+, check notification permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationsEnabled = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-                    PackageManager.PERMISSION_GRANTED
-            updateNotificationsEnabledPreference(notificationsEnabled)
+    // New function to properly handle toggle
+    private fun toggleNotifications(enabled: Boolean) {
+        notificationsEnabled = enabled
+
+        // Update preference
+        updateNotificationsEnabledPreference(enabled)
+
+        // For Android 13+, handle runtime permission
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else if (!enabled) {
+            Toast.makeText(
+                this,
+                "Notifications disabled for this app",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -211,8 +208,6 @@ fun NotificationsScreen(
     onMarkAllAsReadClick: () -> Unit,
     onMarkAsReadClick: (Int) -> Unit
 ) {
-    var isEnabled by remember { mutableStateOf(notificationsEnabled) }
-
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -227,11 +222,8 @@ fun NotificationsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 NotificationSetting(
-                    isOn = isEnabled,
-                    onToggle = {
-                        isEnabled = it
-                        onNotificationsToggle(it)
-                    }
+                    isOn = notificationsEnabled,
+                    onToggle = { onNotificationsToggle(it) }
                 )
                 Spacer(modifier = Modifier.size(16.dp))
                 Text(

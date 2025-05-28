@@ -37,13 +37,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.fragments.LocationCard
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
@@ -60,8 +64,15 @@ class LocationsActivity : ComponentActivity() {
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _: Boolean ->
-        // Optional: handle the result if needed
+    ) { isGranted: Boolean ->
+        // Save the permission status to preferences
+        lifecycleScope.launch {
+            applicationContext.dataStore.updateData { preferences ->
+                val mutablePreferences = preferences.toMutablePreferences()
+                mutablePreferences[FrogFirebaseMessagingService.NOTIFICATIONS_ENABLED_KEY] = isGranted
+                mutablePreferences
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
