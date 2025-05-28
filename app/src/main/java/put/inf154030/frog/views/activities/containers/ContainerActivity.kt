@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -42,6 +44,10 @@ import put.inf154030.frog.models.responses.ParameterHistoryResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.activities.containers.ContainerActivity.Companion.TIMEFRAME_12H
+import put.inf154030.frog.views.activities.containers.ContainerActivity.Companion.TIMEFRAME_1H
+import put.inf154030.frog.views.activities.containers.ContainerActivity.Companion.TIMEFRAME_24H
+import put.inf154030.frog.views.activities.containers.ContainerActivity.Companion.TIMEFRAME_6H
 import put.inf154030.frog.views.activities.schedule.ScheduleActivity
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.ParameterChart
@@ -56,14 +62,6 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-// Timeframe constants for filtering parameter history
-companion object {
-    const val TIMEFRAME_1H = "1h"
-    const val TIMEFRAME_6H = "6h"
-    const val TIMEFRAME_12H = "12h"
-    const val TIMEFRAME_24H = "24h"
-}
-
 class ContainerActivity : ComponentActivity() {
     // State variables for UI and data
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
@@ -74,6 +72,14 @@ class ContainerActivity : ComponentActivity() {
     private var parameterHistoryData by mutableStateOf<Map<Int, List<ParameterHistoryEntry>>>(emptyMap())
     private var selectedTimeframe by mutableStateOf("1h")
     private var shouldReloadOnResume = false
+
+    // Timeframe constants for filtering parameter history
+    companion object {
+        const val TIMEFRAME_1H = "1h"
+        const val TIMEFRAME_6H = "6h"
+        const val TIMEFRAME_12H = "12h"
+        const val TIMEFRAME_24H = "24h"
+    }
 
     // Calculate date ranges for API requests based on selected timeframe
     private fun getDateRangeForTimeframe(timeframe: String): Pair<String, String> {
@@ -103,6 +109,7 @@ class ContainerActivity : ComponentActivity() {
         var loadingCount = parametersList.size
 
         parametersList.forEach { parameter ->
+//            TODO("Naprawić request")
             ApiClient.apiService.getParameterHistory(parameter.id, fromDate, toDate)
                 .enqueue(object: Callback<ParameterHistoryResponse> {
                     override fun onResponse(
@@ -248,10 +255,9 @@ fun ContainerScreen (
             ) {
                 CircularProgressIndicator()
             }
-            return
         }
         Column {
-            TopHeaderBar(title = containerName,)
+            TopHeaderBar(title = containerName)
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
