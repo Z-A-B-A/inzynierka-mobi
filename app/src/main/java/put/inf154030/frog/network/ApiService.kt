@@ -78,6 +78,9 @@ interface ApiService {
     @PUT("locations/{id}")
     fun updateLocation(@Path("id") locationId: Int, @Body locationUpdateRequest: LocationUpdateRequest): Call<LocationUpdateResponse>
 
+    @DELETE("locations/{id}")
+    fun deleteLocation(@Path("id") locationId: Int): Call<MessageResponse>
+
     // Container Endpoints
     @GET("locations/{location_id}/containers")
     fun getContainers(@Path("location_id") locationId: Int): Call<ContainersResponse>

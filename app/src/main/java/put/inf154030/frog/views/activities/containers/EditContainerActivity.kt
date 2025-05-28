@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +20,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -56,8 +55,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for editing a container's details
 class EditContainerActivity : ComponentActivity() {
-    private lateinit var addLocationLauncher: ActivityResultLauncher<Intent>
     private var locationsList by mutableStateOf<List<Location>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
@@ -65,24 +64,22 @@ class EditContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Get initial container data from intent
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
         val containerName = intent.getStringExtra("CONTAINER_NAME") ?: "Couldn't load container name"
         val containerDescription = intent.getStringExtra("CONTAINER_DESCRIPTION") ?: "Couldn't load container description"
 
         val locationId = intent.getIntExtra("LOCATION_ID", -1)
 
-        addLocationLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            // When returning from AddLocationActivity, refresh the locations
-            loadLocations()
-        }
-
         setContent {
             FrogTheme {
                 EditContainerScreen(
                     onBackClick = { finish() },
                     onSaveClick = { name, description, selectedLocation ->
+                        errorMessage = null
+                        isLoading = true
+
+                        // Prepare update request
                         val containerUpdateRequest = ContainerUpdateRequest(
                             name = name,
                             description = description,
@@ -90,6 +87,7 @@ class EditContainerActivity : ComponentActivity() {
                             locationId = selectedLocation
                         )
 
+                        // Call API to update container
                         ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
                             .enqueue(object : Callback<ContainerUpdateResponse> {
                                 override fun onResponse(
@@ -97,36 +95,44 @@ class EditContainerActivity : ComponentActivity() {
                                     response: Response<ContainerUpdateResponse>
                                 ) {
                                     if (response.isSuccessful) {
-                                        // Container updated successfully
-                                        setResult(RESULT_OK)
+                                        isLoading = false
                                         finish()
                                     } else {
                                         // Handle error
+                                        isLoading = false
                                         errorMessage = "Failed to update container: ${response.message()}"
                                     }
                                 }
 
                                 override fun onFailure(call: Call<ContainerUpdateResponse>, t: Throwable) {
+                                    isLoading = false
                                     errorMessage = "Network error: ${t.message}"
                                 }
                             })
                     },
                     onDeleteContainerClick = {
+                        // Open delete confirmation activity
                         val intent = Intent(this, DeleteContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", containerId)
                         startActivity(intent)
                         finish()
                     },
+                    setLoading = { loading -> isLoading = loading },
+                    setErrorMessage = { message -> errorMessage = message },
                     containerName = containerName,
                     containerDescription = containerDescription,
                     locationsList = locationsList,
-                    locationId = locationId
+                    locationId = locationId,
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
                 )
             }
         }
         // Load locations when activity is created
         loadLocations()
     }
+
+    // Loads available locations from API
     private fun loadLocations() {
         isLoading = true
         errorMessage = null
@@ -153,52 +159,54 @@ class EditContainerActivity : ComponentActivity() {
     }
 }
 
+// Composable for editing container details
 @Composable
 fun EditContainerScreen(
     onBackClick: () -> Unit,
     onSaveClick: (String, String, Int) -> Unit,
     onDeleteContainerClick: () -> Unit,
+    setLoading: (Boolean) -> Unit,
+    setErrorMessage: (String) -> Unit,
     containerName: String,
     containerDescription: String,
     locationId: Int,
-    locationsList: List<Location>
+    locationsList: List<Location>,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
+        // Local state for form fields and validation
+        var name by remember { mutableStateOf(containerName) }
+        var description by remember { mutableStateOf(containerDescription) }
+        var errorMessageName by remember { mutableStateOf<String?>(null) }
+        var errorMessageDescription by remember { mutableStateOf<String?>(null) }
+
+        // State for location selection
+        var isLocationDropdownExpanded by remember { mutableStateOf(false) }
+        var selectedLocation by remember { mutableStateOf<Location?>(null) }
+
+        // Show loading spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
         Column {
-            TopHeaderBar(
-                title = "Edit Container"
-            )
+            TopHeaderBar(title = "Edit Container")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(16.dp))
 
-            var errorMessage by remember { mutableStateOf<String?>(null) }
-
-            var name by remember { mutableStateOf(containerName) }
-            var description by remember { mutableStateOf(containerDescription) }
-            var errorMessageName by remember { mutableStateOf<String?>(null) }
-            var errorMessageDescription by remember { mutableStateOf<String?>(null) }
-
-            // State for location selection
-            var isLocationDropdownExpanded by remember { mutableStateOf(false) }
-            var locations by remember { mutableStateOf(listOf<Location>()) }
-            var selectedLocation by remember { mutableStateOf<Location?>(null) }
-            var isLoading by remember { mutableStateOf(true) }
-
             // Load locations when the screen is created
             LaunchedEffect(locationsList) {
-                isLoading = false
-
-                // Find the current location in the locations list
+                setLoading(false)
                 val currentLocation = locationsList.find { it.id == locationId }
-
-                // Set the current location as selected if found, otherwise use the first location
                 selectedLocation = currentLocation ?: locationsList.firstOrNull()
-
-                // No need to sort locations - just display them as they come from the API
-                locations = locationsList
             }
 
             Column (
@@ -207,6 +215,7 @@ fun EditContainerScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Name input
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -257,7 +266,7 @@ fun EditContainerScreen(
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                // Error message
+                // Name error message
                 errorMessageName?.let {
                     Text(
                         text = it,
@@ -266,6 +275,8 @@ fun EditContainerScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
+
+                // Description input
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -316,6 +327,8 @@ fun EditContainerScreen(
                     }
                 )
                 Spacer(modifier = Modifier.size(8.dp))
+
+                // Description error message
                 errorMessageDescription?.let {
                     Text(
                         text = it,
@@ -324,6 +337,8 @@ fun EditContainerScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(8.dp))
+
+                // Location dropdown
                 Text(
                     text = "Lokalizacja",
                     fontFamily = PoppinsFamily,
@@ -384,6 +399,8 @@ fun EditContainerScreen(
                 }
             }
             Spacer(modifier = Modifier.size(16.dp))
+
+            // Bottom section: delete and save
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -391,6 +408,7 @@ fun EditContainerScreen(
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Delete container link
                 Text(
                     text = "delete container",
                     color = Color.Red,
@@ -403,19 +421,34 @@ fun EditContainerScreen(
                         .padding(end = 8.dp)
                 )
                 Spacer(modifier = Modifier.size(16.dp))
+                // General error message
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+                // Save button
                 Button(
                     onClick = {
                         if (name.isBlank()) {
                             errorMessageName = "Name cannot be empty"
+                        } else if (description.isBlank()) {
+                            errorMessageDescription = "Description cannot be empty"
                         } else if (selectedLocation == null) {
-                            errorMessage = "Please select a location"
+                            setErrorMessage("Please select a location")
                         } else {
+                            errorMessageName = null
+                            errorMessageDescription = null
                             onSaveClick(name, description, selectedLocation!!.id)
                         }
                     },
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .fillMaxWidth(0.65f),
+                    enabled = !isLoading
                 ) {
                     Text(
                         text = "Save",
@@ -429,6 +462,7 @@ fun EditContainerScreen(
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun EditContainerActivityPreview () {
@@ -437,13 +471,17 @@ fun EditContainerActivityPreview () {
             onBackClick = {  },
             onSaveClick = { _, _, _ -> },
             onDeleteContainerClick = {  },
+            setLoading = { _ -> },
+            setErrorMessage = { _ -> },
             containerName = "Akwarium",
             containerDescription = "leleleleisonrgjnbtehib",
             locationId = 1,
             locationsList = listOf(
                 Location(1, "Sklep", ""),
                 Location(2, "Zoo", "")
-            )
+            ),
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
