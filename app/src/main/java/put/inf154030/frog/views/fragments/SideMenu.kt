@@ -1,6 +1,5 @@
 package put.inf154030.frog.views.fragments
 
-import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -26,17 +25,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.about.AboutActivity
 import put.inf154030.frog.views.activities.account.AccountActivity
 import put.inf154030.frog.views.activities.notifications.NotificationsActivity
 import put.inf154030.frog.views.activities.notifications.UpcomingActivity
-import put.inf154030.frog.theme.FrogTheme
-import put.inf154030.frog.theme.PoppinsFamily
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun SideMenu(
@@ -170,11 +169,9 @@ fun SideMenu(
 @Composable
 fun SideMenuPreview() {
     FrogTheme {
-        val context = androidx.compose.ui.platform.LocalContext.current
         SideMenu(
             isVisible = true,
-            onDismiss = {},
-            context = context
+            onDismiss = {}
         )
     }
 }
