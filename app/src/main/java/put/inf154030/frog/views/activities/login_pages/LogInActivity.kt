@@ -1,5 +1,6 @@
 package put.inf154030.frog.views.activities.login_pages
 
+import androidx.compose.material3.CircularProgressIndicator
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -59,14 +60,18 @@ import kotlinx.coroutines.flow.first
 import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.responses.MessageResponse
 
+// Activity for user login
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
+                // Main login screen composable
                 LogInScreen(
                     onLoginSuccess = {
+                        // Send FCM token after successful login
                         sendFcmTokenToServer()
+                        // Navigate to main locations screen
                         val intent = Intent(this, LocationsActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -76,12 +81,63 @@ class LogInActivity : ComponentActivity() {
         }
     }
 
+    // Handles login logic and API call
+    fun handleLogin(
+        email: String,
+        password: String,
+        onResult: (success: Boolean, error: String?) -> Unit
+    ) {
+        // Validate input
+        if (email.isEmpty() || password.isEmpty()) {
+            onResult(false, "Please enter email and password")
+            return
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            onResult(false, "Please enter a valid email address")
+            return
+        }
+
+        // Make login API request
+        val loginRequest = LoginRequest(email = email, password = password)
+        val call = ApiClient.apiService.loginUser(loginRequest)
+        call.enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { authResponse ->
+                        SessionManager.saveAuthToken(authResponse.token)
+                        authResponse.user.let { user ->
+                            SessionManager.saveUserInfo(
+                                user.id.toString(),
+                                user.name,
+                                user.email
+                            )
+                        }
+                        onResult(true, null)
+                    } ?: onResult(false, "Empty response received")
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Login failed")
+                }
+            }
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                onResult(false, "Network error: Cannot connect to server")
+            }
+        })
+        // Set a timeout to prevent indefinite waiting
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (isLoading) {
+                call.cancel()
+                isLoading = false
+                errorMessage = "Connection timeout. Please try again."
+            }
+        }, 10000)
+    }
+
+    // Sends the FCM token to the server after login
     private fun sendFcmTokenToServer() {
         lifecycleScope.launch {
             val token = applicationContext.dataStore.data.first()[FrogFirebaseMessagingService.FCM_TOKEN_KEY]
             token?.let {
                 try {
-                    // Create a proper request body with the device_token field
                     val tokenRequest = DeviceTokenRequest(deviceToken = it)
 
                     ApiClient.apiService.updateDeviceToken(tokenRequest).enqueue(object : Callback<MessageResponse> {
@@ -105,10 +161,22 @@ class LogInActivity : ComponentActivity() {
     }
 }
 
+// Composable for the login screen UI
 @Composable
 fun LogInScreen(
     onLoginSuccess: () -> Unit,
 ) {
+    val activity = LocalContext.current as LogInActivity
+    val context = LocalContext.current
+    var email by remember { mutableStateOf("") }
+    val emailValid = remember {
+        derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
+    }
+    var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -118,6 +186,7 @@ fun LogInScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.size(128.dp))
+            // App logo
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App logo",
@@ -133,10 +202,7 @@ fun LogInScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                var email by remember { mutableStateOf("") }
-                val emailValid = remember {
-                    derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
-                }
+                // Email label and input
                 Text(
                     text = "Email",
                     fontFamily = PoppinsFamily,
@@ -170,7 +236,7 @@ fun LogInScreen(
                     }
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                var password by remember { mutableStateOf("") }
+                // Password label and input
                 Text(
                     text = "Password",
                     fontFamily = PoppinsFamily,
@@ -190,33 +256,61 @@ fun LogInScreen(
                             color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(16.dp)
                         ),
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = 16.sp
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = { 
+                            // Trigger login when "Done" is pressed on keyboard
+                            isLoading = true
+                            errorMessage = null
+                            activity.handleLogin(email, password) { success, error ->
+                                isLoading = false
+                                if (success) {
+                                    onLoginSuccess()
+                                } else {
+                                    errorMessage = error
+                                }
+                            }
+                        }
                     ),
-                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 16.sp),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            innerTextField()
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(Modifier.weight(1f)) { innerTextField() }
+                                // Toggle password visibility
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            if (passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+                                        ),
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    )
+                                }
+                            }
                         }
                     }
                 )
                 Spacer(modifier = Modifier.size(32.dp))
+                // "Frogot password" clickable text
                 Text(
                     text = "-- frogot password? --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
-                        .clickable { TODO("Usługa jeszcze nie zaimplementowana emoji żaby") }
+                        .clickable { 
+                            Toast.makeText(context, "Not implemented yet", Toast.LENGTH_SHORT).show()
+                         }
                         .padding(8.dp)
                 )
                 Spacer(modifier = Modifier.size(32.dp))
-                var isLoading by remember { mutableStateOf(false) }
-                var errorMessage by remember { mutableStateOf<String?>(null) }
 
                 // Error message display
                 errorMessage?.let {
@@ -232,77 +326,22 @@ fun LogInScreen(
                 // Login button with loading indicator
                 Button(
                     onClick = {
-                        if (email.isNotEmpty() && password.isNotEmpty() && emailValid.value) {
-                            isLoading = true
-                            errorMessage = null
-
-                            val loginRequest = LoginRequest(
-                                email = email,
-                                password = password
-                            )
-
-                            // Set a timeout for the API call
-                            val call = ApiClient.apiService.loginUser(loginRequest)
-
-                            call.enqueue(object : Callback<AuthResponse> {
-                                override fun onResponse(
-                                    call: Call<AuthResponse>,
-                                    response: Response<AuthResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        response.body()?.let { authResponse ->
-                                            // Save token in SessionManager
-                                            SessionManager.saveAuthToken(authResponse.token)
-
-                                            // Save user info if needed
-                                            authResponse.user.let { user ->
-                                                SessionManager.saveUserInfo(
-                                                    user.id.toString(),
-                                                    user.name,
-                                                    user.email
-                                                )
-                                            }
-                                            onLoginSuccess()
-
-                                        } ?: run {
-                                            errorMessage = "Empty response received"
-                                        }
-                                    } else {
-                                        errorMessage = try {
-                                            response.errorBody()?.string() ?: "Login failed"
-                                        } catch (e: Exception) {
-                                            "Login failed: ${e.message}"
-                                        }
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = "Network error: Cannot connect to server"
-                                }
-                            })
-
-                            // Set a timeout to prevent indefinite waiting
-                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                if (isLoading) {
-                                    call.cancel()
-                                    isLoading = false
-                                    errorMessage = "Connection timeout. Please try again."
-                                }
-                            }, 10000) // 10 second timeout
-
-                        } else if (!emailValid.value) {
-                            errorMessage = "Please enter a valid email address"
-                        } else {
-                            errorMessage = "Please enter email and password"
+                        isLoading = true
+                        errorMessage = null
+                        activity.handleLogin(email, password) { success, error ->
+                            isLoading = false
+                            if (success) {
+                                onLoginSuccess()
+                            } else {
+                                errorMessage = error
+                            }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading
                 ) {
                     if (isLoading) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
@@ -320,6 +359,7 @@ fun LogInScreen(
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun LogInActivityPreview () {
