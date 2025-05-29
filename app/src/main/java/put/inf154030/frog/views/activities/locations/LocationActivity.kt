@@ -1,6 +1,5 @@
 package put.inf154030.frog.views.activities.locations
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -53,25 +52,31 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for displaying and managing containers in a location
 class LocationActivity : ComponentActivity() {
-    private lateinit var addContainerLauncher: ActivityResultLauncher<Intent>
+    // Launcher for add/edit container activities
+    private lateinit var containerLauncher: ActivityResultLauncher<Intent>
+    // List of containers for this location
     private var containersList by mutableStateOf<List<Container>>(emptyList())
+    // Loading and error state
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    // Location info
     private var locationId: Int = -1
     private var locationName: String = "Location"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Get location info from intent
         locationId = intent.getIntExtra("LOCATION_ID", -1)
         locationName = intent.getStringExtra("LOCATION_NAME") ?: "Location"
 
-        // Initialize activity result launcher
-        addContainerLauncher = registerForActivityResult(
+        // Initialize activity result launcher for add/edit container
+        containerLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            loadContainers()
+            loadContainers() // Refresh containers after add/edit
         }
 
         setContent {
@@ -83,11 +88,13 @@ class LocationActivity : ComponentActivity() {
                     errorMessage = errorMessage,
                     onBackClick = { finish() },
                     onAddContainerClick = {
+                        // Launch add container activity
                         val intent = Intent(this, AddContainerActivity::class.java)
                         intent.putExtra("LOCATION_ID", locationId)
-                        addContainerLauncher.launch(intent)
+                        containerLauncher.launch(intent)
                     },
                     onContainerClick = { container ->
+                        // Open container details
                         val intent = Intent(this, ContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", container.id)
                         intent.putExtra("CONTAINER_NAME", container.name)
@@ -95,14 +102,14 @@ class LocationActivity : ComponentActivity() {
                         startActivity(intent)
                     },
                     onEditClick = { container ->
+                        // Launch edit container activity
                         val intent = Intent(this, EditContainerActivity::class.java)
                         intent.putExtra("CONTAINER_ID", container.id)
                         intent.putExtra("CONTAINER_NAME", container.name)
                         intent.putExtra("CONTAINER_DESCRIPTION", container.description)
                         intent.putExtra("LOCATION_ID", locationId)
-                        addContainerLauncher.launch(intent)
-                    },
-                    context = this
+                        containerLauncher.launch(intent)
+                    }
                 )
             }
         }
@@ -110,6 +117,7 @@ class LocationActivity : ComponentActivity() {
         loadContainers()
     }
 
+    // Fetch containers for this location from API
     private fun loadContainers() {
         if (locationId == -1) {
             errorMessage = "Invalid location ID"
@@ -128,7 +136,7 @@ class LocationActivity : ComponentActivity() {
                 if (response.isSuccessful) {
                     containersList = response.body()?.containers ?: emptyList()
                 } else {
-                    errorMessage = "Failed to load locations: ${response.message()}"
+                    errorMessage = "Failed to load containers: ${response.message()}"
                 }
             }
 
@@ -141,21 +149,23 @@ class LocationActivity : ComponentActivity() {
     }
 }
 
+// Composable for the main location screen UI
 @Composable
 fun LocationScreen(
     locationName: String,
-    containers: List<Container> = emptyList(),
-    isLoading: Boolean = false,
-    errorMessage: String? = null,
+    containers: List<Container>,
+    isLoading: Boolean,
+    errorMessage: String?,
     onBackClick: () -> Unit,
     onAddContainerClick: () -> Unit,
     onContainerClick: (Container) -> Unit,
-    onEditClick: (Container) -> Unit,
-    context: Context
+    onEditClick: (Container) -> Unit
 ) {
+    // State for showing the side menu and selected filter
     var showMenu by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("all") }
 
+    // Filter containers based on selected type
     val filteredContainers = when (selectedFilter) {
         "aquariums" -> containers.filter { it.type.lowercase() == "aquarium" }
         "terrariums" -> containers.filter { it.type.lowercase() == "terrarium" }
@@ -170,10 +180,12 @@ fun LocationScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Top navigation bar with menu button
             TopNavigationBar(
                 title = locationName,
                 onMenuClick = { showMenu = !showMenu }
             )
+            // Back button
             Box (
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart
@@ -181,6 +193,7 @@ fun LocationScreen(
                 BackButton { onBackClick() }
             }
 
+            // Filter buttons for container types
             FilterButtonsRow(
                 selectedFilter = selectedFilter,
                 onFilterSelected = { filter -> selectedFilter = filter }
@@ -212,7 +225,7 @@ fun LocationScreen(
                 }
             }
 
-            // This is the scrollable content
+            // Show empty state if no containers
             else if (filteredContainers.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -229,6 +242,7 @@ fun LocationScreen(
                     )
                 }
             } else {
+                // List of containers
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -252,7 +266,7 @@ fun LocationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Floating action button
+                // Floating action button for adding a container
                 IconButton(
                     onClick = onAddContainerClick,
                     modifier = Modifier
@@ -269,18 +283,18 @@ fun LocationScreen(
             }
         }
 
+        // Side menu overlay
         SideMenu(
             isVisible = showMenu,
-            onDismiss = { showMenu = false },
-            context = context
+            onDismiss = { showMenu = false }
         )
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun LocationActivityPreview () {
-    val context = androidx.compose.ui.platform.LocalContext.current
     FrogTheme {
         LocationScreen(
             locationName = "Lokacja 1",
@@ -295,8 +309,7 @@ fun LocationActivityPreview () {
             onBackClick = {},
             onAddContainerClick = {},
             onContainerClick = { _ -> },
-            onEditClick = { _ -> },
-            context = context
+            onEditClick = { _ -> }
         )
     }
 }
