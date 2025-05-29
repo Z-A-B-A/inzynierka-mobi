@@ -36,13 +36,14 @@ import put.inf154030.frog.views.activities.notifications.NotificationsActivity
 import put.inf154030.frog.views.activities.notifications.UpcomingActivity
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun SideMenu(
     isVisible: Boolean,
-    onDismiss: () -> Unit,
-    context: Context
+    onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInHorizontally(initialOffsetX = { it }),
