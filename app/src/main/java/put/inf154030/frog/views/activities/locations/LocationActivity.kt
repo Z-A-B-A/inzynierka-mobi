@@ -234,8 +234,8 @@ fun LocationScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (containers.isEmpty()) "No containers added yet"
-                        else "No ${selectedFilter.dropLast(1)}s in this location",
+                        text = if (selectedFilter == "all") "No containers added yet"
+                        else "No ${selectedFilter}s in this location",
                         color = MaterialTheme.colorScheme.secondary,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium
