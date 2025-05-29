@@ -29,22 +29,24 @@ import put.inf154030.frog.R
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 
+// Entry activity for the app, shows login/signup options
 class InitialActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             FrogTheme {
+                // Main screen composable for initial options
                 InitialScreen(
                     onLoginClick = {
+                        // Navigate to Log In screen
                         val intent = Intent(this, LogInActivity::class.java)
                         startActivity(intent)
-                        finish()
                     },
                     onSignUpClick = {
+                        // Navigate to Sign Up screen
                         val intent = Intent(this, SignUpActivity::class.java)
                         startActivity(intent)
-                        finish()
                     }
                 )
             }
@@ -52,6 +54,7 @@ class InitialActivity : ComponentActivity() {
     }
 }
 
+// Composable for the initial login/signup screen
 @Composable
 fun InitialScreen (
     onLoginClick: () -> Unit,
@@ -68,6 +71,7 @@ fun InitialScreen (
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {
+            // Centered logo at the top
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,6 +86,7 @@ fun InitialScreen (
                         .height(128.dp)
                 )
             }
+            // Log In button
             Button(
                 onClick = { onLoginClick() },
                 modifier = Modifier
@@ -93,6 +98,7 @@ fun InitialScreen (
                     fontFamily = PoppinsFamily
                 )
             }
+            // Sign Up button
             Button(
                 onClick = { onSignUpClick() },
                 modifier = Modifier
@@ -109,6 +115,7 @@ fun InitialScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun InitialActivityPreview () {
