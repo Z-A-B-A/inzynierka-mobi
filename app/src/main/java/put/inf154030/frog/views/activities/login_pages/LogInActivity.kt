@@ -1,11 +1,12 @@
 package put.inf154030.frog.views.activities.login_pages
 
-import androidx.compose.material3.CircularProgressIndicator
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,35 +40,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import put.inf154030.frog.R
-import put.inf154030.frog.views.activities.locations.LocationsActivity
+import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.requests.LoginRequest
 import put.inf154030.frog.models.responses.AuthResponse
+import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
 import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.utils.dataStore
+import put.inf154030.frog.views.activities.locations.LocationsActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlinx.coroutines.flow.first
-import put.inf154030.frog.models.requests.DeviceTokenRequest
-import put.inf154030.frog.models.responses.MessageResponse
 
 // Activity for user login
 class LogInActivity : ComponentActivity() {
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf("")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -166,7 +179,7 @@ class LogInActivity : ComponentActivity() {
 fun LogInScreen(
     onLoginSuccess: () -> Unit,
 ) {
-    val activity = LocalContext.current as LogInActivity
+    val activity = LocalActivity.current as LogInActivity
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     val emailValid = remember {
@@ -235,6 +248,16 @@ fun LogInScreen(
                         }
                     }
                 )
+                // Error message if email is not valid
+                if (!emailValid.value && email.isNotEmpty()) {
+                    Text(
+                        text = "Invalid email address",
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.size(16.dp))
                 // Password label and input
                 Text(
