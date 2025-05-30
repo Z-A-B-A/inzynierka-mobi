@@ -1,5 +1,7 @@
 package put.inf154030.frog.views.activities.schedule
 
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.Box
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -31,7 +33,12 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for deleting a schedule
 class DeleteScheduleActivity : ComponentActivity() {
+    // State for loading and error message
+    private val isLoading by mutableStateOf(false)
+    private val errorMessage by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -39,49 +46,72 @@ class DeleteScheduleActivity : ComponentActivity() {
 
         setContent {
             FrogTheme {
+                // Main screen composable for delete confirmation
                 DeleteScheduleScreen(
                     onYesClick = {
+                        isLoading = true
+                        errorMessage = null
+
+                        // Make API call to delete schedule
                         ApiClient.apiService.deleteSchedule(scheduleId)
                             .enqueue(object: Callback<MessageResponse> {
                                 override fun onResponse(
                                     call: Call<MessageResponse>,
                                     response: Response<MessageResponse>
                                 ) {
-                                    finish()
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish() // Close activity on success
+                                    } else {
+                                        errorMessage = response.errorBody()?.string() ?: "Unknown error"
+                                    }
                                 }
 
                                 override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                                    Toast.makeText(this@DeleteScheduleActivity, "Oops! Something went wrong :( Try again.", Toast.LENGTH_LONG).show()
+                                    isLoading = false
+                                    errorMessage = t.message ?: "Failed to delete schedule"
                                 }
-
                             })
-                        finish()
                     },
-                    onNoClick = { finish() }
+                    onNoClick = { finish() },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 }
 
+// Composable for the delete schedule confirmation UI
 @Composable
 fun DeleteScheduleScreen (
     onYesClick: () -> Unit,
-    onNoClick: () -> Unit
+    onNoClick: () -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Delete Schedule"
-            )
+            TopHeaderBar(title = "Delete Schedule")
             Column (
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                // Show error message if present
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+                // Confirmation prompt
                 Text(
                     text = "Are you sure?",
                     color = MaterialTheme.colorScheme.secondary,
@@ -97,10 +127,12 @@ fun DeleteScheduleScreen (
                     fontSize = 14.sp,
                 )
                 Spacer(modifier = Modifier.size(64.dp))
+                // Yes/No buttons
                 Row {
                     Button(
                         modifier = Modifier.width(128.dp),
-                        onClick = { onYesClick() }
+                        onClick = { onYesClick() },
+                        enabled = !isLoading
                     ) {
                         Text(
                             text = "Yes",
@@ -119,18 +151,35 @@ fun DeleteScheduleScreen (
                     }
                 }
                 Spacer(modifier = Modifier.size(64.dp))
+                // Overlay spinner if loading
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun DeleteScheduleActivityPreview() {
     FrogTheme {
         DeleteScheduleScreen(
             onYesClick = {  },
-            onNoClick = {  }
+            onNoClick = {  },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
