@@ -177,7 +177,9 @@ fun DeleteScheduleActivityPreview() {
     FrogTheme {
         DeleteScheduleScreen(
             onYesClick = {  },
-            onNoClick = {  }
+            onNoClick = {  },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
