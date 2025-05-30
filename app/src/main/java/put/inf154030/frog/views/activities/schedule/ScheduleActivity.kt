@@ -45,7 +45,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for displaying and managing schedules
 class ScheduleActivity : ComponentActivity() {
+    // State for schedules, loading, and error message
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var schedulesList by mutableStateOf<List<Schedule>>(emptyList())
     private var isLoading by mutableStateOf(false)
@@ -56,6 +58,7 @@ class ScheduleActivity : ComponentActivity() {
 
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
 
+        // Register for result to reload schedules after create/edit
         activityResultLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
@@ -64,6 +67,7 @@ class ScheduleActivity : ComponentActivity() {
 
         setContent {
             FrogTheme {
+                // Main screen composable for schedules
                 ScheduleScreen(
                     onBackClick = { finish() },
                     onCreateScheduleClick = {
@@ -83,6 +87,7 @@ class ScheduleActivity : ComponentActivity() {
                 )
             }
         }
+        // Initial load of schedules
         loadSchedules(containerId)
     }
 
@@ -94,6 +99,7 @@ class ScheduleActivity : ComponentActivity() {
         }
     }
 
+    // Fetch schedules from API
     private fun loadSchedules(
         containerId: Int
     ) {
@@ -108,6 +114,7 @@ class ScheduleActivity : ComponentActivity() {
             ) {
                 isLoading = false
                 if (response.isSuccessful) {
+                    // Update list with fetched schedules
                     schedulesList = response.body()?.schedules ?: emptyList()
                 } else {
                     errorMessage = "Failed to load schedules: ${response.message()}"
@@ -122,6 +129,7 @@ class ScheduleActivity : ComponentActivity() {
     }
 }
 
+// Composable for the schedules screen UI
 @Composable
 fun ScheduleScreen(
     onBackClick: () -> Unit,
@@ -136,9 +144,7 @@ fun ScheduleScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Schedule",
-            )
+            TopHeaderBar(title = "Schedule")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -147,6 +153,7 @@ fun ScheduleScreen(
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Show loading spinner
                 if (isLoading) {
                     Box(
                         modifier = Modifier
@@ -156,6 +163,7 @@ fun ScheduleScreen(
                     ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
                     }
+                // Show error message if present
                 } else if (errorMessage != null) {
                     Box(
                         modifier = Modifier
@@ -168,6 +176,7 @@ fun ScheduleScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                     }
+                // Show empty state if no schedules
                 } else if (schedulesList.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -182,6 +191,7 @@ fun ScheduleScreen(
                             fontWeight = FontWeight.Medium
                         )
                     }
+                // Show list of schedules
                 } else {
                     LazyColumn(
                         modifier = Modifier
@@ -203,6 +213,7 @@ fun ScheduleScreen(
                     }
                 }
             }
+            // "Create Schedule" action at the bottom
             Column (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -226,6 +237,7 @@ fun ScheduleScreen(
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun ScheduleActivityPreview() {
