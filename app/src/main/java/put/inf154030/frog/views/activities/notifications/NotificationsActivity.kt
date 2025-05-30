@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.Notification
@@ -58,7 +57,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for displaying and managing notifications
 class NotificationsActivity : ComponentActivity() {
+    // State for notifications, loading, error, and toggle
     private var notificationsList by mutableStateOf<List<Notification>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
@@ -74,58 +75,57 @@ class NotificationsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        checkNotificationPermission()
-        loadNotifications()
-
-        setContent {
-            FrogTheme {
-                NotificationsScreen(
-                    onBackClick = { finish() },
-                    notificationsList = notificationsList,
-                    notificationsEnabled = notificationsEnabled,
-                    onNotificationsToggle = { enabled ->
-                        notificationsEnabled = enabled
-                        if (enabled) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        } else {
-                            // When toggling off, just update preference - can't revoke permission programmatically
-                            updateNotificationsEnabledPreference(false)
-
-                            // Optionally open app settings if you want user to manually revoke permission
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-//                                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-//                                PackageManager.PERMISSION_GRANTED) {
-//
-//                                // Optionally open settings
-//                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-//                                 val uri = Uri.fromParts("package", packageName, null)
-//                                 intent.data = uri
-//                                 startActivity(intent)
-//                            }
-                        }
-                    },
-                    onMarkAllAsReadClick = {
-                        markAllAsRead()
-                    },
-                    onMarkAsReadClick = { id ->
-                        markAsRead(id)
+        // Load notification toggle state from preferences
+        lifecycleScope.launch {
+            notificationsEnabled = applicationContext.dataStore.data.first()[FrogFirebaseMessagingService.NOTIFICATIONS_ENABLED_KEY] ?:
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                    } else {
+                        true
                     }
-                )
+
+            // Update UI
+            setContent {
+                FrogTheme {
+                    NotificationsScreen(
+                        notificationsEnabled = notificationsEnabled,
+                        isLoading = isLoading,
+                        errorMessage = errorMessage,
+                        onBackClick = { finish() },
+                        notificationsList = notificationsList,
+                        onNotificationsToggle = { enabled ->
+                            toggleNotifications(enabled)
+                        },
+                        onMarkAllAsReadClick = { markAllAsRead() },
+                        onMarkAsReadClick = { id -> markAsRead(id) }
+                    )
+                }
             }
+            // Load notifications from API
+            loadNotifications()
         }
     }
 
-    private fun checkNotificationPermission() {
-        // On Android 13+, check notification permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationsEnabled = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-                    PackageManager.PERMISSION_GRANTED
-            updateNotificationsEnabledPreference(notificationsEnabled)
+    // New function to properly handle toggle
+    private fun toggleNotifications(enabled: Boolean) {
+        notificationsEnabled = enabled
+        updateNotificationsEnabledPreference(enabled)
+
+        // Request permission if enabling on Android 13+
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else if (!enabled) {
+            Toast.makeText(
+                this,
+                "Notifications disabled for this app",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
+    // Save notification toggle state to preferences
     private fun updateNotificationsEnabledPreference(enabled: Boolean) = lifecycleScope.launch {
         applicationContext.dataStore.updateData { preferences ->
             val mutablePreferences = preferences.toMutablePreferences()
@@ -134,6 +134,7 @@ class NotificationsActivity : ComponentActivity() {
         }
     }
 
+    // Load notifications from API
     private fun loadNotifications() {
         isLoading = true
         errorMessage = null
@@ -159,7 +160,9 @@ class NotificationsActivity : ComponentActivity() {
             })
     }
 
+    // Mark a single notification as read
     private fun markAsRead(notificationId: Int) {
+        errorMessage = null
         ApiClient.apiService.markNotificationAsRead(notificationId)
             .enqueue(object : Callback<NotificationUpdateResponse> {
                 override fun onResponse(
@@ -169,18 +172,19 @@ class NotificationsActivity : ComponentActivity() {
                     if (response.isSuccessful) {
                         loadNotifications()
                     } else {
-                        // Error handling...
+                        errorMessage = "Failed to mark notification as read"
                     }
                 }
 
                 override fun onFailure(call: Call<NotificationUpdateResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    errorMessage = t.message ?: "Network error"
                 }
-                // onFailure implementation...
             })
     }
 
+    // Mark all notifications as read
     private fun markAllAsRead() {
+        errorMessage = null
         ApiClient.apiService.markAllNotificationsAsRead()
             .enqueue(object : Callback<NotificationMarkAllReadResponse> {
                 override fun onResponse(
@@ -190,29 +194,29 @@ class NotificationsActivity : ComponentActivity() {
                     if (response.isSuccessful) {
                         loadNotifications()
                     } else {
-                        // Error handling...
+                        errorMessage = "Failed to mark all notifications as read"
                     }
                 }
 
                 override fun onFailure(call: Call<NotificationMarkAllReadResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    errorMessage = t.message ?: "Network error"
                 }
-                // onFailure implementation...
             })
     }
 }
 
+// Composable for notifications UI
 @Composable
 fun NotificationsScreen(
     onBackClick: () -> Unit,
     notificationsList: List<Notification>,
     notificationsEnabled: Boolean,
+    isLoading: Boolean,
+    errorMessage: String?,
     onNotificationsToggle: (Boolean) -> Unit,
     onMarkAllAsReadClick: () -> Unit,
     onMarkAsReadClick: (Int) -> Unit
 ) {
-    var isEnabled by remember { mutableStateOf(notificationsEnabled) }
-
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -226,14 +230,13 @@ fun NotificationsScreen(
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Toggle for enabling/disabling notifications
                 NotificationSetting(
-                    isOn = isEnabled,
-                    onToggle = {
-                        isEnabled = it
-                        onNotificationsToggle(it)
-                    }
+                    isOn = notificationsEnabled,
+                    onToggle = { onNotificationsToggle(it) }
                 )
                 Spacer(modifier = Modifier.size(16.dp))
+                // "Mark all as read" action
                 Text(
                     text = "mark all as read",
                     color = MaterialTheme.colorScheme.tertiary,
@@ -246,36 +249,61 @@ fun NotificationsScreen(
                     textAlign = TextAlign.End,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onMarkAllAsReadClick() }
+                        .clickable(enabled = !isLoading) { onMarkAllAsReadClick() }
                 )
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
-                ) {
-                    items(notificationsList) { notification ->
-                        NotificationCard(
-                            eventName = notification.schedule?.name ?: "Notification",
-                            containerName = notification.container?.name ?: "Unknown Container",
-                            executionTime = notification.executionTime,
-                            onMarkAsReadClick = { onMarkAsReadClick(notification.id) }
-                        )
-                    }
-
-                    if (notificationsList.isEmpty()) {
-                        item {
-                            Text(
-                                text = "No notifications",
-                                fontFamily = PoppinsFamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 18.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 32.dp)
+                // Show error message if present
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                // Show loading spinner if loading
+                if (isLoading) {
+                    Spacer(modifier = Modifier.size(32.dp))
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .align(Alignment.CenterHorizontally),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                } else {
+                    // List of notifications
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
+                        items(notificationsList) { notification ->
+                            NotificationCard(
+                                eventName = notification.schedule?.name ?: "Notification",
+                                containerName = notification.container?.name ?: "Unknown Container",
+                                executionTime = notification.executionTime,
+                                onMarkAsReadClick = { onMarkAsReadClick(notification.id) }
                             )
+                        }
+                        // Empty state message
+                        if (notificationsList.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "No new notifications",
+                                    fontFamily = PoppinsFamily,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 32.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -284,6 +312,7 @@ fun NotificationsScreen(
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun NotificationsActivityPreview() {
@@ -315,7 +344,9 @@ fun NotificationsActivityPreview() {
             onMarkAllAsReadClick = {},
             notificationsEnabled = true,
             onNotificationsToggle = { _ -> },
-            onMarkAsReadClick = { _ -> }
+            onMarkAsReadClick = { _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }

@@ -1,12 +1,9 @@
 package put.inf154030.frog.views.activities.species
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -24,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -42,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,8 +57,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for adding a species to a container
 class AddSpeciesActivity : ComponentActivity() {
-    private lateinit var addSpeciesLauncher: ActivityResultLauncher<Intent>
+    // State for species list, loading, and error message
     private var speciesList by mutableStateOf<List<Species>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
@@ -69,13 +69,6 @@ class AddSpeciesActivity : ComponentActivity() {
 
         val containerId = intent.getIntExtra("CONTAINER_ID", -1)
 
-        addSpeciesLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            // When returning from AddLocationActivity, refresh the parameters
-            loadSpecies()
-        }
-
         setContent {
             FrogTheme {
                 AddSpeciesScreen(
@@ -84,22 +77,28 @@ class AddSpeciesActivity : ComponentActivity() {
                         if (selectedSpecies == null) {
                             Toast.makeText(this, "No species selected!", Toast.LENGTH_LONG).show()
                         } else {
-                            val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, speciesCount)
+                            isLoading = true
+                            errorMessage = null
 
+                            val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, speciesCount)
+                            // Make API call to add species to container
                             ApiClient.apiService.addSpeciesToContainer(containerId, addSpeciesRequest)
                                 .enqueue(object: Callback<ContainerSpeciesItemResponse> {
                                     override fun onResponse(
                                         call: Call<ContainerSpeciesItemResponse>,
                                         response: Response<ContainerSpeciesItemResponse>
                                     ) {
-                                        finish()
+                                        isLoading = false
+                                        if (response.isSuccessful) {
+                                            finish()
+                                        } else {
+                                            errorMessage = "Failed to add species: ${response.message()}"
+                                        }
                                     }
 
-                                    override fun onFailure(
-                                        call: Call<ContainerSpeciesItemResponse>,
-                                        t: Throwable
-                                    ) {
-                                        Toast.makeText(this@AddSpeciesActivity, "Network error", Toast.LENGTH_LONG).show()
+                                    override fun onFailure(call: Call<ContainerSpeciesItemResponse>, t: Throwable) {
+                                        isLoading = false
+                                        errorMessage = "Network error: ${t.message}"
                                     }
 
                                 })
@@ -108,13 +107,17 @@ class AddSpeciesActivity : ComponentActivity() {
                     speciesList = speciesList,
                     onFilterSelected = { category ->
                         loadSpecies(if (category == "none") null else category)
-                    }
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
+        // Initial load of species
         loadSpecies()
     }
 
+    // Fetch species from API, optionally filtered by category
     private fun loadSpecies(category: String? = null) {
         isLoading = true
         errorMessage = null
@@ -140,12 +143,15 @@ class AddSpeciesActivity : ComponentActivity() {
     }
 }
 
+// Composable for the add species screen UI
 @Composable
 fun AddSpeciesScreen(
     onBackClick: () -> Unit,
     onSaveClick: (Species?, Int) -> Unit,
     speciesList: List<Species>,
-    onFilterSelected: (String?) -> Unit
+    onFilterSelected: (String?) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     var isSpeciesDropdownExpanded by remember { mutableStateOf(false) }
     var selectedSpecies by remember { mutableStateOf<Species?>(null) }
@@ -159,9 +165,7 @@ fun AddSpeciesScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Add Species",
-            )
+            TopHeaderBar(title = "Add Species")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -171,6 +175,7 @@ fun AddSpeciesScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.size(16.dp))
+                // Filter chips for categories
                 Text(
                     text = "-- filters --",
                     fontFamily = PoppinsFamily,
@@ -217,6 +222,7 @@ fun AddSpeciesScreen(
                         }
                     }
                 }
+                // Dropdown for selecting species
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -268,6 +274,7 @@ fun AddSpeciesScreen(
                 }
 
                 Spacer(modifier = Modifier.size(4.dp))
+                // Show details and count picker if a species is selected
                 if (selectedSpecies != null) {
                     Column(
                         modifier = Modifier
@@ -340,6 +347,7 @@ fun AddSpeciesScreen(
                             }
                         }
                         Spacer(modifier = Modifier.size(16.dp))
+                        // Show selected species details
                         Text(
                             text = "Category: ${selectedSpecies!!.category}",
                             fontFamily = PoppinsFamily,
@@ -367,6 +375,20 @@ fun AddSpeciesScreen(
             }
 
             Spacer(modifier = Modifier.size(32.dp))
+            // Show error message if present
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = PoppinsFamily,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+            // Save button at the bottom
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -376,8 +398,8 @@ fun AddSpeciesScreen(
             ) {
                 Button(
                     onClick = { onSaveClick(selectedSpecies, speciesCount) },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading // Disabled while loading
                 ) {
                     Text(
                         text = "Save",
@@ -386,10 +408,25 @@ fun AddSpeciesScreen(
                 }
                 Spacer(modifier = Modifier.size(64.dp))
             }
+            // Overlay spinner if loading
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
         }
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun AddSpeciesActivityPreview () {
@@ -401,7 +438,9 @@ fun AddSpeciesActivityPreview () {
                 Species(1, "FROG1", "FROG1", "frog1", "amphibians", true),
                 Species(2, "FROG2", "FROG2", "frog2", "amphibians", true)
             ),
-            onFilterSelected = { _ -> }
+            onFilterSelected = { _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }

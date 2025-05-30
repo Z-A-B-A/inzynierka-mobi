@@ -1,7 +1,6 @@
 package put.inf154030.frog.views.activities.schedule
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -41,21 +40,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
+import androidx.compose.ui.zIndex
 import put.inf154030.frog.models.requests.ScheduleCreateRequest
 import put.inf154030.frog.models.responses.ScheduleResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import retrofit2.Callback
-import retrofit2.Response
 
+// Activity for creating a new schedule
 class CreateScheduleActivity : ComponentActivity() {
+    // State for loading and error message
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,65 +68,76 @@ class CreateScheduleActivity : ComponentActivity() {
 
         setContent {
             FrogTheme {
+                // Main screen composable for schedule creation
                 CreateScheduleScreen(
                     onBackClick = { finish() },
                     onCreateClick = { name, frequency, weekDays, executionTime ->
+                        isLoading = true
+                        errorMessage = null
+
+                        // Prepare request data
                         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
                         val currentDate = dateFormat.format(Date())
 
                         val scheduleCreateRequest = ScheduleCreateRequest(name, currentDate.toString(), frequency, weekDays, executionTime)
 
+                        // Make API call to create schedule
                         ApiClient.apiService.createSchedule(containerId, scheduleCreateRequest)
                             .enqueue(object: Callback<ScheduleResponse> {
                                 override fun onResponse(
                                     call: Call<ScheduleResponse>,
                                     response: Response<ScheduleResponse>
                                 ) {
-                                    finish()
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish() // Close activity on success
+                                    } else {
+                                        errorMessage = response.errorBody()?.string() ?: "Unknown error"
+                                    }
                                 }
 
                                 override fun onFailure(call: Call<ScheduleResponse>, t: Throwable) {
-                                    Toast.makeText(this@CreateScheduleActivity, "Oops! Something went wrong :( Try again.", Toast.LENGTH_LONG).show()
+                                    isLoading = false
+                                    errorMessage = t.message ?: "Network error"
                                 }
                             })
-                        finish()
-                    }
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 }
 
+// Composable for the create schedule screen UI
 @Composable
 fun CreateScheduleScreen(
     onBackClick: () -> Unit,
-    onCreateClick: (String, String, String, String) -> Unit
+    onCreateClick: (String, String, String, String) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
+    // State for form fields
     var name by remember { mutableStateOf("") }
     var execution by remember { mutableStateOf(false) }
     var weekDays by remember { mutableStateOf("") }
-
-    // Add state for time
     var hour by remember { mutableIntStateOf(12) }
     var minute by remember { mutableIntStateOf(0) }
     var showTimePicker by remember { mutableStateOf(false) }
-
-    // Format time as "HH:mm"
-    val formattedTime = String.format(Locale.US, "%02d:%02d", hour, minute)
-
     // Days of week selection
     var selectedDays by remember { mutableStateOf(setOf<Int>()) }
-
     val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    // Format time as "HH:mm"
+    val formattedTime = String.format(Locale.US, "%02d:%02d", hour, minute)
 
     Surface (
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Create Schedule",
-            )
+            // Top bar and back button
+            TopHeaderBar(title = "Create Schedule")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
             Column (
@@ -131,6 +147,7 @@ fun CreateScheduleScreen(
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Name input with character counter
                 Row (
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -181,6 +198,7 @@ fun CreateScheduleScreen(
                     }
                 )
                 Spacer(modifier = Modifier.size(32.dp))
+                // Execution mode toggle
                 Text(
                     text = "-- execution --",
                     color = MaterialTheme.colorScheme.secondary,
@@ -220,6 +238,7 @@ fun CreateScheduleScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(16.dp))
+                // Weekly mode: select days
                 if (execution) {
                     Row(
                         modifier = Modifier
@@ -267,7 +286,7 @@ fun CreateScheduleScreen(
                         }
                     }
 
-                    // Show selected days text summary
+                    // Show selected days or error
                     if (selectedDays.isNotEmpty()) {
                         Text(
                             text = "Selected: ${selectedDays.sorted().joinToString(", ")}",
@@ -287,6 +306,7 @@ fun CreateScheduleScreen(
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }
+                // Time selection
                 Text(
                     text = "-- execution time --",
                     color = MaterialTheme.colorScheme.secondary,
@@ -330,6 +350,7 @@ fun CreateScheduleScreen(
                     )
                 }
             }
+            // Error message and create button
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -337,6 +358,14 @@ fun CreateScheduleScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontFamily = PoppinsFamily,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 Button(
                     onClick = {
                         weekDays = selectedDays.sorted().joinToString(",")
@@ -350,8 +379,8 @@ fun CreateScheduleScreen(
 
                         onCreateClick(name, frequency, weekDays, formattedTime)
                     },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading
                 ) {
                     Text(
                         text = "Create",
@@ -359,6 +388,21 @@ fun CreateScheduleScreen(
                     )
                 }
                 Spacer(modifier = Modifier.size(64.dp))
+            }
+        }
+        // Overlay spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                    .zIndex(1f), // Optional: ensures overlay is on top
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(64.dp)
+                )
             }
         }
     }
@@ -404,13 +448,16 @@ fun TimePickerDialog(
     )
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun CreateScheduleActivityPreview() {
     FrogTheme {
         CreateScheduleScreen(
             onBackClick = {},
-            onCreateClick = { _, _, _, _ -> }
+            onCreateClick = { _, _, _, _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }

@@ -1,7 +1,6 @@
 package put.inf154030.frog.views.activities.locations
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -37,13 +36,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
+import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.fragments.LocationCard
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
@@ -51,32 +54,49 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for displaying and managing all locations
 class LocationsActivity : ComponentActivity() {
-    private lateinit var addLocationLauncher: ActivityResultLauncher<Intent>
+    // Launcher for add/edit location activities
+    private lateinit var locationLauncher: ActivityResultLauncher<Intent>
+    // List of locations
     private var locationsList by mutableStateOf<List<Location>>(emptyList())
+    // Loading and error state
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    // User name for greeting
     private val userName = SessionManager.getUserName()
 
+    /* 
+     * Permission launcher for notifications (Android 13+)
+     * For Android 13 and above, we need to request permission to post notifications.
+     * For earlier versions, this is not required.
+    */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _: Boolean ->
-        // Optional: handle the result if needed
+    ) { isGranted: Boolean ->
+        // Save the permission status to preferences
+        lifecycleScope.launch {
+            applicationContext.dataStore.updateData { preferences ->
+                val mutablePreferences = preferences.toMutablePreferences()
+                mutablePreferences[FrogFirebaseMessagingService.NOTIFICATIONS_ENABLED_KEY] = isGranted
+                mutablePreferences
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Request notification permission if needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Request notification permission (API 33+)
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        // Initialize activity result launcher
-        addLocationLauncher = registerForActivityResult(
+        // Initialize activity result launcher for add/edit location
+        locationLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            // When returning from AddLocationActivity, refresh the locations
+            // Refresh locations after add/edit
             loadLocations()
         }
 
@@ -88,21 +108,23 @@ class LocationsActivity : ComponentActivity() {
                     isLoading = isLoading,
                     errorMessage = errorMessage,
                     onAddLocationClick = {
+                        // Launch add location activity
                         val intent = Intent(this, AddLocationActivity::class.java)
-                        addLocationLauncher.launch(intent)
+                        locationLauncher.launch(intent)
                     },
                     onLocationClick = { location ->
+                        // Open location details
                         val intent = Intent(this, LocationActivity::class.java)
                         intent.putExtra("LOCATION_ID", location.id)
                         intent.putExtra("LOCATION_NAME", location.name)
                         startActivity(intent)
                     },
                     onEditClick = { location ->
+                        // Launch edit location activity
                         val intent = Intent(this, EditLocationActivity::class.java)
                         intent.putExtra("LOCATION_ID", location.id)
-                        addLocationLauncher.launch(intent)
-                    },
-                    context = this
+                        locationLauncher.launch(intent)
+                    }
                 )
             }
         }
@@ -112,6 +134,7 @@ class LocationsActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Refresh locations when returning to this activity
         loadLocations()
     }
 
@@ -141,6 +164,7 @@ class LocationsActivity : ComponentActivity() {
     }
 }
 
+// Composable for the main locations screen UI
 @Composable
 fun LocationsScreen(
     userName: String?,
@@ -149,8 +173,7 @@ fun LocationsScreen(
     errorMessage: String?,
     onAddLocationClick: () -> Unit,
     onLocationClick: (Location) -> Unit,
-    onEditClick: (Location) -> Unit,
-    context: Context
+    onEditClick: (Location) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     Surface(
@@ -161,6 +184,7 @@ fun LocationsScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Top navigation bar with menu button
             TopNavigationBar(
                 title = "Hi, $userName!",
                 onMenuClick = { showMenu = !showMenu }
@@ -192,7 +216,7 @@ fun LocationsScreen(
                 }
             }
 
-            // This is the scrollable content
+            // Show empty state if no locations
             if (locations.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -201,13 +225,14 @@ fun LocationsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No locations added yet",
+                        text = "Tap + to add your first location",
                         color = MaterialTheme.colorScheme.secondary,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium
                     )
                 }
             } else {
+                // List of locations
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -229,7 +254,7 @@ fun LocationsScreen(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Floating action button
+                // Floating action button for adding a location
                 IconButton(
                     onClick = { onAddLocationClick() },
                     modifier = Modifier
@@ -246,18 +271,18 @@ fun LocationsScreen(
             }
         }
 
+        // Side menu overlay
         SideMenu(
             isVisible = showMenu,
-            onDismiss = { showMenu = false },
-            context = context
+            onDismiss = { showMenu = false }
         )
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun LocationsActivityPreview () {
-    val context = androidx.compose.ui.platform.LocalContext.current
     FrogTheme {
         LocationsScreen(
             userName = "Bartosz",
@@ -275,8 +300,7 @@ fun LocationsActivityPreview () {
             errorMessage = null,
             onAddLocationClick = {},
             onLocationClick = { _ -> },
-            onEditClick = { _ -> },
-            context = context
+            onEditClick = { _ -> }
         )
     }
 }

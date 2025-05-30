@@ -1,17 +1,18 @@
 package put.inf154030.frog.views.activities.login_pages
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +21,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,10 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,31 +59,86 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Activity for user registration
 class SignUpActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
+                // Main sign-up screen composable
                 SignUpScreen(
                     onSignUpSuccess = {
+                        // Navigate to login screen after successful registration
                         val intent = Intent(this, LogInActivity::class.java)
                         startActivity(intent)
                         finish()
-                    },
-                    context = this
+                    }
                 )
             }
         }
     }
+
+    // Handles registration API call
+    fun handleSignUp(
+        name: String,
+        email: String,
+        password: String,
+        onResult: (success: Boolean, error: String?) -> Unit
+    ) {
+        val registerRequest = RegisterRequest(name, email, password)
+        val call = ApiClient.apiService.registerUser(registerRequest)
+        call.enqueue(object : Callback<RegisterResponse> {
+            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
+                if (response.isSuccessful) {
+                    onResult(true, null)
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Registration failed")
+                }
+            }
+            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                onResult(false, "Network error: Cannot connect to server")
+            }
+        })
+        // Timeout logic
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            onResult(false, "Connection timeout. Please try again.")
+            call.cancel()
+        }, 10000)
+    }
 }
 
+// Composable for the sign-up screen UI
 @Composable
 fun SignUpScreen (
-    onSignUpSuccess: () -> Unit,
-    context: Context
+    onSignUpSuccess: () -> Unit
 ) {
+    val activity = LocalActivity.current as SignUpActivity
+    val context = LocalContext.current
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    val emailValid = remember {
+        derivedStateOf {
+            Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        }
+    }
+    var password by remember { mutableStateOf("") }
+    val passwordValid = remember {
+        derivedStateOf {
+            password.length >= 8
+                    && password.any { it.isUpperCase() }
+                    && password.any { it.isLowerCase() }
+                    && password.any { it.isDigit() }
+        }
+    }
+    var passwordConfirmation by remember { mutableStateOf("") }
+    val passwordsMatch = remember {
+        derivedStateOf { password == passwordConfirmation }
+    }
+    var passwordVisible by remember { mutableStateOf(false) }
+    val allFieldsValid = passwordValid.value && emailValid.value && passwordsMatch.value
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -85,6 +148,7 @@ fun SignUpScreen (
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.size(128.dp))
+            // App logo
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App logo",
@@ -99,7 +163,7 @@ fun SignUpScreen (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                var name by remember { mutableStateOf("") }
+                // Name input
                 Text(
                     text = "Name",
                     fontFamily = PoppinsFamily,
@@ -133,12 +197,7 @@ fun SignUpScreen (
                     }
                 )
                 Spacer(modifier = Modifier.size(16.dp))
-                var email by remember { mutableStateOf("") }
-                val emailValid = remember {
-                    derivedStateOf {
-                        Patterns.EMAIL_ADDRESS.matcher(email).matches()
-                    }
-                }
+                // Email input
                 Text(
                     text = "Email",
                     fontFamily = PoppinsFamily,
@@ -171,6 +230,7 @@ fun SignUpScreen (
                         }
                     }
                 )
+                // Email validation message
                 if (email.isNotEmpty() && !emailValid.value) {
                     Text(
                         text = "Enter valid email address.",
@@ -183,15 +243,7 @@ fun SignUpScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(16.dp))
-                var password by remember { mutableStateOf("") }
-                val passwordValid = remember {
-                    derivedStateOf {
-                        password.length >= 8
-                                && password.any { it.isUpperCase() }
-                                && password.any { it.isLowerCase() }
-                                && password.any { it.isDigit() }
-                    }
-                }
+                // Password input with show/hide toggle
                 Text(
                     text = "Password",
                     fontFamily = PoppinsFamily,
@@ -216,16 +268,29 @@ fun SignUpScreen (
                         fontSize = 16.sp,
                         fontFamily = PoppinsFamily
                     ),
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            innerTextField()
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(Modifier.weight(1f)) { innerTextField() }
+                                // Toggle password visibility
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            if (passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+                                        ),
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    )
+                                }
+                            }
                         }
                     }
                 )
+                // Password validation message
                 if (password.isNotEmpty() && !passwordValid.value) {
                     Text(
                         text = "Password must have at least 8 characters, 1 uppercase, 1 lowercase, and 1 number.",
@@ -238,10 +303,7 @@ fun SignUpScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(16.dp))
-                var passwordConfirmation by remember { mutableStateOf("") }
-                val passwordsMatch = remember {
-                    derivedStateOf { password == passwordConfirmation }
-                }
+                // Confirm password input with show/hide toggle
                 Text(
                     text = "Confirm password",
                     fontFamily = PoppinsFamily,
@@ -266,19 +328,50 @@ fun SignUpScreen (
                         fontSize = 16.sp,
                         fontFamily = PoppinsFamily
                     ),
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            // Trigger sign up on keyboard "Done"
+                            if (allFieldsValid) {
+                                isLoading = true
+                                errorMessage = null
+                                activity.handleSignUp(name, email, password) { success, error ->
+                                    isLoading = false
+                                    if (success) {
+                                        Toast.makeText(context, "Registration successful! Please login.", Toast.LENGTH_LONG).show()
+                                        onSignUpSuccess()
+                                    } else {
+                                        errorMessage = error
+                                    }
+                                }
+                            }
+                        }
+                    ),
                     decorationBox = { innerTextField ->
                         Box(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            innerTextField()
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(Modifier.weight(1f)) { innerTextField() }
+                                // Toggle confirm password visibility
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            if (passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+                                        ),
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    )
+                                }
+                            }
                         }
                     }
                 )
+                // Passwords match validation message
                 if (passwordConfirmation.isNotEmpty() && !passwordsMatch.value) {
                     Text(
-                        text = "Password do not match.",
+                        text = "Passwords do not match.",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -288,70 +381,23 @@ fun SignUpScreen (
                     )
                 }
                 Spacer(modifier = Modifier.size(64.dp))
+                // Sign Up button
                 Button(
                     onClick = {
-                        if (
-                            name.isNotEmpty()
-                            && email.isNotEmpty()
-                            && emailValid.value
-                            && password.isNotEmpty()
-                            && passwordValid.value
-                            && passwordsMatch.value
-                        ){
-                            isLoading = true
-                            errorMessage = null
-
-                            val registerRequest = RegisterRequest(
-                                name = name,
-                                email = email,
-                                password = password
-                            )
-
-                            val call = ApiClient.apiService.registerUser(registerRequest)
-
-                            call.enqueue(object : Callback<RegisterResponse> {
-                                override fun onResponse(
-                                    call: Call<RegisterResponse>,
-                                    response: Response<RegisterResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        Toast.makeText(
-                                            context,
-                                            "Registration successful! Please login.",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-
-                                        onSignUpSuccess()
-                                    } else {
-                                        errorMessage = try {
-                                            response.errorBody()?.string() ?: "Registration failed"
-                                        } catch (e: Exception) {
-                                            "Registration failed: ${e.message}"
-                                        }
-                                    }
-                                }
-
-                                override fun onFailure(
-                                    call: Call<RegisterResponse>,
-                                    t: Throwable
-                                ) {
-                                    isLoading = false
-                                    errorMessage = "Network error: Cannot connect to server"
-                                }
-                            })
-
-                            // Set a timeout to prevent indefinite waiting
-                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                if (isLoading) {
-                                    call.cancel()
-                                    isLoading = false
-                                    errorMessage = "Connection timeout. Please try again."
-                                }
-                            }, 10000) // 10 second timeout
+                        isLoading = true
+                        errorMessage = null
+                        activity.handleSignUp(name, email, password) { success, error ->
+                            isLoading = false
+                            if (success) {
+                                Toast.makeText(context, "Registration successful! Please login.", Toast.LENGTH_LONG).show()
+                                onSignUpSuccess()
+                            } else {
+                                errorMessage = error
+                            }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading
                 ) {
                     if (isLoading) {
                         androidx.compose.material3.CircularProgressIndicator(
@@ -366,6 +412,7 @@ fun SignUpScreen (
                         )
                     }
                 }
+                // Error message display
                 errorMessage?.let { error ->
                     Spacer(modifier = Modifier.size(8.dp))
                     Text(
@@ -383,14 +430,13 @@ fun SignUpScreen (
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun SignUpActivityPreview () {
-    val context = androidx.compose.ui.platform.LocalContext.current
     FrogTheme {
         SignUpScreen(
-            onSignUpSuccess = {},
-            context = context
+            onSignUpSuccess = {}
         )
     }
 }

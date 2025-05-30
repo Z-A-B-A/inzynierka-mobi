@@ -2,7 +2,6 @@ package put.inf154030.frog.views.activities.schedule
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,56 +46,76 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.Locale
 
+// Activity for editing a schedule
 class EditScheduleActivity : ComponentActivity() {
+    // State for loading and error message
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Get schedule ID and execution time from intent
         val scheduleId = intent.getIntExtra("SCHEDULE_ID", -1)
         val scheduleExecTime = intent.getStringExtra("SCHEDULE_EXEC_TIME") ?: "0000-01-01T12:00:00Z"
 
         setContent {
             FrogTheme {
+                // Main screen composable for editing schedule
                 EditScheduleScreen(
                     onBackClick = { finish() },
                     onDeleteScheduleClick = {
+                        // Navigate to delete activity
                         val intent = Intent(this, DeleteScheduleActivity::class.java)
                         intent.putExtra("SCHEDULE_ID", scheduleId)
                         startActivity(intent)
                         finish()
                     },
                     onSaveClick = { executionTime ->
+                        isLoading = true
+                        errorMessage = null
+
+                        // Prepare update request
                         val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime, true)
 
+                        // Make API call to update schedule
                         ApiClient.apiService.updateSchedule(scheduleId, scheduleUpdateRequest)
                             .enqueue(object: Callback<ScheduleUpdateResponse> {
                                 override fun onResponse(
                                     call: Call<ScheduleUpdateResponse>,
                                     response: Response<ScheduleUpdateResponse>
                                 ) {
-                                    finish()
+                                    isLoading = false
+                                    if (response.isSuccessful) {
+                                        finish() // Close activity on success
+                                    } else {
+                                        errorMessage = response.errorBody()?.string() ?: "Unknown error occurred"
+                                    }
                                 }
 
-                                override fun onFailure(
-                                    call: Call<ScheduleUpdateResponse>,
-                                    t: Throwable
-                                ) {
-                                    Toast.makeText(this@EditScheduleActivity, "Oops! Something went wrong :( Try again.", Toast.LENGTH_LONG).show()
+                                override fun onFailure(call: Call<ScheduleUpdateResponse>, t: Throwable) {
+                                    errorMessage = "Network error occurred"
                                 }
                             })
                     },
-                    executionTime = scheduleExecTime
+                    executionTime = scheduleExecTime,
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 }
 
+// Composable for the edit schedule screen UI
 @Composable
 fun EditScheduleScreen(
     onBackClick: () -> Unit,
     onDeleteScheduleClick: () -> Unit,
     onSaveClick: (String) -> Unit,
-    executionTime: String
+    executionTime: String,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     // Parse the ISO 8601 timestamp to extract only HH:mm
     val formattedCurrentTime = try {
@@ -134,9 +154,8 @@ fun EditScheduleScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(
-                title = "Edit Schedule",
-            )
+            // Top bar and back button
+            TopHeaderBar(title = "Edit Schedule")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
             Column (
@@ -146,6 +165,7 @@ fun EditScheduleScreen(
                     .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Time selection label and picker
                 Text(
                     text = "Execution time",
                     fontFamily = PoppinsFamily,
@@ -188,6 +208,7 @@ fun EditScheduleScreen(
                     )
                 }
             }
+            // Bottom actions: error, delete, save
             Column (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,6 +217,17 @@ fun EditScheduleScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Spacer(modifier = Modifier.size(32.dp))
+                // Show error message if present
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                // Delete schedule action
                 Text(
                     text = "delete schedule",
                     color = Color.Red,
@@ -208,10 +240,11 @@ fun EditScheduleScreen(
                         .padding(end = 8.dp)
                 )
                 Spacer(modifier = Modifier.size(64.dp))
+                // Save button
                 Button(
                     onClick = { onSaveClick(formattedTime) },
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                    modifier = Modifier.fillMaxWidth(0.65f),
+                    enabled = !isLoading,
                 ) {
                     Text(
                         text = "Save",
@@ -221,9 +254,24 @@ fun EditScheduleScreen(
                 Spacer(modifier = Modifier.size(64.dp))
             }
         }
+        // Overlay spinner if loading
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+        }
     }
 }
 
+// Preview for Compose UI
 @Preview
 @Composable
 fun EditScheduleActivityPreview() {
@@ -232,7 +280,9 @@ fun EditScheduleActivityPreview() {
             onBackClick = {},
             onDeleteScheduleClick = {},
             onSaveClick = { _ -> },
-            executionTime = "0000-01-01T12:00:00Z"
+            executionTime = "0000-01-01T12:00:00Z",
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
