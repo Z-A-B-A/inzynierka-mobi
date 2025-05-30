@@ -1,17 +1,18 @@
 package put.inf154030.frog.views.activities.login_pages
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +21,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,10 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -104,7 +112,7 @@ class SignUpActivity : ComponentActivity() {
 fun SignUpScreen (
     onSignUpSuccess: () -> Unit
 ) {
-    val activity = LocalContext.current as SignUpActivity
+    val activity = LocalActivity.current as SignUpActivity
     val context = LocalContext.current
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -128,6 +136,8 @@ fun SignUpScreen (
     val passwordsMatch = remember {
         derivedStateOf { password == passwordConfirmation }
     }
+    var passwordVisible by remember { mutableStateOf(false) }
+    val allFieldsValid = passwordValid.value && emailValid.value && passwordsMatch.value
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -318,7 +328,7 @@ fun SignUpScreen (
                         fontSize = 16.sp,
                         fontFamily = PoppinsFamily
                     ),
-                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
@@ -346,12 +356,12 @@ fun SignUpScreen (
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(Modifier.weight(1f)) { innerTextField() }
                                 // Toggle confirm password visibility
-                                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                     Icon(
                                         painter = painterResource(
-                                            if (confirmPasswordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+                                            if (passwordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
                                         ),
-                                        contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
                                     )
                                 }
                             }
