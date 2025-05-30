@@ -198,7 +198,7 @@ class NotificationsActivity : ComponentActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<NotificationUpdateResponse>, t: Throwable) {
+                override fun onFailure(call: Call<NotificationMarkAllReadResponse>, t: Throwable) {
                     errorMessage = t.message ?: "Network error"
                 }
             })
@@ -344,7 +344,9 @@ fun NotificationsActivityPreview() {
             onMarkAllAsReadClick = {},
             notificationsEnabled = true,
             onNotificationsToggle = { _ -> },
-            onMarkAsReadClick = { _ -> }
+            onMarkAsReadClick = { _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
