@@ -82,8 +82,6 @@ fun ContainerCard(
                     )
                 }
             }
-
-            // Text container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
