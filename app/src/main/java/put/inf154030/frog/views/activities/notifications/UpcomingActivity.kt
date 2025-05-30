@@ -11,16 +11,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.UpcomingEvent
 import put.inf154030.frog.models.responses.UpcomingEventsResponse
@@ -120,7 +125,7 @@ fun UpcomingScreen (
                 }
                 // Show loading spinner if loading
                 if (isLoading) {
-                    androidx.compose.material3.CircularProgressIndicator(
+                    CircularProgressIndicator(
                         modifier = Modifier
                             .padding(top = 48.dp)
                             .align(Alignment.CenterHorizontally),
@@ -132,12 +137,12 @@ fun UpcomingScreen (
                         Text(
                             text = "No upcoming events 🎉",
                             color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
-                            fontSize = androidx.compose.ui.unit.sp(18),
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 48.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     } else {
                         // List of upcoming events
