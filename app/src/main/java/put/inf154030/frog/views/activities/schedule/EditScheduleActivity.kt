@@ -73,7 +73,7 @@ class EditScheduleActivity : ComponentActivity() {
                         errorMessage = null
 
                         // Prepare update request
-                        val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime, true)
+                        val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime)
 
                         // Make API call to update schedule
                         schedulesRepository.updateSchedule(

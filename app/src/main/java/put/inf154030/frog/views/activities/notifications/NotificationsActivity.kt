@@ -273,6 +273,7 @@ fun NotificationsScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.size(64.dp))
             }
         }
     }
@@ -301,7 +302,7 @@ fun NotificationsActivityPreview() {
                     "Czyszczenie",
                     false,
                     "2025-05-20T18:01:54.46Z",
-                    "2025-05-20T18:00:00.00Z",
+                    "2025-06-20T18:00:00.00Z",
                     2,
                     ScheduleReference(2, "Czyszczenie"),
                     ContainerReference(1, "Terrarium Gekona Lamparci")

@@ -62,16 +62,10 @@ class UpcomingActivity : ComponentActivity() {
 
     // Fetch upcoming events from API
     private fun loadUpcomingEvents() {
-        isLoading = true
-        errorMessage = null
-
-        notificationsRepository.getUpcomingNotifications(
-            onResult = { upcoming, error ->
-                upcomingList = upcoming ?: emptyList()
-                isLoading = false
-                errorMessage = error
-            }
-        )
+//        isLoading = true
+//        errorMessage = null
+//
+//        TODO("czekam na ogarnięcie requesta")
     }
 }
 

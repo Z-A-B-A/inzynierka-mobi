@@ -37,7 +37,6 @@ import put.inf154030.frog.models.responses.ScheduleUpdateResponse
 import put.inf154030.frog.models.responses.SchedulesResponse
 import put.inf154030.frog.models.responses.SpeciesDetailResponse
 import put.inf154030.frog.models.responses.SpeciesListResponse
-import put.inf154030.frog.models.responses.UpcomingEventsResponse
 import put.inf154030.frog.models.responses.UserResponse
 import retrofit2.Call
 import retrofit2.http.Body
@@ -139,9 +138,6 @@ interface ApiService {
 
     @POST("notifications/mark-all-read")
     fun markAllNotificationsAsRead(): Call<NotificationMarkAllReadResponse>
-
-    @GET("notifications/upcoming")
-    fun getUpcomingNotifications(@Query("days") days: Int?): Call<UpcomingEventsResponse>
 
     // Profile endpoints
     @PUT("me")

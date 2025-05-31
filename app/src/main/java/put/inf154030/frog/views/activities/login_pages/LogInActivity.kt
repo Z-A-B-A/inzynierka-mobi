@@ -73,6 +73,15 @@ class LogInActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // If opened from notification create a chain to get to notifications activity
+        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
+        if (fromNotification) {
+            val intent = Intent(this, LocationsActivity::class.java)
+            intent.putExtra("FROM_NOTIFICATION", true)
+            startActivity(intent)
+        }
+
         setContent {
             FrogTheme {
                 // Main login screen composable

@@ -46,6 +46,7 @@ import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.utils.dataStore
+import put.inf154030.frog.views.activities.notifications.NotificationsActivity
 import put.inf154030.frog.views.fragments.LocationCard
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
@@ -60,7 +61,7 @@ class LocationsActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     // User name for greeting
-    private val userName = SessionManager.getUserName()
+    private var userName = SessionManager.getUserName()
 
     private val locationsRepository = LocationsRepository()
 
@@ -84,6 +85,12 @@ class LocationsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
+        if (fromNotification) {
+            val intent = Intent(this, NotificationsActivity::class.java)
+            startActivity(intent)
+        }
 
         // Request notification permission if needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -134,6 +141,7 @@ class LocationsActivity : ComponentActivity() {
         super.onResume()
         // Refresh locations when returning to this activity
         loadLocations()
+        userName = SessionManager.getUserName()
     }
 
     private fun loadLocations() {

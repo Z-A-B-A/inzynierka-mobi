@@ -1,13 +1,11 @@
 package put.inf154030.frog.repository
 
 import put.inf154030.frog.models.Notification
-import put.inf154030.frog.models.UpcomingEvent
 import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
 import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
-import put.inf154030.frog.models.responses.UpcomingEventsResponse
 import put.inf154030.frog.network.ApiClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -40,6 +38,7 @@ class NotificationsRepository {
             })
     }
 
+//    TODO("Czekam na query wtedy w notifications zrobię to_date do teraz i będzie git")
     fun getNotifications(
         unreadOnly: Boolean = true,
         onResult: (notifications: List<Notification>?, errorMessage: String?) -> Unit
@@ -110,28 +109,6 @@ class NotificationsRepository {
                     t: Throwable
                 ) {
                     onResult(false, t.message ?: "Network error")
-                }
-            })
-    }
-
-    fun getUpcomingNotifications(
-        onResult: (upcomingEvents: List<UpcomingEvent>?, errorMessage: String?) -> Unit
-    ) {
-        ApiClient.apiService.getUpcomingNotifications(1)
-            .enqueue(object : Callback<UpcomingEventsResponse> {
-                override fun onResponse(
-                    call: Call<UpcomingEventsResponse>,
-                    response: Response<UpcomingEventsResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        onResult(response.body()?.upcomingEvents ?: emptyList(), null)
-                    } else {
-                        onResult(null, "Failed to load upcoming events: ${response.message()}")
-                    }
-                }
-
-                override fun onFailure(call: Call<UpcomingEventsResponse>, t: Throwable) {
-                    onResult(null, t.message ?: "Network error")
                 }
             })
     }

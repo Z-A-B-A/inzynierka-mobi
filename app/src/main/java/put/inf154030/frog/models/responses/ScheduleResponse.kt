@@ -2,6 +2,7 @@ package put.inf154030.frog.models.responses
 
 import com.google.gson.annotations.SerializedName
 
+// ScheduleResponse
 data class ScheduleResponse(
     val id: Int,
     val name: String,

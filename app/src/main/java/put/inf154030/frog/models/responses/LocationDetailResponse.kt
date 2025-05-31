@@ -2,6 +2,7 @@ package put.inf154030.frog.models.responses
 
 import com.google.gson.annotations.SerializedName
 
+// LocationDetailResponse
 data class LocationDetailResponse(
     val id: Int,
     val name: String,

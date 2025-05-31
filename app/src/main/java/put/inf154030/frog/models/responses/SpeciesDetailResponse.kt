@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import put.inf154030.frog.models.CompatibleSpecies
 import put.inf154030.frog.models.IncompatibleSpecies
 
+// SpeciesDetailResponse
 data class SpeciesDetailResponse(
     val id: Int,
     val name: String,

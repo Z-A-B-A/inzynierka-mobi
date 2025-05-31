@@ -5,6 +5,7 @@ import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.LocationReference
 import put.inf154030.frog.models.Parameter
 
+// ContainerDetailResponse
 data class ContainerDetailResponse(
     val id: Int,
     val name: String,
