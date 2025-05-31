@@ -46,16 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.Species
 import put.inf154030.frog.models.requests.AddSpeciesRequest
-import put.inf154030.frog.models.responses.ContainerSpeciesItemResponse
-import put.inf154030.frog.models.responses.SpeciesListResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.SpeciesRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for adding a species to a container
 class AddSpeciesActivity : ComponentActivity() {
@@ -63,6 +58,7 @@ class AddSpeciesActivity : ComponentActivity() {
     private var speciesList by mutableStateOf<List<Species>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val speciesRepository = SpeciesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,26 +78,15 @@ class AddSpeciesActivity : ComponentActivity() {
 
                             val addSpeciesRequest = AddSpeciesRequest(selectedSpecies.id, speciesCount)
                             // Make API call to add species to container
-                            ApiClient.apiService.addSpeciesToContainer(containerId, addSpeciesRequest)
-                                .enqueue(object: Callback<ContainerSpeciesItemResponse> {
-                                    override fun onResponse(
-                                        call: Call<ContainerSpeciesItemResponse>,
-                                        response: Response<ContainerSpeciesItemResponse>
-                                    ) {
-                                        isLoading = false
-                                        if (response.isSuccessful) {
-                                            finish()
-                                        } else {
-                                            errorMessage = "Failed to add species: ${response.message()}"
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<ContainerSpeciesItemResponse>, t: Throwable) {
-                                        isLoading = false
-                                        errorMessage = "Network error: ${t.message}"
-                                    }
-
-                                })
+                            speciesRepository.addSpeciesToContainer(
+                                containerId,
+                                addSpeciesRequest,
+                                onResult = { success, error ->
+                                    isLoading = false
+                                    errorMessage = error
+                                    if (success) finish()
+                                }
+                            )
                         }
                     },
                     speciesList = speciesList,
@@ -122,24 +107,14 @@ class AddSpeciesActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getSpecies(if (category == "none") null else category).enqueue(object: Callback<SpeciesListResponse> {
-            override fun onResponse(
-                call: Call<SpeciesListResponse>,
-                response: Response<SpeciesListResponse>
-            ) {
+        speciesRepository.getSpecies(
+            if (category == "none") null else category,
+            onResult = { success, species, error ->
+                if (success && !species.isNullOrEmpty()) speciesList = species
                 isLoading = false
-                if (response.isSuccessful) {
-                    speciesList = response.body()?.species ?: emptyList()
-                } else {
-                    errorMessage = "Failed to load species: ${response.message()}"
-                }
+                errorMessage = error
             }
-
-            override fun onFailure(call: Call<SpeciesListResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-        })
+        )
     }
 }
 

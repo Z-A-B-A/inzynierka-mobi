@@ -27,20 +27,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.SchedulesRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for deleting a schedule
 class DeleteScheduleActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val schedulesRepository = SchedulesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,25 +53,14 @@ class DeleteScheduleActivity : ComponentActivity() {
                         errorMessage = null
 
                         // Make API call to delete schedule
-                        ApiClient.apiService.deleteSchedule(scheduleId)
-                            .enqueue(object: Callback<MessageResponse> {
-                                override fun onResponse(
-                                    call: Call<MessageResponse>,
-                                    response: Response<MessageResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish() // Close activity on success
-                                    } else {
-                                        errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = t.message ?: "Failed to delete schedule"
-                                }
-                            })
+                        schedulesRepository.deleteSchedule(
+                            scheduleId,
+                            onResult = { success, error ->
+                                isLoading = false
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     onNoClick = { finish() },
                     isLoading = isLoading,
