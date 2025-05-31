@@ -77,7 +77,7 @@ fun InitialScreen (
                 verticalArrangement = Arrangement.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo),
+                    painter = painterResource(R.drawable.frog_logo),
                     contentDescription = "App logo",
                     modifier = Modifier
                         .fillMaxWidth()

@@ -39,9 +39,8 @@ import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.ParameterHistoryEntry
-import put.inf154030.frog.models.responses.ContainerDetailResponse
-import put.inf154030.frog.models.responses.ParameterHistoryResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
+import put.inf154030.frog.repository.ParametersRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.containers.ContainerActivity.Companion.TIMEFRAME_12H
@@ -55,9 +54,6 @@ import put.inf154030.frog.views.fragments.ParameterItem
 import put.inf154030.frog.views.fragments.SpeciesItem
 import put.inf154030.frog.views.fragments.TimeFilterChip
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -69,9 +65,11 @@ class ContainerActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var containerId = -1
-    private var parameterHistoryData by mutableStateOf<Map<Int, List<ParameterHistoryEntry>>>(emptyMap())
+    private var parameterHistoryData by mutableStateOf<Map<String, List<ParameterHistoryEntry>>>(emptyMap())
     private var selectedTimeframe by mutableStateOf("1h")
     private var shouldReloadOnResume = false
+    private val containersRepository = ContainersRepository()
+    private val parametersRepository = ParametersRepository()
 
     // Timeframe constants for filtering parameter history
     companion object {
@@ -104,39 +102,30 @@ class ContainerActivity : ComponentActivity() {
     // Load parameter history for all parameters in the selected timeframe
     private fun loadParameterHistory(timeframe: String = "1h") {
         if (parametersList.isEmpty()) return
+        isLoading = true
         val (fromDate, toDate) = getDateRangeForTimeframe(timeframe)
-        val tempHistoryData = mutableMapOf<Int, List<ParameterHistoryEntry>>()
+        val tempHistoryData = mutableMapOf<String, List<ParameterHistoryEntry>>()
         var loadingCount = parametersList.size
 
         parametersList.forEach { parameter ->
-//            TODO("Naprawić request")
-            ApiClient.apiService.getParameterHistory(parameter.id, fromDate, toDate)
-                .enqueue(object: Callback<ParameterHistoryResponse> {
-                    override fun onResponse(
-                        call: Call<ParameterHistoryResponse>,
-                        response: Response<ParameterHistoryResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            response.body()?.let { historyResponse ->
-                                tempHistoryData[parameter.id] = historyResponse.history
-                            }
-                        }
-
-                        loadingCount--
-                        if (loadingCount == 0) {
-                            parameterHistoryData = tempHistoryData
-                        }
+            parametersRepository.getParameterHistory(
+                containerId = containerId,
+                parameterType = parameter.parameterType,
+                fromDate = fromDate,
+                toDate = toDate,
+                onResult = { success, response, error ->
+                    if (success && response != null) {
+                        tempHistoryData[parameter.parameterType] = response.history
                     }
-
-                    override fun onFailure(call: Call<ParameterHistoryResponse>, t: Throwable) {
-                        loadingCount--
-                        if (loadingCount == 0) {
-                            // All parameters loaded (even with failures)
-                            parameterHistoryData = tempHistoryData
-                        }
+                    loadingCount--
+                    if (loadingCount == 0) {
+                        parameterHistoryData = tempHistoryData
                     }
-                })
+                    errorMessage = error
+                }
+            )
         }
+        isLoading = false
     }
 
     // Load container details and update state
@@ -149,29 +138,19 @@ class ContainerActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getContainerDetails(containerId)
-            .enqueue(object: Callback<ContainerDetailResponse> {
-                override fun onResponse(
-                    call: Call<ContainerDetailResponse>,
-                    response: Response<ContainerDetailResponse>
-                ) {
-                    isLoading = false
-
-                    if (response.isSuccessful) {
-                        parametersList = response.body()?.parameters ?: emptyList()
-                        speciesList = response.body()?.species ?: emptyList()
-                        loadParameterHistory(selectedTimeframe)
-                    } else {
-                        errorMessage = "Failed to load container details: ${response.message()}"
-                    }
+        containersRepository.getContainerDetails(
+            containerId,
+            onResult = { success, response, error ->
+                isLoading = false
+                if (success && response != null) {
+                    parametersList = response.parameters
+                    speciesList = response.species ?: emptyList()
+                    loadParameterHistory(selectedTimeframe)
+                } else {
+                    errorMessage = error
                 }
-
-                override fun onFailure(call: Call<ContainerDetailResponse>, t: Throwable) {
-                    isLoading = false
-                    errorMessage = "Network error: ${t.message}"
-                }
-
-            })
+            }
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -237,7 +216,7 @@ fun ContainerScreen (
     containerDescription: String,
     parametersList: List<Parameter>,
     speciesList: List<ContainerSpecies>,
-    parameterHistoryData: Map<Int, List<ParameterHistoryEntry>>,
+    parameterHistoryData: Map<String, List<ParameterHistoryEntry>>,
     onTimeframeSelected: (String) -> Unit,
     selectedTimeframe: String,
     errorMessage: String?,
@@ -430,7 +409,7 @@ fun ContainerScreen (
                     items(parametersList) { parameter ->
                         ParameterChart(
                             parameter = parameter,
-                            historyData = parameterHistoryData[parameter.id] ?: emptyList()
+                            historyData = parameterHistoryData[parameter.parameterType] ?: emptyList()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -480,16 +459,16 @@ fun ContainerActivityPreview () {
             containerName = "Container X",
             containerDescription = "Potężny kontener na bycze ryby",
             parametersList = listOf(
-                Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
-                Parameter(6, "pH", 6.8, "pH", 6.5, 7.5, false, "", "", "predefined"),
-                Parameter(7, "Światło", 5.5, "on/off", 0.0, 0.0, true, "", "", "predefined")
+                Parameter("Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "hotspot_temp", 1),
+                Parameter("pH", 6.8, "pH", 6.5, 7.5, false, "", "ph_measure", 1),
+                Parameter("Światło", 5.5, "on/off", 0.0, 0.0, true, "", "humidifier", 1)
             ),
             speciesList = listOf(
                 ContainerSpecies(1, 1, "frog", 3, "")
             ),
             parameterHistoryData = mapOf(
                 Pair(
-                    5,
+                    "hotspot_temp",
                     listOf(
                         ParameterHistoryEntry(21.5, "2025-05-14T10:00:00"),
                         ParameterHistoryEntry(22.0, "2025-05-14T10:10:00"),

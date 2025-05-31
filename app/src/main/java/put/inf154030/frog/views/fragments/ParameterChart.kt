@@ -61,7 +61,7 @@ fun ParameterChart(
 fun ParameterChartPreview() {
     FrogTheme {
         ParameterChart(
-            parameter = Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
+            parameter = Parameter("Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", 1),
             historyData = listOf(
                 ParameterHistoryEntry(21.5, "2025-05-14T10:00:00"),
                 ParameterHistoryEntry(22.0, "2025-05-14T10:10:00"),

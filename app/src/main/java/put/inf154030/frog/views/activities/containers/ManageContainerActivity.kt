@@ -74,11 +74,11 @@ class ManageContainerActivity : ComponentActivity() {
     private var errorMessageSpecies by mutableStateOf<String?>(null)
     private var containerId = -1
     // Maps to store the updated values
-    private var parameterMinValues = mutableMapOf<Int, String>()
-    private var parameterMaxValues = mutableMapOf<Int, String>()
+    private var parameterMinValues = mutableMapOf<String, String>()
+    private var parameterMaxValues = mutableMapOf<String, String>()
     private var speciesCounts = mutableMapOf<Int, String>()
     // Sets to track invalid input fields
-    private var invalidParameterInputs = mutableSetOf<Int>()
+    private var invalidParameterInputs = mutableSetOf<String>()
     private var invalidSpeciesInputs = mutableSetOf<Int>()
     // Save status tracking
     private var saveErrorCount = 0
@@ -128,21 +128,21 @@ class ManageContainerActivity : ComponentActivity() {
                         finish()
                     },
                     // Handle parameter min value changes and validation
-                    onParameterMinValueChanged = { parameterId, value ->
-                        parameterMinValues[parameterId] = value
+                    onParameterMinValueChanged = { parameterType, value ->
+                        parameterMinValues[parameterType] = value
                         if (value.isNotBlank() && value.toDoubleOrNull() == null) {
-                            invalidParameterInputs.add(parameterId)
+                            invalidParameterInputs.add(parameterType)
                         } else {
-                            invalidParameterInputs.remove(parameterId)
+                            invalidParameterInputs.remove(parameterType)
                         }
                     },
                     // Handle parameter max value changes and validation
-                    onParameterMaxValueChanged = { parameterId, value ->
-                        parameterMaxValues[parameterId] = value
+                    onParameterMaxValueChanged = { parameterType, value ->
+                        parameterMaxValues[parameterType] = value
                         if (value.isNotBlank() && value.toDoubleOrNull() == null) {
-                            invalidParameterInputs.add(parameterId)
+                            invalidParameterInputs.add(parameterType)
                         } else {
-                            invalidParameterInputs.remove(parameterId)
+                            invalidParameterInputs.remove(parameterType)
                         }
                     },
                     // Handle species count changes and validation
@@ -179,8 +179,8 @@ class ManageContainerActivity : ComponentActivity() {
 
         // Build the list of parameter update requests
         val parameterUpdates = parametersList.mapNotNull { parameter ->
-            val minValueStr = parameterMinValues[parameter.id]
-            val maxValueStr = parameterMaxValues[parameter.id]
+            val minValueStr = parameterMinValues[parameter.parameterType]
+            val maxValueStr = parameterMaxValues[parameter.parameterType]
 
             // Skip if no changes
             if (minValueStr == null && maxValueStr == null) return@mapNotNull null
@@ -190,13 +190,11 @@ class ManageContainerActivity : ComponentActivity() {
 
             // Create update request
             val parameterRequest = ParameterUpdateRequest(
-                name = null,
                 minValue = minValue,
                 maxValue = maxValue,
-                isControlled = null
             )
 
-            Pair(parameter.id, parameterRequest)
+            Pair(parameter.parameterType, parameterRequest)
         }
 
         // Build the list of species update requests
@@ -222,8 +220,8 @@ class ManageContainerActivity : ComponentActivity() {
         }
 
         // Process parameter updates
-        for ((parameterId, updateRequest) in parameterUpdates) {
-            ApiClient.apiService.updateParameter(parameterId, updateRequest)
+        for ((parameterType, updateRequest) in parameterUpdates) {
+            ApiClient.apiService.updateParameter(containerId, updateRequest, parameterType)
                 .enqueue(object : Callback<ParameterResponse> {
                     override fun onResponse(call: Call<ParameterResponse>, response: Response<ParameterResponse>) {
                         completedRequests++
@@ -297,25 +295,25 @@ class ManageContainerActivity : ComponentActivity() {
         isLoading = true
         errorMessageParams = null
 
-        ApiClient.apiService.getParameters(containerId).enqueue(object:
-            Callback<ParametersResponse> {
-            override fun onResponse(
-                call: Call<ParametersResponse>,
-                response: Response<ParametersResponse>
-            ) {
-                isLoading = false
-                if (response.isSuccessful) {
-                    parametersList = response.body()?.parameters ?: emptyList()
-                } else {
-                    errorMessageParams = "Failed to load parameters: ${response.message()}"
-                }
-            }
-
-            override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
-                isLoading = false
-                errorMessageParams = "Network error: ${t.message}"
-            }
-        })
+//        ApiClient.apiService.getParameters(containerId).enqueue(object:
+//            Callback<ParametersResponse> {
+//            override fun onResponse(
+//                call: Call<ParametersResponse>,
+//                response: Response<ParametersResponse>
+//            ) {
+//                isLoading = false
+//                if (response.isSuccessful) {
+//                    parametersList = response.body()?.parameters ?: emptyList()
+//                } else {
+//                    errorMessageParams = "Failed to load parameters: ${response.message()}"
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
+//                isLoading = false
+//                errorMessageParams = "Network error: ${t.message}"
+//            }
+//        })
     }
 
     // Load species from API
@@ -354,8 +352,8 @@ fun ManageContainerScreen(
     onAddSpeciesClick: () -> Unit,
     onRemoveSpeciesClick: (Int) -> Unit,
     onSaveClick: () -> Unit,
-    onParameterMinValueChanged: (Int, String) -> Unit,
-    onParameterMaxValueChanged: (Int, String) -> Unit,
+    onParameterMinValueChanged: (String, String) -> Unit,
+    onParameterMaxValueChanged: (String, String) -> Unit,
     onSpeciesCountChanged: (Int, String) -> Unit,
     isLoading: Boolean,
     errorMessageParams: String?,
@@ -470,7 +468,7 @@ fun ManageContainerScreen(
                     ) {
                         items(parameters) { parameter ->
                             EditParameterRow(
-                                parameterId = parameter.id,
+                                parameterType = parameter.parameterType,
                                 parameterName = parameter.name,
                                 parameterMin = parameter.minValue ?: 0.0,
                                 parameterMax = parameter.maxValue ?: 0.0,
@@ -634,9 +632,9 @@ fun ManageContainerActivityPreview () {
             hasInvalidInput = false,
             containerName = "Container X",
             parameters = listOf(
-                Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
-                Parameter(6, "pH", 6.8, "pH", 6.5, 7.5, false, "", "", "predefined"),
-                Parameter(7, "Światło", 5.5, "on/off", 0.0, 0.0, true, "", "", "predefined")
+                Parameter("Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "hotspot_temp", 1),
+                Parameter("pH", 6.8, "pH", 6.5, 7.5, false, "", "ph_measure", 1),
+                Parameter("Światło", 5.5, "on/off", 0.0, 0.0, true, "", "humidifier", 1)
             ),
             species = listOf(
                 ContainerSpecies(1, 1, "frog", 3, "")

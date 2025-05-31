@@ -201,7 +201,7 @@ fun LogInScreen(
             Spacer(modifier = Modifier.size(128.dp))
             // App logo
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = R.drawable.frog_logo),
                 contentDescription = "App logo",
                 modifier = Modifier
                     .fillMaxWidth()

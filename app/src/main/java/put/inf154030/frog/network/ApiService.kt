@@ -7,10 +7,7 @@ import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.requests.LocationCreateRequest
 import put.inf154030.frog.models.requests.LocationUpdateRequest
 import put.inf154030.frog.models.requests.LoginRequest
-import put.inf154030.frog.models.requests.ParameterCreateRequest
 import put.inf154030.frog.models.requests.ParameterUpdateRequest
-import put.inf154030.frog.models.requests.ParameterValueUpdateRequest
-import put.inf154030.frog.models.requests.PresetParametersRequest
 import put.inf154030.frog.models.requests.RegisterRequest
 import put.inf154030.frog.models.requests.ScheduleCreateRequest
 import put.inf154030.frog.models.requests.ScheduleUpdateRequest
@@ -34,9 +31,6 @@ import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
 import put.inf154030.frog.models.responses.ParameterHistoryResponse
 import put.inf154030.frog.models.responses.ParameterResponse
-import put.inf154030.frog.models.responses.ParameterValueResponse
-import put.inf154030.frog.models.responses.ParametersResponse
-import put.inf154030.frog.models.responses.PresetParametersResponse
 import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.ScheduleResponse
 import put.inf154030.frog.models.responses.ScheduleUpdateResponse
@@ -98,26 +92,11 @@ interface ApiService {
     fun deleteContainer(@Path("id") containerId: Int): Call<MessageResponse>
 
     // Parameter Endpoints
-    @GET("containers/{container_id}/parameters")
-    fun getParameters(@Path("container_id") containerId: Int): Call<ParametersResponse>
+    @PUT("containers/{id}/parameters/{parameter_type}")
+    fun updateParameter(@Path("id") containerId: Int, @Body parameter: ParameterUpdateRequest, @Path("parameter_type") parameterType: String): Call<ParameterResponse>
 
-    @POST("containers/{container_id}/parameters")
-    fun createParameter(@Path("container_id") containerId: Int, @Body parameter: ParameterCreateRequest): Call<ParameterResponse>
-
-    @POST("containers/{container_id}/preset-parameters")
-    fun addPresetParameters(@Path("container_id") containerId: Int, @Body request: PresetParametersRequest): Call<PresetParametersResponse>
-
-    @PUT("parameters/{id}")
-    fun updateParameter(@Path("id") parameterId: Int, @Body parameter: ParameterUpdateRequest): Call<ParameterResponse>
-
-    @POST("parameters/{id}/update-value")
-    fun updateParameterValue(@Path("id") parameterId: Int, @Body request: ParameterValueUpdateRequest): Call<ParameterValueResponse>
-
-    @GET("parameters/{id}/history")
-    fun getParameterHistory(@Path("id") parameterId: Int, @Query("from_date") fromDate: String?, @Query("to_date") toDate: String?): Call<ParameterHistoryResponse>
-
-    @DELETE("parameters/{id}")
-    fun deleteParameter(@Path("id") parameterId: Int): Call<MessageResponse>
+    @GET("containers/{container_id}/parameters/{parameter_type}/history")
+    fun getParameterHistory(@Path("container_id") containerId: Int, @Path("parameter_type") parameterType: String, @Query("from_datetime") fromDate: String?, @Query("to_datetime") toDate: String?): Call<ParameterHistoryResponse>
 
     // Schedule Endpoints
     @GET("containers/{container_id}/schedules")

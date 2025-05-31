@@ -36,21 +36,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.UserUpdateRequest
-import put.inf154030.frog.models.responses.UserResponse
-import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.repository.AccountRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for editing user account information
 class EditAccountActivity : ComponentActivity() {
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
     private val userName = SessionManager.getUserName()
     private val userEmail = SessionManager.getUserEmail()
+    private val accountRepository = AccountRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,29 +57,24 @@ class EditAccountActivity : ComponentActivity() {
             FrogTheme {
                 EditAccountScreen(
                     onBackClick = { finish() }, // Close activity on back
-                    onSaveClick = { name, email, onResult ->
-                        // Make API call to update user info
+                    onSaveClick = { name, email ->
+                        isLoading = true
+                        errorMessage = null
+
                         val userUpdateRequest = UserUpdateRequest(name = name, email = email)
-
-                        ApiClient.apiService.updateUser(userUpdateRequest).enqueue(object : Callback<UserResponse> {
-                            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-                                if (response.isSuccessful) {
-                                    // Update session information
-                                    SessionManager.saveUpdatedUserInfo(name, email)
-                                    onResult(null)
-                                    finish()
-                                } else {
-                                    onResult("Failed to update user information.")
-                                }
+                        accountRepository.updateUser(
+                            userUpdateRequest,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) finish()
                             }
-
-                            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                                onResult("Network error: ${t.message}")
-                            }
-                        })
+                        )
                     },
                     userName = userName,
-                    userEmail = userEmail
+                    userEmail = userEmail,
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
@@ -91,18 +85,17 @@ class EditAccountActivity : ComponentActivity() {
 @Composable
 fun EditAccountScreen (
     onBackClick: () -> Unit,
-    onSaveClick: (String, String, (String?) -> Unit) -> Unit, // Save callback
+    onSaveClick: (String, String) -> Unit, // Save callback
     userName: String?,
-    userEmail: String?
+    userEmail: String?,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     var name by remember { mutableStateOf(userName ?: "") }
     var email by remember { mutableStateOf(userEmail ?: "") }
     // Validate email format
     val emailValid = remember { derivedStateOf { Patterns.EMAIL_ADDRESS.matcher(email).matches() } }
     val canSave = name.isNotBlank() && email.isNotBlank() && emailValid.value
-
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -231,14 +224,7 @@ fun EditAccountScreen (
                     )
                 }
                 Button(
-                    onClick = {
-                        isLoading = true
-                        errorMessage = null
-                        onSaveClick(name, email) { error ->
-                            isLoading = false
-                            errorMessage = error
-                        }
-                    },
+                    onClick = { onSaveClick(name, email) },
                     enabled = canSave && !isLoading,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
@@ -263,9 +249,11 @@ fun EditAccountActivityPreview () {
     FrogTheme {
         EditAccountScreen(
             onBackClick = {},
-            onSaveClick = { _, _, _ -> },
+            onSaveClick = { _, _ -> },
             userName = "Bartosz",
-            userEmail = "bartoszkorszun@gmail.com"
+            userEmail = "bartoszkorszun@gmail.com",
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
