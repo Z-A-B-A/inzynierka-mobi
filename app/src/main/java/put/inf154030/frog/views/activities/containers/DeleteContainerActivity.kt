@@ -27,20 +27,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for confirming and executing container deletion
 class DeleteContainerActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val containersRepository = ContainersRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -55,26 +52,14 @@ class DeleteContainerActivity : ComponentActivity() {
                         errorMessage = null
                         isLoading = true
 
-                        // Call API to delete container
-                        ApiClient.apiService.deleteContainer(containerId)
-                            .enqueue(object : Callback<MessageResponse> {
-                                override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
-                                    if (response.isSuccessful) {
-                                        isLoading = false
-                                        finish() // Close activity on success
-                                    } else {
-                                        isLoading = false
-                                        // Show error from API or fallback
-                                        errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                                    isLoading = false
-                                    // Show network error
-                                    errorMessage = t.message
-                                }
-                            })
+                        containersRepository.deleteContainer(
+                            containerId,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     onNoClick = { finish() }, // Cancel and close activity
                     isLoading = isLoading,

@@ -1,8 +1,11 @@
 package put.inf154030.frog.repository
 
 import put.inf154030.frog.models.requests.ContainerCreateRequest
+import put.inf154030.frog.models.requests.ContainerUpdateRequest
 import put.inf154030.frog.models.responses.ContainerDetailResponse
 import put.inf154030.frog.models.responses.ContainerResponse
+import put.inf154030.frog.models.responses.ContainerUpdateResponse
+import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -78,6 +81,72 @@ class ContainersRepository {
                     t: Throwable
                 ) {
                     onResult(false, null, "Network error: ${t.message}")
+                }
+            })
+    }
+
+    fun deleteContainer(
+        containerId: Int,
+        onResult: (
+            success: Boolean,
+            isLoading: Boolean,
+            errorMessage: String?
+        ) -> Unit
+    ) {
+        // Indicate loading started
+        onResult(false, true, null)
+        ApiClient.apiService.deleteContainer(containerId)
+            .enqueue(object : Callback<MessageResponse> {
+                override fun onResponse(
+                    call: Call<MessageResponse>,
+                    response: Response<MessageResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onResult(true, false, null)
+                    } else {
+                        val error = response.errorBody()?.string() ?: "Unknown error"
+                        onResult(false, false, error)
+                    }
+                }
+
+                override fun onFailure(
+                    call: Call<MessageResponse>,
+                    t: Throwable
+                ) {
+                    onResult(false, false, t.message)
+                }
+            })
+    }
+
+    fun updateContainer(
+        containerId: Int,
+        containerUpdateRequest: ContainerUpdateRequest,
+        onResult: (
+            success: Boolean,
+            isLoading: Boolean,
+            errorMessage: String?
+        ) -> Unit
+    ) {
+        // Indicate loading started
+        onResult(false, true, null)
+        ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
+            .enqueue(object : Callback<ContainerUpdateResponse> {
+                override fun onResponse(
+                    call: Call<ContainerUpdateResponse>,
+                    response: Response<ContainerUpdateResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onResult(true, false, null)
+                    } else {
+                        onResult(false, false, "Failed to update container: ${response.message()}")
+                    }
+                }
+
+                override fun onFailure(
+                    call: Call<ContainerUpdateResponse>,
+                    t: Throwable
+                ) {
+                    onResult(false, false, "Network error: ${t.message}")
                 }
             })
     }

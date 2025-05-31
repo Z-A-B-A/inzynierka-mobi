@@ -44,22 +44,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
-import put.inf154030.frog.models.responses.ContainerUpdateResponse
-import put.inf154030.frog.models.responses.LocationsResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
+import put.inf154030.frog.repository.LocationsRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for editing a container's details
 class EditContainerActivity : ComponentActivity() {
     private var locationsList by mutableStateOf<List<Location>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val containersRepository = ContainersRepository()
+    private val locationsRepository = LocationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,28 +85,15 @@ class EditContainerActivity : ComponentActivity() {
                             locationId = selectedLocation
                         )
 
-                        // Call API to update container
-                        ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
-                            .enqueue(object : Callback<ContainerUpdateResponse> {
-                                override fun onResponse(
-                                    call: Call<ContainerUpdateResponse>,
-                                    response: Response<ContainerUpdateResponse>
-                                ) {
-                                    if (response.isSuccessful) {
-                                        isLoading = false
-                                        finish()
-                                    } else {
-                                        // Handle error
-                                        isLoading = false
-                                        errorMessage = "Failed to update container: ${response.message()}"
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<ContainerUpdateResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = "Network error: ${t.message}"
-                                }
-                            })
+                        containersRepository.updateContainer(
+                            containerId,
+                            containerUpdateRequest,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     onDeleteContainerClick = {
                         // Open delete confirmation activity
@@ -137,25 +122,13 @@ class EditContainerActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getLocations().enqueue(object : Callback<LocationsResponse> {
-            override fun onResponse(
-                call: Call<LocationsResponse>,
-                response: Response<LocationsResponse>
-            ) {
-                isLoading = false
-                if (response.isSuccessful) {
-                    locationsList = response.body()?.locations ?: emptyList()
-                } else {
-                    errorMessage = "Failed to load locations: ${response.message()}"
-                }
+        locationsRepository.getLocations(
+            onResult = { success, loading, locations, error ->
+                isLoading = loading
+                errorMessage = error
+                if (success && !locations.isNullOrEmpty()) locationsList = locations
             }
-
-            override fun onFailure(call: Call<LocationsResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-
-        })
+        )
     }
 }
 

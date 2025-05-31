@@ -45,12 +45,9 @@ import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.requests.ParameterUpdateRequest
 import put.inf154030.frog.models.requests.UpdateSpeciesCountRequest
-import put.inf154030.frog.models.responses.ContainerSpeciesResponse
-import put.inf154030.frog.models.responses.ContainerSpeciesUpdateResponse
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.models.responses.ParameterResponse
-import put.inf154030.frog.models.responses.ParametersResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
+import put.inf154030.frog.repository.ParametersRepository
+import put.inf154030.frog.repository.SpeciesRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.species.AddSpeciesActivity
@@ -58,9 +55,6 @@ import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.EditParameterRow
 import put.inf154030.frog.views.fragments.EditSpeciesRow
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for managing container parameters and species
 class ManageContainerActivity : ComponentActivity() {
@@ -70,6 +64,7 @@ class ManageContainerActivity : ComponentActivity() {
     private var parametersList by mutableStateOf<List<Parameter>>(emptyList())
     private var speciesList by mutableStateOf<List<ContainerSpecies>>(emptyList())
     private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
     private var errorMessageParams by mutableStateOf<String?>(null)
     private var errorMessageSpecies by mutableStateOf<String?>(null)
     private var containerId = -1
@@ -85,6 +80,10 @@ class ManageContainerActivity : ComponentActivity() {
     private var totalSaveRequests = 0
     private var completedRequests = 0
 
+    private val speciesRepository = SpeciesRepository()
+    private val parametersRepository = ParametersRepository()
+    private val containersRepository = ContainersRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -95,7 +94,7 @@ class ManageContainerActivity : ComponentActivity() {
         speciesLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            loadSpecies(containerId = containerId)
+            loadContainerDetails()
         }
 
         setContent {
@@ -109,19 +108,15 @@ class ManageContainerActivity : ComponentActivity() {
                     },
                     onRemoveSpeciesClick = { speciesId ->
                         // Remove species from container
-                        ApiClient.apiService.deleteSpeciesFromContainer(containerId, speciesId)
-                            .enqueue(object : Callback<MessageResponse> {
-                                override fun onResponse(
-                                    call: Call<MessageResponse>,
-                                    response: Response<MessageResponse>
-                                ) {
-                                    loadSpecies(containerId)
-                                }
-
-                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                                    errorMessageSpecies = t.message
-                                }
-                            })
+                        speciesRepository.deleteSpeciesFromContainer(
+                            containerId,
+                            speciesId,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) loadContainerDetails()
+                            }
+                        )
                     },
                     onSaveClick = {
                         saveChanges()
@@ -165,8 +160,7 @@ class ManageContainerActivity : ComponentActivity() {
             }
         }
         // Initial data load
-        loadParameters(containerId = containerId)
-        loadSpecies(containerId = containerId)
+        loadContainerDetails()
     }
 
     // Save all changes to parameters and species
@@ -221,45 +215,36 @@ class ManageContainerActivity : ComponentActivity() {
 
         // Process parameter updates
         for ((parameterType, updateRequest) in parameterUpdates) {
-            ApiClient.apiService.updateParameter(containerId, updateRequest, parameterType)
-                .enqueue(object : Callback<ParameterResponse> {
-                    override fun onResponse(call: Call<ParameterResponse>, response: Response<ParameterResponse>) {
-                        completedRequests++
-                        if (!response.isSuccessful) {
-                            saveErrorCount++
-                        }
-                        checkSaveCompletion()
-                    }
-
-                    override fun onFailure(call: Call<ParameterResponse>, t: Throwable) {
-                        completedRequests++
-                        saveErrorCount++
-                        checkSaveCompletion()
-                    }
-                })
+            parametersRepository.updateParameter(
+                containerId,
+                parameterType,
+                updateRequest,
+                onResult = { success, failure, loading, error ->
+                    completedRequests++
+                    isLoading = loading
+                    errorMessage = error
+                    if (!success) saveErrorCount++
+                    if (failure) saveErrorCount++
+                    checkSaveCompletion()
+                }
+            )
         }
 
         // Process species updates
         for ((speciesId, updateRequest) in speciesUpdates) {
-            ApiClient.apiService.updateContainerSpecies(containerId, speciesId, updateRequest)
-                .enqueue(object : Callback<ContainerSpeciesUpdateResponse> {
-                    override fun onResponse(
-                        call: Call<ContainerSpeciesUpdateResponse>,
-                        response: Response<ContainerSpeciesUpdateResponse>
-                    ) {
-                        completedRequests++
-                        if (!response.isSuccessful) {
-                            saveErrorCount++
-                        }
-                        checkSaveCompletion()
-                    }
-
-                    override fun onFailure(call: Call<ContainerSpeciesUpdateResponse>, t: Throwable) {
-                        completedRequests++
-                        saveErrorCount++
-                        checkSaveCompletion()
-                    }
-                })
+            speciesRepository.updateContainerSpecies(
+                containerId,
+                speciesId,
+                updateRequest,
+                onResult = { success, failure, loading, error ->
+                    completedRequests++
+                    isLoading = loading
+                    errorMessage = error
+                    if (!success) saveErrorCount++
+                    if (failure) saveErrorCount++
+                    checkSaveCompletion()
+                }
+            )
         }
     }
 
@@ -268,14 +253,8 @@ class ManageContainerActivity : ComponentActivity() {
         if (completedRequests >= totalSaveRequests) {
             isLoading = false
             if (saveErrorCount > 0) {
-                Toast.makeText(
-                    this,
-                    "Not all changes were saved (${saveErrorCount} errors)",
-                    Toast.LENGTH_LONG
-                ).show()
                 // Reload data if not finishing
-                loadParameters(containerId)
-                loadSpecies(containerId)
+                loadContainerDetails()
             } else {
                 finish() // Return to previous screen on success
             }
@@ -284,64 +263,31 @@ class ManageContainerActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadSpecies(containerId = containerId)
+        loadContainerDetails()
     }
 
-//    TODO("Naprawić requesty")
-    // Load parameters from API
-    private fun loadParameters(
-        containerId: Int
-    ) {
+    // Load container details and update state
+    private fun loadContainerDetails() {
+        if (containerId == -1) {
+            errorMessage = "Invalid container ID"
+            return
+        }
+
         isLoading = true
-        errorMessageParams = null
+        errorMessage = null
 
-//        ApiClient.apiService.getParameters(containerId).enqueue(object:
-//            Callback<ParametersResponse> {
-//            override fun onResponse(
-//                call: Call<ParametersResponse>,
-//                response: Response<ParametersResponse>
-//            ) {
-//                isLoading = false
-//                if (response.isSuccessful) {
-//                    parametersList = response.body()?.parameters ?: emptyList()
-//                } else {
-//                    errorMessageParams = "Failed to load parameters: ${response.message()}"
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<ParametersResponse>, t: Throwable) {
-//                isLoading = false
-//                errorMessageParams = "Network error: ${t.message}"
-//            }
-//        })
-    }
-
-    // Load species from API
-    private fun loadSpecies(
-        containerId: Int
-    ) {
-        isLoading = true
-        errorMessageSpecies = null
-
-        ApiClient.apiService.getContainerSpecies(containerId)
-            .enqueue(object: Callback<ContainerSpeciesResponse> {
-                override fun onResponse(
-                    call: Call<ContainerSpeciesResponse>,
-                    response: Response<ContainerSpeciesResponse>
-                ) {
-                    isLoading = false
-                    if (response.isSuccessful) {
-                        speciesList = response.body()?.species ?: emptyList()
-                    } else {
-                        errorMessageSpecies = "Failed to load species: ${response.message()}"
-                    }
+        containersRepository.getContainerDetails(
+            containerId,
+            onResult = { success, response, error ->
+                isLoading = false
+                if (success && response != null) {
+                    parametersList = response.parameters
+                    speciesList = response.species ?: emptyList()
+                } else {
+                    errorMessage = error
                 }
-
-                override fun onFailure(call: Call<ContainerSpeciesResponse>, t: Throwable) {
-                    isLoading = false
-                    errorMessageSpecies = "Network error: ${t.message}"
-                }
-            })
+            }
+        )
     }
 }
 
