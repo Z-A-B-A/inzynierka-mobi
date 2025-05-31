@@ -1,6 +1,10 @@
 package put.inf154030.frog.repository
 
+import put.inf154030.frog.models.requests.LoginRequest
+import put.inf154030.frog.models.requests.RegisterRequest
 import put.inf154030.frog.models.requests.UserUpdateRequest
+import put.inf154030.frog.models.responses.AuthResponse
+import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.UserResponse
 import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
@@ -47,6 +51,71 @@ class AccountRepository {
                         false,
                         "Network error: ${t.message}"
                     )
+                }
+            })
+    }
+
+    fun loginUser(
+        request: LoginRequest,
+        onResult: (
+            success: Boolean,
+            isLoading: Boolean,
+            errorMessage: String?) -> Unit
+    ) {
+        ApiClient.apiService.loginUser(request)
+            .enqueue(object : Callback<AuthResponse> {
+                override fun onResponse(
+                    call: Call<AuthResponse>,
+                    response: Response<AuthResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.let { authResponse ->
+                            SessionManager.saveAuthToken(authResponse.token)
+                            authResponse.user.let { user ->
+                                SessionManager.saveUserInfo(
+                                    user.id.toString(),
+                                    user.name,
+                                    user.email
+                                )
+                            }
+                            onResult(true, false,null)
+                        } ?: onResult(false, false, "Empty response received")
+                    } else {
+                        onResult(false,false, response.errorBody()?.string() ?: "Login failed")
+                    }
+                }
+
+                override fun onFailure(
+                    call: Call<AuthResponse>,
+                    t: Throwable
+                ) {
+                    onResult(false, false,"Network error: Cannot connect to server")
+                }
+            })
+    }
+
+    fun registerUser(
+        request: RegisterRequest,
+        onResult: (success: Boolean, isLoading: Boolean, errorMessage: String?) -> Unit
+    ) {
+        onResult(false, true, null) // Loading started
+        ApiClient.apiService.registerUser(request)
+            .enqueue(object : Callback<RegisterResponse> {
+                override fun onResponse(
+                    call: Call<RegisterResponse>,
+                    response: Response<RegisterResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onResult(true, false, null)
+                    } else {
+                        onResult(false, false, response.errorBody()?.string() ?: "Registration failed")
+                    }
+                }
+                override fun onFailure(
+                    call: Call<RegisterResponse>,
+                    t: Throwable
+                ) {
+                    onResult(false, false, "Network error: Cannot connect to server")
                 }
             })
     }

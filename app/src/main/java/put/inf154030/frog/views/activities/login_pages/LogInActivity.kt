@@ -6,7 +6,6 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -57,23 +56,20 @@ import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.requests.LoginRequest
-import put.inf154030.frog.models.responses.AuthResponse
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.repository.AccountRepository
+import put.inf154030.frog.repository.NotificationsRepository
 import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.activities.locations.LocationsActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for user login
 class LogInActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
-    private var errorMessage by mutableStateOf("")
+    private var errorMessage by mutableStateOf<String?>(null)
+    private val accountRepository = AccountRepository()
+    private val notificationsRepository = NotificationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,68 +77,61 @@ class LogInActivity : ComponentActivity() {
             FrogTheme {
                 // Main login screen composable
                 LogInScreen(
-                    onLoginSuccess = {
-                        // Send FCM token after successful login
-                        sendFcmTokenToServer()
-                        // Navigate to main locations screen
-                        val intent = Intent(this, LocationsActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
+                    onLoginClick = { email, password ->
+                        handleLogin(
+                            email,
+                            password,
+                            onSuccess = { success ->
+                                // Avoid starting multiple activities
+                                if (success && !isLoading) {
+                                    // Send FCM token after successful login
+                                    sendFcmTokenToServer()
+                                    // Navigate to main locations screen
+                                    val intent = Intent(this, LocationsActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                        )
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 
     // Handles login logic and API call
-    fun handleLogin(
+    private fun handleLogin(
         email: String,
         password: String,
-        onResult: (success: Boolean, error: String?) -> Unit
+        onSuccess: (Boolean) -> Unit
     ) {
+        isLoading = true
+        errorMessage = null
+
         // Validate input
         if (email.isEmpty() || password.isEmpty()) {
-            onResult(false, "Please enter email and password")
+            isLoading = false
+            errorMessage = "Please enter email and password"
             return
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            onResult(false, "Please enter a valid email address")
+            isLoading = false
+            errorMessage = "Please enter a valid email address"
             return
         }
 
         // Make login API request
         val loginRequest = LoginRequest(email = email, password = password)
-        val call = ApiClient.apiService.loginUser(loginRequest)
-        call.enqueue(object : Callback<AuthResponse> {
-            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                if (response.isSuccessful) {
-                    response.body()?.let { authResponse ->
-                        SessionManager.saveAuthToken(authResponse.token)
-                        authResponse.user.let { user ->
-                            SessionManager.saveUserInfo(
-                                user.id.toString(),
-                                user.name,
-                                user.email
-                            )
-                        }
-                        onResult(true, null)
-                    } ?: onResult(false, "Empty response received")
-                } else {
-                    onResult(false, response.errorBody()?.string() ?: "Login failed")
-                }
+        accountRepository.loginUser(
+            loginRequest,
+            onResult = { success, loading, error ->
+                isLoading = loading
+                errorMessage = error
+                onSuccess(success)
             }
-            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                onResult(false, "Network error: Cannot connect to server")
-            }
-        })
-        // Set a timeout to prevent indefinite waiting
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            if (isLoading) {
-                call.cancel()
-                isLoading = false
-                errorMessage = "Connection timeout. Please try again."
-            }
-        }, 10000)
+        )
     }
 
     // Sends the FCM token to the server after login
@@ -152,20 +141,13 @@ class LogInActivity : ComponentActivity() {
             token?.let {
                 try {
                     val tokenRequest = DeviceTokenRequest(deviceToken = it)
-
-                    ApiClient.apiService.updateDeviceToken(tokenRequest).enqueue(object : Callback<MessageResponse> {
-                        override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
-                            if (response.isSuccessful) {
-                                Log.d("FCM", "Token sent to server successfully")
-                            } else {
-                                Log.e("FCM", "Failed to send token: ${response.errorBody()?.string()}")
-                            }
+                    notificationsRepository.updateDeviceToken(
+                        tokenRequest,
+                        onResult = { error ->
+                            isLoading = false
+                            errorMessage = error
                         }
-
-                        override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                            Log.e("FCM", "Failed to send token to server", t)
-                        }
-                    })
+                    )
                 } catch (e: Exception) {
                     Log.e("FCM", "Error setting up token request", e)
                 }
@@ -177,17 +159,16 @@ class LogInActivity : ComponentActivity() {
 // Composable for the login screen UI
 @Composable
 fun LogInScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginClick: (String, String) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
-    val activity = LocalActivity.current as LogInActivity
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     val emailValid = remember {
         derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
     }
     var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
     
     Surface(
@@ -283,16 +264,7 @@ fun LogInScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { 
                             // Trigger login when "Done" is pressed on keyboard
-                            isLoading = true
-                            errorMessage = null
-                            activity.handleLogin(email, password) { success, error ->
-                                isLoading = false
-                                if (success) {
-                                    onLoginSuccess()
-                                } else {
-                                    errorMessage = error
-                                }
-                            }
+                            onLoginClick(email, password)
                         }
                     ),
                     singleLine = true,
@@ -348,18 +320,7 @@ fun LogInScreen(
 
                 // Login button with loading indicator
                 Button(
-                    onClick = {
-                        isLoading = true
-                        errorMessage = null
-                        activity.handleLogin(email, password) { success, error ->
-                            isLoading = false
-                            if (success) {
-                                onLoginSuccess()
-                            } else {
-                                errorMessage = error
-                            }
-                        }
-                    },
+                    onClick = { onLoginClick(email, password) },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
                 ) {
@@ -388,7 +349,9 @@ fun LogInScreen(
 fun LogInActivityPreview () {
     FrogTheme {
         LogInScreen(
-            onLoginSuccess = {}
+            onLoginClick = { _ ,_ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }
