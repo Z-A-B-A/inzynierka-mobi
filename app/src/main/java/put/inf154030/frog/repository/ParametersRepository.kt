@@ -42,7 +42,7 @@ class ParametersRepository {
     fun updateParameter(
         containerId: Int,
         parameterType: String,
-        updateRequest: ParameterUpdateRequest,
+        request: ParameterUpdateRequest,
         onResult: (
             success: Boolean,
             failure: Boolean,
@@ -51,7 +51,7 @@ class ParametersRepository {
     ) {
         // Indicate loading started
         onResult(false, false, null)
-        ApiClient.apiService.updateParameter(containerId, updateRequest, parameterType)
+        ApiClient.apiService.updateParameter(containerId, request, parameterType)
             .enqueue(object : retrofit2.Callback<ParameterResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ParameterResponse>,

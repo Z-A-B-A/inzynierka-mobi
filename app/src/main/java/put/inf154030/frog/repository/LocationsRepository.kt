@@ -75,7 +75,7 @@ class LocationsRepository {
     }
 
     fun createLocation(
-        locationCreateRequest: LocationCreateRequest,
+        request: LocationCreateRequest,
         onResult: (
             success: Boolean,
             errorMessage: String?
@@ -83,7 +83,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.createLocation(locationCreateRequest)
+        ApiClient.apiService.createLocation(request)
             .enqueue(object : Callback<LocationResponse> {
                 override fun onResponse(
                     call: Call<LocationResponse>,
@@ -138,7 +138,7 @@ class LocationsRepository {
 
     fun updateLocation(
         locationId: Int,
-        locationUpdateRequest: LocationUpdateRequest,
+        request: LocationUpdateRequest,
         onResult: (
             success: Boolean,
             errorMessage: String?
@@ -146,7 +146,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.updateLocation(locationId, locationUpdateRequest)
+        ApiClient.apiService.updateLocation(locationId, request)
             .enqueue(object : Callback<LocationUpdateResponse> {
                 override fun onResponse(
                     call: Call<LocationUpdateResponse>,

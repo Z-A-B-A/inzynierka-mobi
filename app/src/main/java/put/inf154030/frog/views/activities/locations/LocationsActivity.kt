@@ -142,9 +142,9 @@ class LocationsActivity : ComponentActivity() {
 
         locationsRepository.getLocations(
             onResult = { success, locations, error ->
+                if (success && !locations.isNullOrEmpty()) locationsList = locations
                 isLoading = false
                 errorMessage = error
-                if (success && !locations.isNullOrEmpty()) locationsList = locations
             }
         )
     }

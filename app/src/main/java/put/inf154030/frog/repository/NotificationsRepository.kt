@@ -15,10 +15,10 @@ import retrofit2.Response
 
 class NotificationsRepository {
     fun updateDeviceToken(
-        tokenRequest: DeviceTokenRequest,
+        request: DeviceTokenRequest,
         onResult: (errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.updateDeviceToken(tokenRequest)
+        ApiClient.apiService.updateDeviceToken(request)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
                     call: Call<MessageResponse>,

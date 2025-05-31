@@ -279,13 +279,13 @@ class ManageContainerActivity : ComponentActivity() {
         containersRepository.getContainerDetails(
             containerId,
             onResult = { success, response, error ->
-                isLoading = false
                 if (success && response != null) {
                     parametersList = response.parameters
                     speciesList = response.species ?: emptyList()
                 } else {
                     errorMessage = error
                 }
+                isLoading = false
             }
         )
     }

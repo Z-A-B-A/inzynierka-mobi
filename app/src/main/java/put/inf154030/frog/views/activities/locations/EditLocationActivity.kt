@@ -102,9 +102,9 @@ class EditLocationActivity : ComponentActivity() {
         locationsRepository.getLocation(
             locationId,
             onResult = { success, location, error ->
+                if (success) locationName = location?.name ?: "Unknown location"
                 isLoading = false
                 errorMessage = error
-                if (success) locationName = location?.name ?: "Unknown location"
             }
         )
     }

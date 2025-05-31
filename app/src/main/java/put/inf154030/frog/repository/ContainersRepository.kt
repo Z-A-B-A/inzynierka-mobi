@@ -149,7 +149,7 @@ class ContainersRepository {
 
     fun updateContainer(
         containerId: Int,
-        containerUpdateRequest: ContainerUpdateRequest,
+        request: ContainerUpdateRequest,
         onResult: (
             success: Boolean,
             errorMessage: String?
@@ -157,7 +157,7 @@ class ContainersRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
+        ApiClient.apiService.updateContainer(containerId, request)
             .enqueue(object : Callback<ContainerUpdateResponse> {
                 override fun onResponse(
                     call: Call<ContainerUpdateResponse>,

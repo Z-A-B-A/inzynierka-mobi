@@ -141,7 +141,6 @@ class ContainerActivity : ComponentActivity() {
         containersRepository.getContainerDetails(
             containerId,
             onResult = { success, response, error ->
-                isLoading = false
                 if (success && response != null) {
                     parametersList = response.parameters
                     speciesList = response.species ?: emptyList()
@@ -149,6 +148,7 @@ class ContainerActivity : ComponentActivity() {
                 } else {
                     errorMessage = error
                 }
+                isLoading = false
             }
         )
     }

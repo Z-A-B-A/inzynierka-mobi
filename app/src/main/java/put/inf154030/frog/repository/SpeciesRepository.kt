@@ -45,7 +45,7 @@ class SpeciesRepository {
     fun updateContainerSpecies(
         containerId: Int,
         speciesId: Int,
-        updateRequest: UpdateSpeciesCountRequest,
+        request: UpdateSpeciesCountRequest,
         onResult: (
             success: Boolean,
             failure: Boolean,
@@ -54,7 +54,7 @@ class SpeciesRepository {
     ) {
         // Indicate loading started
         onResult(false, false,null)
-        ApiClient.apiService.updateContainerSpecies(containerId, speciesId, updateRequest)
+        ApiClient.apiService.updateContainerSpecies(containerId, speciesId, request)
             .enqueue(object : retrofit2.Callback<ContainerSpeciesUpdateResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ContainerSpeciesUpdateResponse>,

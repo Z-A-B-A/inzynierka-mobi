@@ -136,9 +136,9 @@ class NotificationsActivity : ComponentActivity() {
 
         notificationsRepository.getNotifications(
             onResult = { notifications, error ->
+                notificationsList = notifications ?: emptyList()
                 isLoading = false
                 errorMessage = error
-                notificationsList = notifications ?: emptyList()
             }
         )
     }
