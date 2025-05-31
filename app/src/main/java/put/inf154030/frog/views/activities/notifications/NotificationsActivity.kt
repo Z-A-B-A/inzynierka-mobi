@@ -41,10 +41,7 @@ import kotlinx.coroutines.launch
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.Notification
 import put.inf154030.frog.models.ScheduleReference
-import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
-import put.inf154030.frog.models.responses.NotificationUpdateResponse
-import put.inf154030.frog.models.responses.NotificationsResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.NotificationsRepository
 import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
@@ -53,9 +50,6 @@ import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.NotificationCard
 import put.inf154030.frog.views.fragments.NotificationSetting
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for displaying and managing notifications
 class NotificationsActivity : ComponentActivity() {
@@ -64,6 +58,7 @@ class NotificationsActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var notificationsEnabled by mutableStateOf(true)
+    private val notificationsRepository = NotificationsRepository()
 
     // Modern permission request launcher
     private val requestPermissionLauncher = registerForActivityResult(
@@ -139,69 +134,40 @@ class NotificationsActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getNotifications(unreadOnly = true)
-            .enqueue(object : Callback<NotificationsResponse> {
-                override fun onResponse(
-                    call: Call<NotificationsResponse>,
-                    response: Response<NotificationsResponse>
-                ) {
-                    isLoading = false
-                    if (response.isSuccessful) {
-                        notificationsList = response.body()?.notifications ?: emptyList()
-                    } else {
-                        errorMessage = "Failed to load notifications"
-                    }
-                }
-
-                override fun onFailure(call: Call<NotificationsResponse>, t: Throwable) {
-                    isLoading = false
-                    errorMessage = t.message ?: "Network error"
-                }
-            })
+        notificationsRepository.getNotifications(
+            onResult = { notifications, error ->
+                isLoading = false
+                errorMessage = error
+                notificationsList = notifications ?: emptyList()
+            }
+        )
     }
 
     // Mark a single notification as read
     private fun markAsRead(notificationId: Int) {
+        isLoading = true
         errorMessage = null
-        ApiClient.apiService.markNotificationAsRead(notificationId)
-            .enqueue(object : Callback<NotificationUpdateResponse> {
-                override fun onResponse(
-                    call: Call<NotificationUpdateResponse>,
-                    response: Response<NotificationUpdateResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        loadNotifications()
-                    } else {
-                        errorMessage = "Failed to mark notification as read"
-                    }
-                }
 
-                override fun onFailure(call: Call<NotificationUpdateResponse>, t: Throwable) {
-                    errorMessage = t.message ?: "Network error"
-                }
-            })
+        notificationsRepository.markNotificationAsRead(
+            notificationId,
+            onResult = { success, error ->
+                isLoading = false
+                errorMessage = error
+                if (success) loadNotifications()
+            }
+        )
     }
 
     // Mark all notifications as read
     private fun markAllAsRead() {
+        isLoading = true
         errorMessage = null
-        ApiClient.apiService.markAllNotificationsAsRead()
-            .enqueue(object : Callback<NotificationMarkAllReadResponse> {
-                override fun onResponse(
-                    call: Call<NotificationMarkAllReadResponse>,
-                    response: Response<NotificationMarkAllReadResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        loadNotifications()
-                    } else {
-                        errorMessage = "Failed to mark all notifications as read"
-                    }
-                }
 
-                override fun onFailure(call: Call<NotificationMarkAllReadResponse>, t: Throwable) {
-                    errorMessage = t.message ?: "Network error"
-                }
-            })
+        notificationsRepository.markAllNotificationsAsRead { success, error ->
+            isLoading = false
+            errorMessage = error
+            if (success) loadNotifications()
+        }
     }
 }
 

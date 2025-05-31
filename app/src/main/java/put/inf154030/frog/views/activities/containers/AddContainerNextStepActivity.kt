@@ -65,8 +65,8 @@ class AddContainerNextStepActivity : ComponentActivity() {
                         containersRepository.createContainer(
                             containerCreateRequest,
                             locationId,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }

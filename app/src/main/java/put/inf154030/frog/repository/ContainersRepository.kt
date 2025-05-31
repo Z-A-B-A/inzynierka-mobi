@@ -19,7 +19,6 @@ class ContainersRepository {
         locationId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String? ) -> Unit
     ) {
         // Make API call to create the container
@@ -32,12 +31,10 @@ class ContainersRepository {
                     if (response.isSuccessful) {
                         onResult(
                             true,
-                            false,
                             null
                         )
                     } else {
                         onResult(
-                            false,
                             false,
                             "Failed to create container: ${response.message()}"
                         )
@@ -50,7 +47,6 @@ class ContainersRepository {
                 ) {
                     onResult(
                         false,
-                        false,
                         "Network error: ${t.message}"
                     )
                 }
@@ -61,13 +57,12 @@ class ContainersRepository {
         locationId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             containers: List<Container>?,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null, null)
+        onResult(false, null, null)
         ApiClient.apiService.getContainers(locationId)
             .enqueue(object : Callback<ContainersResponse> {
                 override fun onResponse(
@@ -75,9 +70,9 @@ class ContainersRepository {
                     response: Response<ContainersResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, response.body()?.containers ?: emptyList(), null)
+                        onResult(true, response.body()?.containers ?: emptyList(), null)
                     } else {
-                        onResult(false, false, null, "Failed to load containers: ${response.message()}")
+                        onResult(false, null, "Failed to load containers: ${response.message()}")
                     }
                 }
 
@@ -85,7 +80,7 @@ class ContainersRepository {
                     call: Call<ContainersResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, null, "Network error: ${t.message}")
+                    onResult(false, null, "Network error: ${t.message}")
                 }
             })
     }
@@ -124,12 +119,11 @@ class ContainersRepository {
         containerId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false,  null)
         ApiClient.apiService.deleteContainer(containerId)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
@@ -137,10 +131,10 @@ class ContainersRepository {
                     response: Response<MessageResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true,  null)
                     } else {
                         val error = response.errorBody()?.string() ?: "Unknown error"
-                        onResult(false, false, error)
+                        onResult(false, error)
                     }
                 }
 
@@ -148,7 +142,7 @@ class ContainersRepository {
                     call: Call<MessageResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, t.message)
+                    onResult(false, t.message)
                 }
             })
     }
@@ -158,12 +152,11 @@ class ContainersRepository {
         containerUpdateRequest: ContainerUpdateRequest,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false, null)
         ApiClient.apiService.updateContainer(containerId, containerUpdateRequest)
             .enqueue(object : Callback<ContainerUpdateResponse> {
                 override fun onResponse(
@@ -171,9 +164,9 @@ class ContainersRepository {
                     response: Response<ContainerUpdateResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true, null)
                     } else {
-                        onResult(false, false, "Failed to update container: ${response.message()}")
+                        onResult(false, "Failed to update container: ${response.message()}")
                     }
                 }
 
@@ -181,7 +174,7 @@ class ContainersRepository {
                     call: Call<ContainerUpdateResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, "Network error: ${t.message}")
+                    onResult(false, "Network error: ${t.message}")
                 }
             })
     }

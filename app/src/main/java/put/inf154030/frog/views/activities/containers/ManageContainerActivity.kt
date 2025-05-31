@@ -111,8 +111,8 @@ class ManageContainerActivity : ComponentActivity() {
                         speciesRepository.deleteSpeciesFromContainer(
                             containerId,
                             speciesId,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) loadContainerDetails()
                             }
@@ -219,9 +219,9 @@ class ManageContainerActivity : ComponentActivity() {
                 containerId,
                 parameterType,
                 updateRequest,
-                onResult = { success, failure, loading, error ->
+                onResult = { success, failure, error ->
                     completedRequests++
-                    isLoading = loading
+                    isLoading = false
                     errorMessage = error
                     if (!success) saveErrorCount++
                     if (failure) saveErrorCount++
@@ -236,9 +236,9 @@ class ManageContainerActivity : ComponentActivity() {
                 containerId,
                 speciesId,
                 updateRequest,
-                onResult = { success, failure, loading, error ->
+                onResult = { success, failure, error ->
                     completedRequests++
-                    isLoading = loading
+                    isLoading = false
                     errorMessage = error
                     if (!success) saveErrorCount++
                     if (failure) saveErrorCount++

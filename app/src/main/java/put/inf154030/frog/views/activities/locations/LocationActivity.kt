@@ -127,8 +127,8 @@ class LocationActivity : ComponentActivity() {
 
         containersRepository.getContainers(
             locationId,
-            onResult = { success, loading, containers, error ->
-                isLoading = loading
+            onResult = { success, containers, error ->
+                isLoading = false
                 errorMessage = error
                 if (success && !containers.isNullOrEmpty()) containersList = containers
             }

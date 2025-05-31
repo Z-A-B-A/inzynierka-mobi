@@ -98,8 +98,8 @@ class SignUpActivity : ComponentActivity() {
         val registerRequest = RegisterRequest(name, email, password)
         accountRepository.registerUser(
             registerRequest,
-            onResult = { success, loading, error ->
-                isLoading = loading
+            onResult = { success, error ->
+                isLoading = false
                 errorMessage = error
                 onSuccess(success)
             }

@@ -17,13 +17,12 @@ class LocationsRepository {
     fun getLocations(
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             locations: List<Location>?,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null, null)
+        onResult(false, null, null)
         ApiClient.apiService.getLocations()
             .enqueue(object : Callback<LocationsResponse> {
             override fun onResponse(
@@ -31,14 +30,14 @@ class LocationsRepository {
                 response: Response<LocationsResponse>
             ) {
                 if (response.isSuccessful) {
-                    onResult(true, false, response.body()?.locations ?: emptyList(), null)
+                    onResult(true, response.body()?.locations ?: emptyList(), null)
                 } else {
-                    onResult(false, false, null, "Failed to load locations: ${response.message()}")
+                    onResult(false, null, "Failed to load locations: ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<LocationsResponse>, t: Throwable) {
-                onResult(false, false, null, "Network error: ${t.message}")
+                onResult(false, null, "Network error: ${t.message}")
             }
         })
     }
@@ -47,13 +46,12 @@ class LocationsRepository {
         locationId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             location: LocationDetailResponse?,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null, null)
+        onResult(false, null, null)
         ApiClient.apiService.getLocation(locationId)
             .enqueue(object : Callback<LocationDetailResponse> {
                 override fun onResponse(
@@ -61,9 +59,9 @@ class LocationsRepository {
                     response: Response<LocationDetailResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, response.body(), null)
+                        onResult(true, response.body(), null)
                     } else {
-                        onResult(false, false, null, "Failed to load location: ${response.message()}")
+                        onResult(false, null, "Failed to load location: ${response.message()}")
                     }
                 }
 
@@ -71,7 +69,7 @@ class LocationsRepository {
                     call: Call<LocationDetailResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, null, "Network error: ${t.message}")
+                    onResult(false, null, "Network error: ${t.message}")
                 }
             })
     }
@@ -80,12 +78,11 @@ class LocationsRepository {
         locationCreateRequest: LocationCreateRequest,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false, null)
         ApiClient.apiService.createLocation(locationCreateRequest)
             .enqueue(object : Callback<LocationResponse> {
                 override fun onResponse(
@@ -93,9 +90,9 @@ class LocationsRepository {
                     response: Response<LocationResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true, null)
                     } else {
-                        onResult(false, false, "Failed to create location: ${response.message()}")
+                        onResult(false, "Failed to create location: ${response.message()}")
                     }
                 }
 
@@ -103,7 +100,7 @@ class LocationsRepository {
                     call: Call<LocationResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, "Network error: ${t.message}")
+                    onResult(false, "Network error: ${t.message}")
                 }
             })
     }
@@ -112,12 +109,11 @@ class LocationsRepository {
         locationId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false, null)
         ApiClient.apiService.deleteLocation(locationId)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
@@ -125,9 +121,9 @@ class LocationsRepository {
                     response: Response<MessageResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true, null)
                     } else {
-                        onResult(false, false, "Failed to delete location: ${response.message()}")
+                        onResult(false, "Failed to delete location: ${response.message()}")
                     }
                 }
 
@@ -135,7 +131,7 @@ class LocationsRepository {
                     call: Call<MessageResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, "Network error: ${t.message}")
+                    onResult(false,  "Network error: ${t.message}")
                 }
             })
     }
@@ -145,12 +141,11 @@ class LocationsRepository {
         locationUpdateRequest: LocationUpdateRequest,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false, null)
         ApiClient.apiService.updateLocation(locationId, locationUpdateRequest)
             .enqueue(object : Callback<LocationUpdateResponse> {
                 override fun onResponse(
@@ -158,9 +153,9 @@ class LocationsRepository {
                     response: Response<LocationUpdateResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true, null)
                     } else {
-                        onResult(false, false, "Failed to update location: ${response.message()}")
+                        onResult(false, "Failed to update location: ${response.message()}")
                     }
                 }
 
@@ -168,7 +163,7 @@ class LocationsRepository {
                     call: Call<LocationUpdateResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, "Network error: ${t.message}")
+                    onResult(false, "Network error: ${t.message}")
                 }
             })
     }

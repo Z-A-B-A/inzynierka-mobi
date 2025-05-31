@@ -11,12 +11,11 @@ class SpeciesRepository {
         speciesId: Int,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, true, null)
+        onResult(false, null)
         ApiClient.apiService.deleteSpeciesFromContainer(containerId, speciesId)
             .enqueue(object : retrofit2.Callback<MessageResponse> {
                 override fun onResponse(
@@ -24,9 +23,9 @@ class SpeciesRepository {
                     response: retrofit2.Response<MessageResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true, null)
                     } else {
-                        onResult(false, false, "Failed to delete species: ${response.message()}")
+                        onResult(false, "Failed to delete species: ${response.message()}")
                     }
                 }
 
@@ -34,7 +33,7 @@ class SpeciesRepository {
                     call: retrofit2.Call<MessageResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, t.message)
+                    onResult(false, t.message)
                 }
             })
     }
@@ -46,12 +45,11 @@ class SpeciesRepository {
         onResult: (
             success: Boolean,
             failure: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, false,true, null)
+        onResult(false, false,null)
         ApiClient.apiService.updateContainerSpecies(containerId, speciesId, updateRequest)
             .enqueue(object : retrofit2.Callback<ContainerSpeciesUpdateResponse> {
                 override fun onResponse(
@@ -59,9 +57,9 @@ class SpeciesRepository {
                     response: retrofit2.Response<ContainerSpeciesUpdateResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false,false, null)
+                        onResult(true, false,null)
                     } else {
-                        onResult(false, false,false, "Failed to update species: ${response.message()}")
+                        onResult(false, false,"Failed to update species: ${response.message()}")
                     }
                 }
 
@@ -69,7 +67,7 @@ class SpeciesRepository {
                     call: retrofit2.Call<ContainerSpeciesUpdateResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, true,false, "Network error: ${t.message}")
+                    onResult(false, true,"Network error: ${t.message}")
                 }
             })
     }

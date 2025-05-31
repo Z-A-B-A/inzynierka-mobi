@@ -141,8 +141,8 @@ class LocationsActivity : ComponentActivity() {
         errorMessage = null
 
         locationsRepository.getLocations(
-            onResult = { success, loading, locations, error ->
-                isLoading = loading
+            onResult = { success, locations, error ->
+                isLoading = false
                 errorMessage = error
                 if (success && !locations.isNullOrEmpty()) locationsList = locations
             }

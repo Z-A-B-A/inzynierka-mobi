@@ -28,15 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.UpcomingEvent
-import put.inf154030.frog.models.responses.UpcomingEventsResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.NotificationsRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.views.fragments.UpcomingCard
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for displaying upcoming events
 class UpcomingActivity : ComponentActivity() {
@@ -44,6 +40,7 @@ class UpcomingActivity : ComponentActivity() {
     private var upcomingList by mutableStateOf<List<UpcomingEvent>>(emptyList())
     private var isLoading by mutableStateOf(true)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val notificationsRepository = NotificationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,26 +65,13 @@ class UpcomingActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getUpcomingNotifications(1)
-            .enqueue(object : Callback<UpcomingEventsResponse> {
-                override fun onResponse(
-                    call: Call<UpcomingEventsResponse>,
-                    response: Response<UpcomingEventsResponse>
-                ) {
-                    isLoading = false
-                    if (response.isSuccessful) {
-                        // Update list with fetched events
-                        upcomingList = response.body()?.upcomingEvents ?: emptyList()
-                    } else {
-                        errorMessage = "Failed to load upcoming events: ${response.message()}"
-                    }
-                }
-
-                override fun onFailure(call: Call<UpcomingEventsResponse>, t: Throwable) {
-                    isLoading = false
-                    errorMessage = t.message ?: "Network error"
-                }
-            })
+        notificationsRepository.getUpcomingNotifications(
+            onResult = { upcoming, error ->
+                upcomingList = upcoming ?: emptyList()
+                isLoading = false
+                errorMessage = error
+            }
+        )
     }
 }
 

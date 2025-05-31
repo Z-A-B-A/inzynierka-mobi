@@ -46,12 +46,11 @@ class ParametersRepository {
         onResult: (
             success: Boolean,
             failure: Boolean,
-            isLoading: Boolean,
             errorMessage: String?
         ) -> Unit
     ) {
         // Indicate loading started
-        onResult(false, false, true, null)
+        onResult(false, false, null)
         ApiClient.apiService.updateParameter(containerId, updateRequest, parameterType)
             .enqueue(object : retrofit2.Callback<ParameterResponse> {
                 override fun onResponse(
@@ -59,9 +58,9 @@ class ParametersRepository {
                     response: retrofit2.Response<ParameterResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true,  false, false, null)
+                        onResult(true,  false, null)
                     } else {
-                        onResult(false, false, false, "Failed to update parameter: ${response.message()}")
+                        onResult(false, false, "Failed to update parameter: ${response.message()}")
                     }
                 }
 
@@ -69,7 +68,7 @@ class ParametersRepository {
                     call: retrofit2.Call<ParameterResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, true, false, "Network error: ${t.message}")
+                    onResult(false, true, "Network error: ${t.message}")
                 }
             })
     }

@@ -17,7 +17,6 @@ class AccountRepository {
         request: UserUpdateRequest,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String? ) -> Unit
     ) {
         ApiClient.apiService.updateUser(request)
@@ -33,12 +32,10 @@ class AccountRepository {
                         }
                         onResult(
                             true,
-                            false,
                             null
                         )
                     } else {
                         onResult(
-                            false,
                             false,
                             "Could not update user data"
                         )
@@ -47,7 +44,6 @@ class AccountRepository {
 
                 override fun onFailure(call: Call<UserResponse>, t: Throwable) {
                     onResult(
-                        false,
                         false,
                         "Network error: ${t.message}"
                     )
@@ -59,7 +55,6 @@ class AccountRepository {
         request: LoginRequest,
         onResult: (
             success: Boolean,
-            isLoading: Boolean,
             errorMessage: String?) -> Unit
     ) {
         ApiClient.apiService.loginUser(request)
@@ -78,10 +73,10 @@ class AccountRepository {
                                     user.email
                                 )
                             }
-                            onResult(true, false,null)
-                        } ?: onResult(false, false, "Empty response received")
+                            onResult(true, null)
+                        } ?: onResult(false, "Empty response received")
                     } else {
-                        onResult(false,false, response.errorBody()?.string() ?: "Login failed")
+                        onResult(false,response.errorBody()?.string() ?: "Login failed")
                     }
                 }
 
@@ -89,16 +84,16 @@ class AccountRepository {
                     call: Call<AuthResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false,"Network error: Cannot connect to server")
+                    onResult(false, "Network error: Cannot connect to server")
                 }
             })
     }
 
     fun registerUser(
         request: RegisterRequest,
-        onResult: (success: Boolean, isLoading: Boolean, errorMessage: String?) -> Unit
+        onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        onResult(false, true, null) // Loading started
+        onResult(false,  null) // Loading started
         ApiClient.apiService.registerUser(request)
             .enqueue(object : Callback<RegisterResponse> {
                 override fun onResponse(
@@ -106,16 +101,16 @@ class AccountRepository {
                     response: Response<RegisterResponse>
                 ) {
                     if (response.isSuccessful) {
-                        onResult(true, false, null)
+                        onResult(true,  null)
                     } else {
-                        onResult(false, false, response.errorBody()?.string() ?: "Registration failed")
+                        onResult(false,  response.errorBody()?.string() ?: "Registration failed")
                     }
                 }
                 override fun onFailure(
                     call: Call<RegisterResponse>,
                     t: Throwable
                 ) {
-                    onResult(false, false, "Network error: Cannot connect to server")
+                    onResult(false,  "Network error: Cannot connect to server")
                 }
             })
     }

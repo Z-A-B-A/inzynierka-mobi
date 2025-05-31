@@ -77,8 +77,8 @@ class EditLocationActivity : ComponentActivity() {
                         locationsRepository.updateLocation(
                             locationId,
                             locationUpdateRequest,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }
@@ -101,8 +101,8 @@ class EditLocationActivity : ComponentActivity() {
 
         locationsRepository.getLocation(
             locationId,
-            onResult = { success, loading, location, error ->
-                isLoading = loading
+            onResult = { success, location, error ->
+                isLoading = false
                 errorMessage = error
                 if (success) locationName = location?.name ?: "Unknown location"
             }

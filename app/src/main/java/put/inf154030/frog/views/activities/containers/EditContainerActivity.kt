@@ -88,8 +88,8 @@ class EditContainerActivity : ComponentActivity() {
                         containersRepository.updateContainer(
                             containerId,
                             containerUpdateRequest,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }
@@ -123,8 +123,8 @@ class EditContainerActivity : ComponentActivity() {
         errorMessage = null
 
         locationsRepository.getLocations(
-            onResult = { success, loading, locations, error ->
-                isLoading = loading
+            onResult = { success, locations, error ->
+                isLoading = false
                 errorMessage = error
                 if (success && !locations.isNullOrEmpty()) locationsList = locations
             }

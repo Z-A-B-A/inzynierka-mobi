@@ -64,8 +64,8 @@ class EditAccountActivity : ComponentActivity() {
                         val userUpdateRequest = UserUpdateRequest(name = name, email = email)
                         accountRepository.updateUser(
                             userUpdateRequest,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }

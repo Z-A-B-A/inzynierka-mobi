@@ -54,8 +54,8 @@ class DeleteContainerActivity : ComponentActivity() {
 
                         containersRepository.deleteContainer(
                             containerId,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }

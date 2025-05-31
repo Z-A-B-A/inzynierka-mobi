@@ -55,8 +55,8 @@ class DeleteLocationActivity : ComponentActivity() {
                         // Call API to delete location
                         locationsRepository.deleteLocation(
                             locationId,
-                            onResult = { success, loading, error ->
-                                isLoading = loading
+                            onResult = { success, error ->
+                                isLoading = false
                                 errorMessage = error
                                 if (success) finish()
                             }

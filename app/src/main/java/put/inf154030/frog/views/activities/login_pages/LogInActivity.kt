@@ -126,8 +126,8 @@ class LogInActivity : ComponentActivity() {
         val loginRequest = LoginRequest(email = email, password = password)
         accountRepository.loginUser(
             loginRequest,
-            onResult = { success, loading, error ->
-                isLoading = loading
+            onResult = { success, error ->
+                isLoading = false
                 errorMessage = error
                 onSuccess(success)
             }
