@@ -36,8 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import put.inf154030.frog.R
 import put.inf154030.frog.models.Container
-import put.inf154030.frog.models.responses.ContainersResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.activities.containers.AddContainerActivity
@@ -48,9 +47,6 @@ import put.inf154030.frog.views.fragments.ContainerCard
 import put.inf154030.frog.views.fragments.FilterButtonsRow
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for displaying and managing containers in a location
 class LocationActivity : ComponentActivity() {
@@ -64,6 +60,8 @@ class LocationActivity : ComponentActivity() {
     // Location info
     private var locationId: Int = -1
     private var locationName: String = "Location"
+
+    private val containersRepository = ContainersRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,25 +125,14 @@ class LocationActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getContainers(locationId).enqueue(object : Callback<ContainersResponse> {
-            override fun onResponse(
-                call: Call<ContainersResponse>,
-                response: Response<ContainersResponse>
-            ) {
-                isLoading = false
-                if (response.isSuccessful) {
-                    containersList = response.body()?.containers ?: emptyList()
-                } else {
-                    errorMessage = "Failed to load containers: ${response.message()}"
-                }
+        containersRepository.getContainers(
+            locationId,
+            onResult = { success, loading, containers, error ->
+                isLoading = loading
+                errorMessage = error
+                if (success && !containers.isNullOrEmpty()) containersList = containers
             }
-
-            override fun onFailure(call: Call<ContainersResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-
-        })
+        )
     }
 }
 

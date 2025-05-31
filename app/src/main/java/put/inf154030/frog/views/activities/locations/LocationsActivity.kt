@@ -40,9 +40,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.models.Location
-import put.inf154030.frog.models.responses.LocationsResponse
-import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.repository.LocationsRepository
 import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
@@ -50,9 +49,6 @@ import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.fragments.LocationCard
 import put.inf154030.frog.views.fragments.SideMenu
 import put.inf154030.frog.views.fragments.TopNavigationBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for displaying and managing all locations
 class LocationsActivity : ComponentActivity() {
@@ -65,6 +61,8 @@ class LocationsActivity : ComponentActivity() {
     private var errorMessage by mutableStateOf<String?>(null)
     // User name for greeting
     private val userName = SessionManager.getUserName()
+
+    private val locationsRepository = LocationsRepository()
 
     /* 
      * Permission launcher for notifications (Android 13+)
@@ -142,25 +140,13 @@ class LocationsActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getLocations().enqueue(object : Callback<LocationsResponse> {
-            override fun onResponse(
-                call: Call<LocationsResponse>,
-                response: Response<LocationsResponse>
-            ) {
-                isLoading = false
-                if (response.isSuccessful) {
-                    locationsList = response.body()?.locations ?: emptyList()
-                } else {
-                    errorMessage = "Failed to load locations: ${response.message()}"
-                }
+        locationsRepository.getLocations(
+            onResult = { success, loading, locations, error ->
+                isLoading = loading
+                errorMessage = error
+                if (success && !locations.isNullOrEmpty()) locationsList = locations
             }
-
-            override fun onFailure(call: Call<LocationsResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-
-        })
+        )
     }
 }
 

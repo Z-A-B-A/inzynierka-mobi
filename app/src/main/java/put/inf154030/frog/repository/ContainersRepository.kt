@@ -1,10 +1,12 @@
 package put.inf154030.frog.repository
 
+import put.inf154030.frog.models.Container
 import put.inf154030.frog.models.requests.ContainerCreateRequest
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
 import put.inf154030.frog.models.responses.ContainerDetailResponse
 import put.inf154030.frog.models.responses.ContainerResponse
 import put.inf154030.frog.models.responses.ContainerUpdateResponse
+import put.inf154030.frog.models.responses.ContainersResponse
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
 import retrofit2.Call
@@ -51,6 +53,39 @@ class ContainersRepository {
                         false,
                         "Network error: ${t.message}"
                     )
+                }
+            })
+    }
+
+    fun getContainers(
+        locationId: Int,
+        onResult: (
+            success: Boolean,
+            isLoading: Boolean,
+            containers: List<Container>?,
+            errorMessage: String?
+        ) -> Unit
+    ) {
+        // Indicate loading started
+        onResult(false, true, null, null)
+        ApiClient.apiService.getContainers(locationId)
+            .enqueue(object : Callback<ContainersResponse> {
+                override fun onResponse(
+                    call: Call<ContainersResponse>,
+                    response: Response<ContainersResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onResult(true, false, response.body()?.containers ?: emptyList(), null)
+                    } else {
+                        onResult(false, false, null, "Failed to load containers: ${response.message()}")
+                    }
+                }
+
+                override fun onFailure(
+                    call: Call<ContainersResponse>,
+                    t: Throwable
+                ) {
+                    onResult(false, false, null, "Network error: ${t.message}")
                 }
             })
     }

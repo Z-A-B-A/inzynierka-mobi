@@ -37,16 +37,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.LocationUpdateRequest
-import put.inf154030.frog.models.responses.LocationDetailResponse
-import put.inf154030.frog.models.responses.LocationUpdateResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.LocationsRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for editing a location's name
 class EditLocationActivity : ComponentActivity() {
@@ -54,6 +49,7 @@ class EditLocationActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private var locationName by mutableStateOf("")
+    private val locationsRepository = LocationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,24 +74,15 @@ class EditLocationActivity : ComponentActivity() {
                         errorMessage = null
 
                         val locationUpdateRequest = LocationUpdateRequest(name = name)
-                        ApiClient.apiService.updateLocation(locationId, locationUpdateRequest)
-                            .enqueue(object : Callback<LocationUpdateResponse> {
-                                override fun onResponse(
-                                    call: Call<LocationUpdateResponse>,
-                                    response: Response<LocationUpdateResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish()
-                                    } else {
-                                        errorMessage = "Failed to update location: ${response.message()}"
-                                    }
-                                }
-                                override fun onFailure(call: Call<LocationUpdateResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = "Network error: ${t.message}"
-                                }
-                            })
+                        locationsRepository.updateLocation(
+                            locationId,
+                            locationUpdateRequest,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     setErrorMessage = { message -> errorMessage = message },
                     locationName = locationName,
@@ -111,20 +98,15 @@ class EditLocationActivity : ComponentActivity() {
     // Fetch location details from API
     private fun loadLocationData(locationId: Int) {
         isLoading = true
-        ApiClient.apiService.getLocation(locationId).enqueue(object : Callback<LocationDetailResponse> {
-            override fun onResponse(call: Call<LocationDetailResponse>, response: Response<LocationDetailResponse>) {
-                isLoading = false
-                if (response.isSuccessful) {
-                    locationName = response.body()?.name ?: ""
-                } else {
-                    errorMessage = "Failed to load location: ${response.message()}"
-                }
+
+        locationsRepository.getLocation(
+            locationId,
+            onResult = { success, loading, location, error ->
+                isLoading = loading
+                errorMessage = error
+                if (success) locationName = location?.name ?: "Unknown location"
             }
-            override fun onFailure(call: Call<LocationDetailResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-        })
+        )
     }
 }
 

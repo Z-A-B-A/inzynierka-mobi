@@ -31,22 +31,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.views.fragments.BackButton
-import put.inf154030.frog.views.fragments.TopHeaderBar
 import put.inf154030.frog.models.requests.LocationCreateRequest
-import put.inf154030.frog.models.responses.LocationResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.LocationsRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import put.inf154030.frog.views.fragments.BackButton
+import put.inf154030.frog.views.fragments.TopHeaderBar
 
 // Activity for adding a new location
 class AddLocationActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val locationsRepository = LocationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,24 +58,14 @@ class AddLocationActivity : ComponentActivity() {
 
                         // Prepare request and call API
                         val locationCreateRequest = LocationCreateRequest(name = name.trim())
-                        ApiClient.apiService.createLocation(locationCreateRequest)
-                            .enqueue(object : Callback<LocationResponse> {
-                                override fun onResponse(
-                                    call: Call<LocationResponse>,
-                                    response: Response<LocationResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish() // Close activity on success
-                                    } else {
-                                        errorMessage = "Failed to create location: ${response.message()}"
-                                    }
-                                }
-                                override fun onFailure(call: Call<LocationResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = "Network error: ${t.message}"
-                                }
-                            })
+                        locationsRepository.createLocation(
+                            locationCreateRequest,
+                            onResult = { success, loading, error ->
+                                isLoading = loading
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     setErrorMessage = { message -> errorMessage = message },
                     isLoading = isLoading,
