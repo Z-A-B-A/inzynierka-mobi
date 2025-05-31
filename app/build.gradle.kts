@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.localbroadcastmanager)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.biometric)
     implementation(libs.firebase.messaging)
     implementation(libs.gson)
     implementation(libs.material)
