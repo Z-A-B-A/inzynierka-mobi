@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.benchmark.common)
+    implementation(libs.androidx.security.crypto)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

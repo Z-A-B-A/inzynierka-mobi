@@ -1,11 +1,13 @@
 package put.inf154030.frog.views.activities.login_pages
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,8 +51,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import put.inf154030.frog.R
@@ -82,6 +87,9 @@ class LogInActivity : FragmentActivity() {
             startActivity(intent)
         }
 
+        // Check if user has stored credentials
+        val storedCredentials = getCredentials(this)
+
         setContent {
             FrogTheme {
                 // Main login screen composable
@@ -103,11 +111,97 @@ class LogInActivity : FragmentActivity() {
                             }
                         )
                     },
+                    onBiometricClick = { showBiometricPrompt() },
                     isLoading = isLoading,
-                    errorMessage = errorMessage
+                    errorMessage = errorMessage,
+                    hasStoredCredentials = storedCredentials != null
                 )
             }
         }
+    }
+
+    // Store credentials after first login
+    private fun saveCredentials(context: Context, email: String, password: String) {
+        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "secret_shared_prefs",
+            masterKey,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        sharedPreferences.edit()
+            .putString("email", email)
+            .putString("password", password)
+            .apply()
+    }
+
+    // Retrieve credentials for biometric login
+    fun getCredentials(context: Context): Pair<String, String>? {
+        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "secret_shared_prefs",
+            masterKey,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        val email = sharedPreferences.getString("email", null)
+        val password = sharedPreferences.getString("password", null)
+        return if (email != null && password != null) Pair(email, password) else null
+    }
+
+    // Biometric
+    private fun showBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+
+                    // Get stored credentials
+                    val credentials = getCredentials(this@LogInActivity)
+                    if (credentials != null) {
+                        val (storedEmail, storedPassword) = credentials
+                        // Login with stored credentials
+                        handleLogin(
+                            storedEmail,
+                            storedPassword,
+                            onSuccess = { success ->
+                                if (success && !isLoading) {
+                                    // Send FCM token after successful login
+                                    sendFcmTokenToServer()
+                                    // Navigate to main locations screen
+                                    val intent =
+                                        Intent(this@LogInActivity, LocationsActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                        )
+                    }  else {
+                        errorMessage = "No stored credentials found"
+                    }
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    errorMessage = "Authentication error: $errString"
+                }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    errorMessage = "Authentication failed"
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Biometric Login")
+            .setSubtitle("Log in using your biometric credential")
+            .setNegativeButtonText("Cancel")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 
     // Handles login logic and API call
@@ -138,6 +232,7 @@ class LogInActivity : FragmentActivity() {
             onResult = { success, error ->
                 isLoading = false
                 errorMessage = error
+                if (success) saveCredentials(this, email, password)
                 onSuccess(success)
             }
         )
@@ -169,8 +264,10 @@ class LogInActivity : FragmentActivity() {
 @Composable
 fun LogInScreen(
     onLoginClick: (String, String) -> Unit,
+    onBiometricClick: () -> Unit,
     isLoading: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    hasStoredCredentials: Boolean
 ) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
@@ -205,6 +302,26 @@ fun LogInScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                // Show biometric button if credentials are stored
+                if (hasStoredCredentials) {
+                    IconButton(
+                        onClick = { onBiometricClick() },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_fingerprint), // Make sure you have this icon
+                            contentDescription = "Use biometric login",
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Text(
+                        text = "Use biometrics to login",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 // Email label and input
                 Text(
                     text = "Email",
@@ -359,8 +476,10 @@ fun LogInActivityPreview () {
     FrogTheme {
         LogInScreen(
             onLoginClick = { _ ,_ -> },
+            onBiometricClick = {},
             isLoading = false,
-            errorMessage = null
+            errorMessage = null,
+            hasStoredCredentials = true
         )
     }
 }
