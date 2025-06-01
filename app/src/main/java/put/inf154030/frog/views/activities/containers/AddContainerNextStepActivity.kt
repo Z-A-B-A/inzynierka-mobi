@@ -33,18 +33,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.ContainerCreateRequest
-import put.inf154030.frog.models.responses.ContainerResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.ContainersRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for the second step of adding a container (name & description)
 class AddContainerNextStepActivity : ComponentActivity() {
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+    private val containersRepository = ContainersRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -56,39 +56,24 @@ class AddContainerNextStepActivity : ComponentActivity() {
                 // Main screen composable for this step
                 AddContainerNextStepScreen(
                     onBackClick = { finish() },
-                    onFinishClick = { 
-                        name, 
-                        description,
-                        setLoading,
-                        setErrorName->
+                    onFinishClick = { name, description ->
+                        isLoading = true
+                        errorMessage = null
+
                         // Prepare request object
                         val containerCreateRequest = ContainerCreateRequest(name, description, containerCode)
-
-                        setLoading(true)
-                        // Make API call to create the container
-                        ApiClient.apiService.createContainer(locationId, containerCreateRequest)
-                            .enqueue(object : Callback<ContainerResponse> {
-                                override fun onResponse(
-                                    call: Call<ContainerResponse>,
-                                    response: Response<ContainerResponse>
-                                ) {
-                                    setLoading(false)
-                                    if (response.isSuccessful) {
-                                        finish()
-                                    } else {
-                                        setErrorName("Failed to create container: ${response.message()}")
-                                    }
-                                }
-
-                                override fun onFailure(
-                                    call: Call<ContainerResponse>,
-                                    t: Throwable
-                                ) {
-                                    setLoading(false)
-                                    setErrorName("Network error: ${t.message}")
-                                }
-                            })
-                    }
+                        containersRepository.createContainer(
+                            containerCreateRequest,
+                            locationId,
+                            onResult = { success, error ->
+                                isLoading = false
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
@@ -98,13 +83,10 @@ class AddContainerNextStepActivity : ComponentActivity() {
 // Composable for entering container name and description
 @Composable
 fun AddContainerNextStepScreen (
-    onBackClick: () -> Unit = {},
-    onFinishClick: (
-        String, 
-        String,
-        (Boolean) -> Unit,
-        (String?) -> Unit
-    ) -> Unit
+    onBackClick: () -> Unit,
+    onFinishClick: (String, String) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
     Surface (
         modifier = Modifier.fillMaxSize(),
@@ -123,7 +105,6 @@ fun AddContainerNextStepScreen (
                 // State for form fields and errors
                 var name by remember { mutableStateOf("") }
                 var description by remember { mutableStateOf("") }
-                var isLoading by remember { mutableStateOf(false) }
                 var errorMessageName by remember { mutableStateOf<String?>(null) }
                 var errorMessageDescription by remember { mutableStateOf<String?>(null) }
 
@@ -251,6 +232,14 @@ fun AddContainerNextStepScreen (
                     CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
                 }
 
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 // Finish button
                 Button(
                     onClick = {
@@ -271,12 +260,7 @@ fun AddContainerNextStepScreen (
                         errorMessageName = null
                         errorMessageDescription = null
 
-                        onFinishClick(
-                            name, 
-                            description,
-                            { loading -> isLoading = loading },
-                            { err -> errorMessageName = err }
-                        )
+                        onFinishClick(name, description)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
@@ -299,7 +283,9 @@ fun AddContainerNextStepActivityPreview () {
     FrogTheme {
         AddContainerNextStepScreen(
             onBackClick = {  },
-            onFinishClick = { _, _, _, _ -> }
+            onFinishClick = { _, _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }

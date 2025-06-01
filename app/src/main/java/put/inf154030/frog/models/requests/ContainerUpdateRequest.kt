@@ -2,6 +2,7 @@ package put.inf154030.frog.models.requests
 
 import com.google.gson.annotations.SerializedName
 
+// ContainerUpdateRequest
 data class ContainerUpdateRequest(
     val name: String?,
     val description: String?,

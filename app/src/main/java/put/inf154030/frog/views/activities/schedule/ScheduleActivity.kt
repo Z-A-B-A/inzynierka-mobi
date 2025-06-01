@@ -33,17 +33,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import put.inf154030.frog.models.Schedule
+import put.inf154030.frog.repository.SchedulesRepository
+import put.inf154030.frog.theme.FrogTheme
+import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.ScheduleItem
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import put.inf154030.frog.models.Schedule
-import put.inf154030.frog.models.responses.SchedulesResponse
-import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.theme.FrogTheme
-import put.inf154030.frog.theme.PoppinsFamily
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for displaying and managing schedules
 class ScheduleActivity : ComponentActivity() {
@@ -52,6 +48,7 @@ class ScheduleActivity : ComponentActivity() {
     private var schedulesList by mutableStateOf<List<Schedule>>(emptyList())
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val schedulesRepository = SchedulesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,26 +103,14 @@ class ScheduleActivity : ComponentActivity() {
         isLoading = true
         errorMessage = null
 
-        ApiClient.apiService.getSchedules(containerId).enqueue(object:
-            Callback<SchedulesResponse> {
-            override fun onResponse(
-                call: Call<SchedulesResponse>,
-                response: Response<SchedulesResponse>
-            ) {
+        schedulesRepository.getSchedules(
+            containerId,
+            onResult = { success, schedules, error ->
+                if (success && !schedules.isNullOrEmpty()) schedulesList = schedules
                 isLoading = false
-                if (response.isSuccessful) {
-                    // Update list with fetched schedules
-                    schedulesList = response.body()?.schedules ?: emptyList()
-                } else {
-                    errorMessage = "Failed to load schedules: ${response.message()}"
-                }
+                errorMessage = error
             }
-
-            override fun onFailure(call: Call<SchedulesResponse>, t: Throwable) {
-                isLoading = false
-                errorMessage = "Network error: ${t.message}"
-            }
-        })
+        )
     }
 }
 

@@ -34,12 +34,12 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun EditParameterRow(
-    parameterId: Int,
+    parameterType: String,
     parameterName: String,
     parameterMin: Double,
     parameterMax: Double,
-    onMinValueChanged: (Int, String) -> Unit,
-    onMaxValueChanged: (Int, String) -> Unit
+    onMinValueChanged: (String, String) -> Unit,
+    onMaxValueChanged: (String, String) -> Unit
 ) {
     Column (
         modifier = Modifier.fillMaxWidth(),
@@ -75,7 +75,7 @@ fun EditParameterRow(
                         // Only accept numeric input with at most one decimal point
                         if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
                             minValue = newValue
-                            onMinValueChanged(parameterId, newValue)
+                            onMinValueChanged(parameterType, newValue)
                         }
                     },
                     modifier = Modifier
@@ -107,7 +107,7 @@ fun EditParameterRow(
                         // Only accept numeric input with at most one decimal point
                         if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
                             maxValue = newValue
-                            onMaxValueChanged(parameterId, newValue)
+                            onMaxValueChanged(parameterType, newValue)
                         }
                     },
                     modifier = Modifier
@@ -149,7 +149,7 @@ fun EditParameterRow(
 fun EditParameterRowPreview() {
     FrogTheme {
         EditParameterRow(
-            parameterId = 1,
+            parameterType = "water_temp",
             parameterName = "Temperatura wody",
             parameterMin = 20.0,
             parameterMax = 25.0,

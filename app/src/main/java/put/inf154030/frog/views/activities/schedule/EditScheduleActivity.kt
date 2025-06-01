@@ -35,15 +35,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.models.requests.ScheduleUpdateRequest
-import put.inf154030.frog.models.responses.ScheduleUpdateResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.SchedulesRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.Locale
 
 // Activity for editing a schedule
@@ -51,6 +47,7 @@ class EditScheduleActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val schedulesRepository = SchedulesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,27 +73,18 @@ class EditScheduleActivity : ComponentActivity() {
                         errorMessage = null
 
                         // Prepare update request
-                        val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime, true)
+                        val scheduleUpdateRequest = ScheduleUpdateRequest(executionTime)
 
                         // Make API call to update schedule
-                        ApiClient.apiService.updateSchedule(scheduleId, scheduleUpdateRequest)
-                            .enqueue(object: Callback<ScheduleUpdateResponse> {
-                                override fun onResponse(
-                                    call: Call<ScheduleUpdateResponse>,
-                                    response: Response<ScheduleUpdateResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish() // Close activity on success
-                                    } else {
-                                        errorMessage = response.errorBody()?.string() ?: "Unknown error occurred"
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<ScheduleUpdateResponse>, t: Throwable) {
-                                    errorMessage = "Network error occurred"
-                                }
-                            })
+                        schedulesRepository.updateSchedule(
+                            scheduleId,
+                            scheduleUpdateRequest,
+                            onResult = { success, error ->
+                                isLoading = false
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     executionTime = scheduleExecTime,
                     isLoading = isLoading,

@@ -42,15 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import put.inf154030.frog.models.requests.ScheduleCreateRequest
-import put.inf154030.frog.models.responses.ScheduleResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.SchedulesRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -60,6 +56,7 @@ class CreateScheduleActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val schedulesRepository = SchedulesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,25 +79,15 @@ class CreateScheduleActivity : ComponentActivity() {
                         val scheduleCreateRequest = ScheduleCreateRequest(name, currentDate.toString(), frequency, weekDays, executionTime)
 
                         // Make API call to create schedule
-                        ApiClient.apiService.createSchedule(containerId, scheduleCreateRequest)
-                            .enqueue(object: Callback<ScheduleResponse> {
-                                override fun onResponse(
-                                    call: Call<ScheduleResponse>,
-                                    response: Response<ScheduleResponse>
-                                ) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish() // Close activity on success
-                                    } else {
-                                        errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                                    }
-                                }
-
-                                override fun onFailure(call: Call<ScheduleResponse>, t: Throwable) {
-                                    isLoading = false
-                                    errorMessage = t.message ?: "Network error"
-                                }
-                            })
+                        schedulesRepository.createSchedule(
+                            containerId,
+                            scheduleCreateRequest,
+                            onResult = { success, error ->
+                                isLoading = false
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                     },
                     isLoading = isLoading,
                     errorMessage = errorMessage

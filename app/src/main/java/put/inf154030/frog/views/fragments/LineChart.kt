@@ -130,7 +130,7 @@ fun LineChartPreview() {
                 ParameterHistoryEntry(22.4, "2025-05-14T11:20:00"),
                 ParameterHistoryEntry(22.2, "2025-05-14T11:30:00")
             ),
-            parameter = Parameter(5, "Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", "predefined"),
+            parameter = Parameter("Temperatura wody", 25.0, "°C", 24.0, 28.0, true, "", "", 1),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)

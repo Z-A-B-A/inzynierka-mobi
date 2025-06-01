@@ -1,13 +1,13 @@
 package put.inf154030.frog.views.activities.login_pages
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,98 +51,191 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import put.inf154030.frog.R
 import put.inf154030.frog.models.requests.DeviceTokenRequest
 import put.inf154030.frog.models.requests.LoginRequest
-import put.inf154030.frog.models.responses.AuthResponse
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.repository.AccountRepository
+import put.inf154030.frog.repository.NotificationsRepository
 import put.inf154030.frog.services.FrogFirebaseMessagingService
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.utils.dataStore
 import put.inf154030.frog.views.activities.locations.LocationsActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for user login
-class LogInActivity : ComponentActivity() {
+class LogInActivity : FragmentActivity() {
     private var isLoading by mutableStateOf(false)
-    private var errorMessage by mutableStateOf("")
+    private var errorMessage by mutableStateOf<String?>(null)
+    private val accountRepository = AccountRepository()
+    private val notificationsRepository = NotificationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // If opened from notification create a chain to get to notifications activity
+        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
+        if (fromNotification) {
+            val intent = Intent(this, LocationsActivity::class.java)
+            intent.putExtra("FROM_NOTIFICATION", true)
+            startActivity(intent)
+        }
+
+        // Check if user has stored credentials
+        val storedCredentials = getCredentials(this)
+
         setContent {
             FrogTheme {
                 // Main login screen composable
                 LogInScreen(
-                    onLoginSuccess = {
-                        // Send FCM token after successful login
-                        sendFcmTokenToServer()
-                        // Navigate to main locations screen
-                        val intent = Intent(this, LocationsActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
+                    onLoginClick = { email, password ->
+                        handleLogin(
+                            email,
+                            password,
+                            onSuccess = { success ->
+                                // Avoid starting multiple activities
+                                if (success && !isLoading) {
+                                    // Send FCM token after successful login
+                                    sendFcmTokenToServer()
+                                    // Navigate to main locations screen
+                                    val intent = Intent(this, LocationsActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                        )
+                    },
+                    onBiometricClick = { showBiometricPrompt() },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    hasStoredCredentials = storedCredentials != null
                 )
             }
         }
     }
 
+    // Store credentials after first login
+    private fun saveCredentials(context: Context, email: String, password: String) {
+        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "secret_shared_prefs",
+            masterKey,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        sharedPreferences.edit()
+            .putString("email", email)
+            .putString("password", password)
+            .apply()
+    }
+
+    // Retrieve credentials for biometric login
+    fun getCredentials(context: Context): Pair<String, String>? {
+        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "secret_shared_prefs",
+            masterKey,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        val email = sharedPreferences.getString("email", null)
+        val password = sharedPreferences.getString("password", null)
+        return if (email != null && password != null) Pair(email, password) else null
+    }
+
+    // Biometric
+    private fun showBiometricPrompt() {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+
+                    // Get stored credentials
+                    val credentials = getCredentials(this@LogInActivity)
+                    if (credentials != null) {
+                        val (storedEmail, storedPassword) = credentials
+                        // Login with stored credentials
+                        handleLogin(
+                            storedEmail,
+                            storedPassword,
+                            onSuccess = { success ->
+                                if (success && !isLoading) {
+                                    // Send FCM token after successful login
+                                    sendFcmTokenToServer()
+                                    // Navigate to main locations screen
+                                    val intent =
+                                        Intent(this@LogInActivity, LocationsActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                        )
+                    }  else {
+                        errorMessage = "No stored credentials found"
+                    }
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    errorMessage = "Authentication error: $errString"
+                }
+
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    errorMessage = "Authentication failed"
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Biometric Login")
+            .setSubtitle("Log in using your biometric credential")
+            .setNegativeButtonText("Cancel")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
+
     // Handles login logic and API call
-    fun handleLogin(
+    private fun handleLogin(
         email: String,
         password: String,
-        onResult: (success: Boolean, error: String?) -> Unit
+        onSuccess: (Boolean) -> Unit
     ) {
+        isLoading = true
+        errorMessage = null
+
         // Validate input
         if (email.isEmpty() || password.isEmpty()) {
-            onResult(false, "Please enter email and password")
+            isLoading = false
+            errorMessage = "Please enter email and password"
             return
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            onResult(false, "Please enter a valid email address")
+            isLoading = false
+            errorMessage = "Please enter a valid email address"
             return
         }
 
         // Make login API request
         val loginRequest = LoginRequest(email = email, password = password)
-        val call = ApiClient.apiService.loginUser(loginRequest)
-        call.enqueue(object : Callback<AuthResponse> {
-            override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                if (response.isSuccessful) {
-                    response.body()?.let { authResponse ->
-                        SessionManager.saveAuthToken(authResponse.token)
-                        authResponse.user.let { user ->
-                            SessionManager.saveUserInfo(
-                                user.id.toString(),
-                                user.name,
-                                user.email
-                            )
-                        }
-                        onResult(true, null)
-                    } ?: onResult(false, "Empty response received")
-                } else {
-                    onResult(false, response.errorBody()?.string() ?: "Login failed")
-                }
-            }
-            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                onResult(false, "Network error: Cannot connect to server")
-            }
-        })
-        // Set a timeout to prevent indefinite waiting
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            if (isLoading) {
-                call.cancel()
+        accountRepository.loginUser(
+            loginRequest,
+            onResult = { success, error ->
                 isLoading = false
-                errorMessage = "Connection timeout. Please try again."
+                errorMessage = error
+                if (success) saveCredentials(this, email, password)
+                onSuccess(success)
             }
-        }, 10000)
+        )
     }
 
     // Sends the FCM token to the server after login
@@ -152,20 +245,13 @@ class LogInActivity : ComponentActivity() {
             token?.let {
                 try {
                     val tokenRequest = DeviceTokenRequest(deviceToken = it)
-
-                    ApiClient.apiService.updateDeviceToken(tokenRequest).enqueue(object : Callback<MessageResponse> {
-                        override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
-                            if (response.isSuccessful) {
-                                Log.d("FCM", "Token sent to server successfully")
-                            } else {
-                                Log.e("FCM", "Failed to send token: ${response.errorBody()?.string()}")
-                            }
+                    notificationsRepository.updateDeviceToken(
+                        tokenRequest,
+                        onResult = { error ->
+                            isLoading = false
+                            errorMessage = error
                         }
-
-                        override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                            Log.e("FCM", "Failed to send token to server", t)
-                        }
-                    })
+                    )
                 } catch (e: Exception) {
                     Log.e("FCM", "Error setting up token request", e)
                 }
@@ -177,17 +263,18 @@ class LogInActivity : ComponentActivity() {
 // Composable for the login screen UI
 @Composable
 fun LogInScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginClick: (String, String) -> Unit,
+    onBiometricClick: () -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?,
+    hasStoredCredentials: Boolean
 ) {
-    val activity = LocalActivity.current as LogInActivity
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     val emailValid = remember {
         derivedStateOf { email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches() }
     }
     var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
     
     Surface(
@@ -201,7 +288,7 @@ fun LogInScreen(
             Spacer(modifier = Modifier.size(128.dp))
             // App logo
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = R.drawable.frog_logo),
                 contentDescription = "App logo",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -215,6 +302,26 @@ fun LogInScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
+                // Show biometric button if credentials are stored
+                if (hasStoredCredentials) {
+                    IconButton(
+                        onClick = { onBiometricClick() },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_fingerprint), // Make sure you have this icon
+                            contentDescription = "Use biometric login",
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Text(
+                        text = "Use biometrics to login",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 // Email label and input
                 Text(
                     text = "Email",
@@ -283,16 +390,7 @@ fun LogInScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { 
                             // Trigger login when "Done" is pressed on keyboard
-                            isLoading = true
-                            errorMessage = null
-                            activity.handleLogin(email, password) { success, error ->
-                                isLoading = false
-                                if (success) {
-                                    onLoginSuccess()
-                                } else {
-                                    errorMessage = error
-                                }
-                            }
+                            onLoginClick(email, password)
                         }
                     ),
                     singleLine = true,
@@ -348,18 +446,7 @@ fun LogInScreen(
 
                 // Login button with loading indicator
                 Button(
-                    onClick = {
-                        isLoading = true
-                        errorMessage = null
-                        activity.handleLogin(email, password) { success, error ->
-                            isLoading = false
-                            if (success) {
-                                onLoginSuccess()
-                            } else {
-                                errorMessage = error
-                            }
-                        }
-                    },
+                    onClick = { onLoginClick(email, password) },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
                 ) {
@@ -388,7 +475,11 @@ fun LogInScreen(
 fun LogInActivityPreview () {
     FrogTheme {
         LogInScreen(
-            onLoginSuccess = {}
+            onLoginClick = { _ ,_ -> },
+            onBiometricClick = {},
+            isLoading = false,
+            errorMessage = null,
+            hasStoredCredentials = true
         )
     }
 }

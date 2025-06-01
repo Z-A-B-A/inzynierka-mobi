@@ -3,9 +3,7 @@ package put.inf154030.frog.views.activities.login_pages
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,71 +48,72 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import put.inf154030.frog.R
 import put.inf154030.frog.models.requests.RegisterRequest
-import put.inf154030.frog.models.responses.RegisterResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.AccountRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for user registration
 class SignUpActivity : ComponentActivity() {
+    private var isLoading by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+    private val accountRepository = AccountRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FrogTheme {
                 // Main sign-up screen composable
                 SignUpScreen(
-                    onSignUpSuccess = {
-                        // Navigate to login screen after successful registration
-                        val intent = Intent(this, LogInActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
+                    onSignUpClick = { name, email, password ->
+                        handleSignUp(
+                            name, email, password,
+                            onSuccess = { success ->
+                                // Avoid starting multiple activities
+                                if (success && !isLoading) {
+                                    // Navigate to login screen after successful registration
+                                    val intent = Intent(this, LogInActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                        )
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage
                 )
             }
         }
     }
 
     // Handles registration API call
-    fun handleSignUp(
+    private fun handleSignUp(
         name: String,
         email: String,
         password: String,
-        onResult: (success: Boolean, error: String?) -> Unit
+        onSuccess: (Boolean) -> Unit
     ) {
+        isLoading = true
+        errorMessage = null
+
         val registerRequest = RegisterRequest(name, email, password)
-        val call = ApiClient.apiService.registerUser(registerRequest)
-        call.enqueue(object : Callback<RegisterResponse> {
-            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
-                if (response.isSuccessful) {
-                    onResult(true, null)
-                } else {
-                    onResult(false, response.errorBody()?.string() ?: "Registration failed")
-                }
+        accountRepository.registerUser(
+            registerRequest,
+            onResult = { success, error ->
+                isLoading = false
+                errorMessage = error
+                onSuccess(success)
             }
-            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-                onResult(false, "Network error: Cannot connect to server")
-            }
-        })
-        // Timeout logic
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            onResult(false, "Connection timeout. Please try again.")
-            call.cancel()
-        }, 10000)
+        )
     }
 }
 
 // Composable for the sign-up screen UI
 @Composable
 fun SignUpScreen (
-    onSignUpSuccess: () -> Unit
+    onSignUpClick: (String, String, String) -> Unit,
+    isLoading: Boolean,
+    errorMessage: String?
 ) {
-    val activity = LocalActivity.current as SignUpActivity
-    val context = LocalContext.current
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     val emailValid = remember {
@@ -150,7 +148,7 @@ fun SignUpScreen (
             Spacer(modifier = Modifier.size(128.dp))
             // App logo
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = R.drawable.frog_logo),
                 contentDescription = "App logo",
                 modifier = Modifier
                     .fillMaxWidth(0.75f)
@@ -334,17 +332,7 @@ fun SignUpScreen (
                         onDone = {
                             // Trigger sign up on keyboard "Done"
                             if (allFieldsValid) {
-                                isLoading = true
-                                errorMessage = null
-                                activity.handleSignUp(name, email, password) { success, error ->
-                                    isLoading = false
-                                    if (success) {
-                                        Toast.makeText(context, "Registration successful! Please login.", Toast.LENGTH_LONG).show()
-                                        onSignUpSuccess()
-                                    } else {
-                                        errorMessage = error
-                                    }
-                                }
+                                onSignUpClick(name, email, password)
                             }
                         }
                     ),
@@ -384,17 +372,7 @@ fun SignUpScreen (
                 // Sign Up button
                 Button(
                     onClick = {
-                        isLoading = true
-                        errorMessage = null
-                        activity.handleSignUp(name, email, password) { success, error ->
-                            isLoading = false
-                            if (success) {
-                                Toast.makeText(context, "Registration successful! Please login.", Toast.LENGTH_LONG).show()
-                                onSignUpSuccess()
-                            } else {
-                                errorMessage = error
-                            }
-                        }
+                        onSignUpClick(name, email, password)
                     },
                     modifier = Modifier.fillMaxWidth(0.65f),
                     enabled = !isLoading
@@ -436,7 +414,9 @@ fun SignUpScreen (
 fun SignUpActivityPreview () {
     FrogTheme {
         SignUpScreen(
-            onSignUpSuccess = {}
+            onSignUpClick = {_, _, _ -> },
+            isLoading = false,
+            errorMessage = null
         )
     }
 }

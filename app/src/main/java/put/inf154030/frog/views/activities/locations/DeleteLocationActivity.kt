@@ -28,20 +28,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import put.inf154030.frog.models.responses.MessageResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.repository.LocationsRepository
 import put.inf154030.frog.theme.FrogTheme
 import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.TopHeaderBar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // Activity for confirming and executing location deletion
 class DeleteLocationActivity : ComponentActivity() {
     // State for loading and error message
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+    private val locationsRepository = LocationsRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         
@@ -56,23 +53,14 @@ class DeleteLocationActivity : ComponentActivity() {
                         isLoading = true
                         errorMessage = null
                         // Call API to delete location
-                        ApiClient.apiService.deleteLocation(locationId)
-                            .enqueue(object : Callback<MessageResponse> {
-                                override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
-                                    isLoading = false
-                                    if (response.isSuccessful) {
-                                        finish() // Close activity on success
-                                    } else {
-                                        // Show error from API
-                                        errorMessage = "Failed to delete location: ${response.message()}"
-                                    }
-                                }
-                                override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                                    isLoading = false
-                                    // Show network error
-                                    errorMessage = "Network error: ${t.message}"
-                                }
-                            })
+                        locationsRepository.deleteLocation(
+                            locationId,
+                            onResult = { success, error ->
+                                isLoading = false
+                                errorMessage = error
+                                if (success) finish()
+                            }
+                        )
                      },
                     onNoClick = { finish() }, // Cancel and close activity
                     isLoading = isLoading,

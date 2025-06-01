@@ -5,6 +5,7 @@ import put.inf154030.frog.models.ContainerSpecies
 import put.inf154030.frog.models.LocationReference
 import put.inf154030.frog.models.Parameter
 
+// ContainerDetailResponse
 data class ContainerDetailResponse(
     val id: Int,
     val name: String,
@@ -14,5 +15,5 @@ data class ContainerDetailResponse(
     @SerializedName("created_at") val createdAt: String,
     val location: LocationReference,
     val parameters: List<Parameter>,
-    val species: List<ContainerSpecies>
+    val species: List<ContainerSpecies>?
 )

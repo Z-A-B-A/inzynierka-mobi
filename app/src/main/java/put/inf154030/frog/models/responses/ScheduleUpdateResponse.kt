@@ -6,6 +6,5 @@ data class ScheduleUpdateResponse(
     val id: Int,
     val name: String,
     @SerializedName("execution_time") val executionTime: String,
-    val active: Boolean,
     @SerializedName("updated_at") val updatedAt: String
 )

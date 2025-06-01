@@ -66,13 +66,14 @@ class FrogFirebaseMessagingService : FirebaseMessagingService() {
         val body = remoteMessage.notification?.body ?: "New notification"
         showNotification(title, body)
     }
-//    TODO("Zrobić tak, żeby otwierała się notifications activity")
+
     // Builds and displays a notification
     private fun showNotification(title: String, message: String) {
         val notificationId = System.currentTimeMillis().toInt()
 
         // Intent to launch when notification is tapped (currently LogInActivity)
         val intent = Intent(this, LogInActivity::class.java)
+        intent.putExtra("FROM_NOTIFICATION", true)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         val pendingIntentFlags =

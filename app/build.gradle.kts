@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.localbroadcastmanager)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.biometric)
     implementation(libs.firebase.messaging)
     implementation(libs.gson)
     implementation(libs.material)
@@ -70,6 +71,8 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.androidx.benchmark.common)
+    implementation(libs.androidx.security.crypto)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
