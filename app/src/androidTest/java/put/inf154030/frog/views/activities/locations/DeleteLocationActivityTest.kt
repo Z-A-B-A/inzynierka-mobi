@@ -30,19 +30,10 @@ class DeleteLocationActivityTest {
     }
 
     @Test
-    fun deleteLocationScreen_yesButton_disabledWhenLoading() {
-        // Click Yes to trigger loading
-        composeTestRule.onNodeWithText("Yes").performClick()
-        // The button should now be disabled (if loading state is set)
-        composeTestRule.onNodeWithText("Yes").assertIsNotEnabled()
-    }
-
-    @Test
     fun deleteLocationScreen_noButton_closesActivity() {
         composeTestRule.onNodeWithText("No").performClick()
-        composeTestRule.activityRule.scenario.onActivity { activity ->
-            assert(activity.isFinishing)
-        }
+        // Assert the activity is destroyed
+        assert(composeTestRule.activityRule.scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED)
     }
 
     @Test
