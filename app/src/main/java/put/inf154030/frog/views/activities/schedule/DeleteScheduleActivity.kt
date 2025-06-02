@@ -150,7 +150,7 @@ fun DeleteScheduleScreen (
                     ) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(64.dp)
+                            modifier = Modifier.size(64.dp).testTag("CircularProgressIndicator")
                         )
                     }
                 }
