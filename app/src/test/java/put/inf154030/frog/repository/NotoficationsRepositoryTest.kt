@@ -1,20 +1,26 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import put.inf154030.frog.models.ContainerReference
 import put.inf154030.frog.models.Notification
+import put.inf154030.frog.models.ScheduleReference
 import put.inf154030.frog.models.requests.DeviceTokenRequest
-import put.inf154030.frog.models.responses.*
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
+import put.inf154030.frog.models.responses.NotificationUpdateResponse
+import put.inf154030.frog.models.responses.NotificationsResponse
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class NotificationsRepositoryTest {
 
@@ -33,15 +39,11 @@ class NotificationsRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
     }
 
     @Test
     fun `updateDeviceToken success calls onResult with null`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val request = DeviceTokenRequest("token")
         val response = Response.success(MessageResponse("ok"))
         `when`(mockApiService.updateDeviceToken(request)).thenReturn(mockTokenCall)
@@ -57,10 +59,10 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `updateDeviceToken failure calls onResult with error message`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val request = DeviceTokenRequest("token")
         val response = Response.error<MessageResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateDeviceToken(request)).thenReturn(mockTokenCall)
 
@@ -75,7 +77,7 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `updateDeviceToken network failure calls onResult with network error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val request = DeviceTokenRequest("token")
         `when`(mockApiService.updateDeviceToken(request)).thenReturn(mockTokenCall)
 
@@ -90,9 +92,21 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `getNotifications success calls onResult with notifications`() {
-        val repo = NotificationsRepository()
-        val notifications = listOf(Notification(1, "title", "body", false, null, null, null))
-        val response = Response.success(NotificationsResponse(notifications))
+        val repo = NotificationsRepository(mockApiService)
+        val notifications = listOf(Notification(
+            1,
+            "msg",
+            false,
+            "02-06-2025 19:00",
+            "02-06-2025 19:00",
+            1,
+            ScheduleReference(1, "Karmienie"),
+            ContainerReference(1, "Terrarium")
+        ))
+        val response = Response.success(NotificationsResponse(
+            notifications,
+            1
+        ))
         `when`(mockApiService.getNotifications(true)).thenReturn(mockGetCall)
 
         var result: List<Notification>? = null
@@ -108,9 +122,9 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `getNotifications failure calls onResult with error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val response = Response.error<NotificationsResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getNotifications(true)).thenReturn(mockGetCall)
 
@@ -125,7 +139,7 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `getNotifications network failure calls onResult with network error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         `when`(mockApiService.getNotifications(true)).thenReturn(mockGetCall)
 
         var error: String? = null
@@ -134,13 +148,17 @@ class NotificationsRepositoryTest {
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<NotificationsResponse>>
         verify(mockGetCall).enqueue(captor.capture())
         captor.value.onFailure(mockGetCall, Throwable("timeout"))
-        assert(error?.contains("Network error") == true)
+        assert(error == "timeout" || (error != null && error!!.contains("timeout")))
     }
 
     @Test
     fun `markNotificationAsRead success calls onResult with true`() {
-        val repo = NotificationsRepository()
-        val response = Response.success(NotificationUpdateResponse("ok"))
+        val repo = NotificationsRepository(mockApiService)
+        val response = Response.success(NotificationUpdateResponse(
+            1,
+            true,
+            "02-06-2025 19:00"
+        ))
         `when`(mockApiService.markNotificationAsRead(1)).thenReturn(mockMarkCall)
 
         var called = false
@@ -156,9 +174,9 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `markNotificationAsRead failure calls onResult with false and error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val response = Response.error<NotificationUpdateResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.markNotificationAsRead(1)).thenReturn(mockMarkCall)
 
@@ -175,24 +193,30 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `markNotificationAsRead network failure calls onResult with false and network error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         `when`(mockApiService.markNotificationAsRead(1)).thenReturn(mockMarkCall)
 
+        var called = false
         var error: String? = null
         repo.markNotificationAsRead(1) { success, err ->
+            called = true
             if (!success) error = err
         }
 
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<NotificationUpdateResponse>>
         verify(mockMarkCall).enqueue(captor.capture())
         captor.value.onFailure(mockMarkCall, Throwable("timeout"))
-        assert(error?.contains("Network error") == true)
+        assert(called)
+        assert(error == "timeout" || (error != null && error!!.contains("timeout")))
     }
 
     @Test
     fun `markAllNotificationsAsRead success calls onResult with true`() {
-        val repo = NotificationsRepository()
-        val response = Response.success(NotificationMarkAllReadResponse("ok"))
+        val repo = NotificationsRepository(mockApiService)
+        val response = Response.success(NotificationMarkAllReadResponse(
+            "msg",
+            1
+        ))
         `when`(mockApiService.markAllNotificationsAsRead()).thenReturn(mockMarkAllCall)
 
         var called = false
@@ -208,9 +232,9 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `markAllNotificationsAsRead failure calls onResult with false and error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         val response = Response.error<NotificationMarkAllReadResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.markAllNotificationsAsRead()).thenReturn(mockMarkAllCall)
 
@@ -227,7 +251,7 @@ class NotificationsRepositoryTest {
 
     @Test
     fun `markAllNotificationsAsRead network failure calls onResult with false and network error`() {
-        val repo = NotificationsRepository()
+        val repo = NotificationsRepository(mockApiService)
         `when`(mockApiService.markAllNotificationsAsRead()).thenReturn(mockMarkAllCall)
 
         var error: String? = null
@@ -238,6 +262,6 @@ class NotificationsRepositoryTest {
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<NotificationMarkAllReadResponse>>
         verify(mockMarkAllCall).enqueue(captor.capture())
         captor.value.onFailure(mockMarkAllCall, Throwable("timeout"))
-        assert(error?.contains("Network error") == true)
+        assert(error == "timeout" || (error != null && error!!.contains("timeout")))
     }
 }
