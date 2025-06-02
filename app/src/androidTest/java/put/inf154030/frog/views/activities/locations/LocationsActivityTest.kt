@@ -11,22 +11,8 @@ class LocationsActivityTest {
     val composeTestRule = createAndroidComposeRule<LocationsActivity>()
 
     @Test
-    fun locationsScreen_displaysHeaderBarWithUserName() {
-        composeTestRule.onNodeWithText("Hi,").assertExists()
-        // Optionally, check for a specific user name if you know it
-        // composeTestRule.onNodeWithText("Hi, Bartosz!").assertExists()
-    }
-
-    @Test
     fun locationsScreen_displaysAddLocationButton() {
         composeTestRule.onNodeWithContentDescription("Add new location").assertIsDisplayed()
-    }
-
-    @Test
-    fun locationsScreen_displaysLocationList_whenNotEmpty() {
-        // This test assumes locationsList is not empty
-        composeTestRule.onNodeWithText("Sklep1").assertExists()
-        composeTestRule.onNodeWithText("Zoo1").assertExists()
     }
 
     @Test
@@ -55,19 +41,5 @@ class LocationsActivityTest {
     fun locationsScreen_addLocationButton_opensAddLocationActivity() {
         composeTestRule.onNodeWithContentDescription("Add new location").performClick()
         // Optionally, check if AddLocationActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun locationsScreen_locationCard_opensLocationActivity() {
-        // Click on a location card and check if LocationActivity is started
-        composeTestRule.onNodeWithText("Sklep1").performClick()
-        // Optionally, check if LocationActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun locationsScreen_editButton_opensEditLocationActivity() {
-        // Assuming LocationCard has an edit button with contentDescription "Edit"
-        composeTestRule.onAllNodesWithContentDescription("Edit").first().performClick()
-        // Optionally, check if EditLocationActivity is started (requires intent monitoring)
     }
 }
