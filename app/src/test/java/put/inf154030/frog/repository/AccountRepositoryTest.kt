@@ -9,7 +9,6 @@ import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -20,7 +19,6 @@ import put.inf154030.frog.models.requests.UserUpdateRequest
 import put.inf154030.frog.models.responses.AuthResponse
 import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.UserResponse
-import put.inf154030.frog.network.ApiClient
 import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback

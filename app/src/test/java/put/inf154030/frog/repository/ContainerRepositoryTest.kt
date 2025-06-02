@@ -1,21 +1,29 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import put.inf154030.frog.models.Container
+import put.inf154030.frog.models.LocationReference
+import put.inf154030.frog.models.Parameter
 import put.inf154030.frog.models.requests.ContainerCreateRequest
 import put.inf154030.frog.models.requests.ContainerUpdateRequest
-import put.inf154030.frog.models.responses.*
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.models.responses.ContainerDetailResponse
+import put.inf154030.frog.models.responses.ContainerResponse
+import put.inf154030.frog.models.responses.ContainerUpdateResponse
+import put.inf154030.frog.models.responses.ContainersResponse
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class ContainersRepositoryTest {
 
@@ -36,17 +44,14 @@ class ContainersRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
+        // No need to set ApiClient.apiService via reflection
     }
 
     @Test
     fun `createContainer success calls onResult with true`() {
-        val repo = ContainersRepository()
-        val request = ContainerCreateRequest("Test", "desc")
-        val response = Response.success(ContainerResponse(1, "Test", "desc"))
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerCreateRequest("Test", "desc", "123456")
+        val response = Response.success(ContainerResponse(1, "Test", "aquarium", "desc", true, "02-06-2025 19:00"))
         `when`(mockApiService.createContainer(1, request)).thenReturn(mockCreateCall)
 
         var called = false
@@ -62,8 +67,8 @@ class ContainersRepositoryTest {
 
     @Test
     fun `createContainer failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
-        val request = ContainerCreateRequest("Test", "desc")
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerCreateRequest("Test", "desc", "123456")
         val response = Response.error<ContainerResponse>(
             400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
         )
@@ -82,8 +87,8 @@ class ContainersRepositoryTest {
 
     @Test
     fun `createContainer network failure calls onResult with false and network error`() {
-        val repo = ContainersRepository()
-        val request = ContainerCreateRequest("Test", "desc")
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerCreateRequest("Test", "desc", "123456")
         `when`(mockApiService.createContainer(1, request)).thenReturn(mockCreateCall)
 
         var errorMsg: String? = null
@@ -99,8 +104,8 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainers success calls onResult with true and containers`() {
-        val repo = ContainersRepository()
-        val containers = listOf(Container(1, "Test", "desc", null, null, null, null, null, null))
+        val repo = ContainersRepository(mockApiService)
+        val containers = listOf(Container(1, "Test", "desc", null, true, "02-06-2025 19:00"))
         val response = Response.success(ContainersResponse(containers))
         `when`(mockApiService.getContainers(1)).thenReturn(mockGetCall)
 
@@ -117,9 +122,9 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainers failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         val response = Response.error<ContainersResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getContainers(1)).thenReturn(mockGetCall)
 
@@ -136,7 +141,7 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainers network failure calls onResult with false and network error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         `when`(mockApiService.getContainers(1)).thenReturn(mockGetCall)
 
         var errorMsg: String? = null
@@ -152,8 +157,33 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainerDetails success calls onResult with true and response`() {
-        val repo = ContainersRepository()
-        val detail = ContainerDetailResponse(1, "Test", "desc", null, null, null, null, null, null, null)
+        val repo = ContainersRepository(mockApiService)
+        val detail = ContainerDetailResponse(
+            1,
+            "Test",
+            "desc",
+            null,
+            true,
+            "02-06-2025 19:00",
+            LocationReference(
+                1,
+                "Location 1"
+            ),
+            listOf(
+                Parameter(
+                    "Temperature",
+                    25.0,
+                    "%",
+                    24.0,
+                    26.0,
+                    true,
+                    "02-06-2025 19:00",
+                    "water_temp",
+                    1
+                )
+            ),
+            null
+        )
         val response = Response.success(detail)
         `when`(mockApiService.getContainerDetails(1)).thenReturn(mockDetailCall)
 
@@ -170,9 +200,9 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainerDetails failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         val response = Response.error<ContainerDetailResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getContainerDetails(1)).thenReturn(mockDetailCall)
 
@@ -189,7 +219,7 @@ class ContainersRepositoryTest {
 
     @Test
     fun `getContainerDetails network failure calls onResult with false and network error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         `when`(mockApiService.getContainerDetails(1)).thenReturn(mockDetailCall)
 
         var errorMsg: String? = null
@@ -205,7 +235,7 @@ class ContainersRepositoryTest {
 
     @Test
     fun `deleteContainer success calls onResult with true`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         val response = Response.success(MessageResponse("deleted"))
         `when`(mockApiService.deleteContainer(1)).thenReturn(mockDeleteCall)
 
@@ -222,9 +252,9 @@ class ContainersRepositoryTest {
 
     @Test
     fun `deleteContainer failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         val response = Response.error<MessageResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.deleteContainer(1)).thenReturn(mockDeleteCall)
 
@@ -241,7 +271,7 @@ class ContainersRepositoryTest {
 
     @Test
     fun `deleteContainer network failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
+        val repo = ContainersRepository(mockApiService)
         `when`(mockApiService.deleteContainer(1)).thenReturn(mockDeleteCall)
 
         var errorMsg: String? = null
@@ -257,9 +287,9 @@ class ContainersRepositoryTest {
 
     @Test
     fun `updateContainer success calls onResult with true`() {
-        val repo = ContainersRepository()
-        val request = ContainerUpdateRequest("Test", "desc")
-        val response = Response.success(ContainerUpdateResponse("updated"))
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerUpdateRequest("Test", "desc", true, 2)
+        val response = Response.success(ContainerUpdateResponse(1, "updated", "water_temp", "desc", true, 1, "02-06-2025 19:00", "02-06-2025 19:00"))
         `when`(mockApiService.updateContainer(1, request)).thenReturn(mockUpdateCall)
 
         var called = false
@@ -275,10 +305,10 @@ class ContainersRepositoryTest {
 
     @Test
     fun `updateContainer failure calls onResult with false and error`() {
-        val repo = ContainersRepository()
-        val request = ContainerUpdateRequest("Test", "desc")
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerUpdateRequest("Test", "desc", true, 2)
         val response = Response.error<ContainerUpdateResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateContainer(1, request)).thenReturn(mockUpdateCall)
 
@@ -295,8 +325,8 @@ class ContainersRepositoryTest {
 
     @Test
     fun `updateContainer network failure calls onResult with false and network error`() {
-        val repo = ContainersRepository()
-        val request = ContainerUpdateRequest("Test", "desc")
+        val repo = ContainersRepository(mockApiService)
+        val request = ContainerUpdateRequest("Test", "desc", true, 2)
         `when`(mockApiService.updateContainer(1, request)).thenReturn(mockUpdateCall)
 
         var errorMsg: String? = null

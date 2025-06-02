@@ -9,11 +9,14 @@ import put.inf154030.frog.models.responses.ContainerUpdateResponse
 import put.inf154030.frog.models.responses.ContainersResponse
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ContainersRepository {
+class ContainersRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun createContainer(
         request: ContainerCreateRequest,
         locationId: Int,
@@ -22,7 +25,7 @@ class ContainersRepository {
             errorMessage: String? ) -> Unit
     ) {
         // Make API call to create the container
-        ApiClient.apiService.createContainer(locationId, request)
+        apiService.createContainer(locationId, request)
             .enqueue(object : Callback<ContainerResponse> {
                 override fun onResponse(
                     call: Call<ContainerResponse>,
@@ -63,7 +66,7 @@ class ContainersRepository {
     ) {
         // Indicate loading started
         onResult(false, null, null)
-        ApiClient.apiService.getContainers(locationId)
+        apiService.getContainers(locationId)
             .enqueue(object : Callback<ContainersResponse> {
                 override fun onResponse(
                     call: Call<ContainersResponse>,
@@ -93,7 +96,7 @@ class ContainersRepository {
             errorMessage: String?
         ) -> Unit
     ) {
-        ApiClient.apiService.getContainerDetails(containerId)
+        apiService.getContainerDetails(containerId)
             .enqueue(object : Callback<ContainerDetailResponse> {
                 override fun onResponse(
                     call: Call<ContainerDetailResponse>,
@@ -124,7 +127,7 @@ class ContainersRepository {
     ) {
         // Indicate loading started
         onResult(false,  null)
-        ApiClient.apiService.deleteContainer(containerId)
+        apiService.deleteContainer(containerId)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
                     call: Call<MessageResponse>,
@@ -157,7 +160,7 @@ class ContainersRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.updateContainer(containerId, request)
+        apiService.updateContainer(containerId, request)
             .enqueue(object : Callback<ContainerUpdateResponse> {
                 override fun onResponse(
                     call: Call<ContainerUpdateResponse>,
