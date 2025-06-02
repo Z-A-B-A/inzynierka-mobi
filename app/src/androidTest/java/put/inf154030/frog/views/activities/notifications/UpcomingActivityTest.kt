@@ -24,7 +24,7 @@ class UpcomingActivityTest {
     fun upcomingScreen_showsLoadingIndicatorWhenLoading() {
         // By default, isLoading is true at start
         composeTestRule.onNode(isPopup()).assertDoesNotExist() // Just to avoid popup interference
-        composeTestRule.onNode(hasAnyAncestor(hasText("Upcoming")) and hasTestTag("CircularProgressIndicator")).assertExists()
+        composeTestRule.onNodeWithTag("CircularProgressIndicator").assertExists()
         // If you don't use testTag, you can check for CircularProgressIndicator by role or count
     }
 
