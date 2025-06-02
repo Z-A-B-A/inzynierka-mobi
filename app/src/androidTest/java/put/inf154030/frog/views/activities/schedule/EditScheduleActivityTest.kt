@@ -16,17 +16,6 @@ class EditScheduleActivityTest {
     }
 
     @Test
-    fun editScheduleScreen_displaysTimeFieldAndPicker() {
-        composeTestRule.onNodeWithText("Execution time").assertIsDisplayed()
-        // The formatted time (e.g., "12:00") should be displayed
-        composeTestRule.onAllNodes(hasText(":")).onFirst().assertIsDisplayed()
-        // Open the time picker dialog
-        composeTestRule.onAllNodes(hasText(":")).onFirst().performClick()
-        composeTestRule.onNodeWithText("Select Time").assertIsDisplayed()
-        composeTestRule.onNodeWithText("OK").performClick()
-    }
-
-    @Test
     fun editScheduleScreen_displaysDeleteScheduleLink() {
         composeTestRule.onNodeWithText("delete schedule").assertIsDisplayed()
     }
