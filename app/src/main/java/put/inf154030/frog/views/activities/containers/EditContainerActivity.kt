@@ -167,7 +167,7 @@ fun EditContainerScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(modifier = Modifier.testTag("CircularProgressIndicator"))
+                CircularProgressIndicator()
             }
         }
         Column {
