@@ -1,21 +1,26 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import put.inf154030.frog.models.Species
+import put.inf154030.frog.models.SpeciesReference
 import put.inf154030.frog.models.requests.AddSpeciesRequest
 import put.inf154030.frog.models.requests.UpdateSpeciesCountRequest
-import put.inf154030.frog.models.responses.*
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.models.responses.ContainerSpeciesItemResponse
+import put.inf154030.frog.models.responses.ContainerSpeciesUpdateResponse
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.models.responses.SpeciesListResponse
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class SpeciesRepositoryTest {
 
@@ -34,15 +39,11 @@ class SpeciesRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
     }
 
     @Test
     fun `deleteSpeciesFromContainer success calls onResult with true`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val response = Response.success(MessageResponse("deleted"))
         `when`(mockApiService.deleteSpeciesFromContainer(1, 2)).thenReturn(mockDeleteCall)
 
@@ -59,9 +60,9 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `deleteSpeciesFromContainer failure calls onResult with false and error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val response = Response.error<MessageResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.deleteSpeciesFromContainer(1, 2)).thenReturn(mockDeleteCall)
 
@@ -78,7 +79,7 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `deleteSpeciesFromContainer network failure calls onResult with false and error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         `when`(mockApiService.deleteSpeciesFromContainer(1, 2)).thenReturn(mockDeleteCall)
 
         var errorMsg: String? = null
@@ -94,9 +95,14 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `updateContainerSpecies success calls onResult with true`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = UpdateSpeciesCountRequest(5)
-        val response = Response.success(ContainerSpeciesUpdateResponse("updated"))
+        val response = Response.success(ContainerSpeciesUpdateResponse(
+            1,
+            1,
+            2,
+            "02-06-2025 19:00",
+        ))
         `when`(mockApiService.updateContainerSpecies(1, 2, request)).thenReturn(mockUpdateCall)
 
         var called = false
@@ -112,10 +118,10 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `updateContainerSpecies failure calls onResult with false and error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = UpdateSpeciesCountRequest(5)
         val response = Response.error<ContainerSpeciesUpdateResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateContainerSpecies(1, 2, request)).thenReturn(mockUpdateCall)
 
@@ -132,7 +138,7 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `updateContainerSpecies network failure calls onResult with false and network error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = UpdateSpeciesCountRequest(5)
         `when`(mockApiService.updateContainerSpecies(1, 2, request)).thenReturn(mockUpdateCall)
 
@@ -149,9 +155,13 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `addSpeciesToContainer success calls onResult with true`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = AddSpeciesRequest(1, 5)
-        val response = Response.success(ContainerSpeciesItemResponse(1, 1, 5))
+        val response = Response.success(ContainerSpeciesItemResponse(
+            1, SpeciesReference(1, "Frog"), 5,
+            "02-06-2025 19:00",
+            emptyList()
+        ))
         `when`(mockApiService.addSpeciesToContainer(1, request)).thenReturn(mockAddCall)
 
         var called = false
@@ -167,10 +177,10 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `addSpeciesToContainer failure calls onResult with false and error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = AddSpeciesRequest(1, 5)
         val response = Response.error<ContainerSpeciesItemResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.addSpeciesToContainer(1, request)).thenReturn(mockAddCall)
 
@@ -187,7 +197,7 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `addSpeciesToContainer network failure calls onResult with false and network error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val request = AddSpeciesRequest(1, 5)
         `when`(mockApiService.addSpeciesToContainer(1, request)).thenReturn(mockAddCall)
 
@@ -204,8 +214,13 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `getSpecies success calls onResult with true and species`() {
-        val repo = SpeciesRepository()
-        val speciesList = listOf(Species(1, "Frog", "desc", null, null, null, null, null))
+        val repo = SpeciesRepository(mockApiService)
+        val speciesList = listOf(Species(
+            1, "Frog", "Frog",
+            "desc",
+            "dinosaur",
+            true
+        ))
         val response = Response.success(SpeciesListResponse(speciesList))
         `when`(mockApiService.getSpecies("amphibian")).thenReturn(mockGetCall)
 
@@ -222,9 +237,9 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `getSpecies failure calls onResult with false and error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         val response = Response.error<SpeciesListResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getSpecies("amphibian")).thenReturn(mockGetCall)
 
@@ -241,7 +256,7 @@ class SpeciesRepositoryTest {
 
     @Test
     fun `getSpecies network failure calls onResult with false and network error`() {
-        val repo = SpeciesRepository()
+        val repo = SpeciesRepository(mockApiService)
         `when`(mockApiService.getSpecies("amphibian")).thenReturn(mockGetCall)
 
         var errorMsg: String? = null

@@ -8,8 +8,11 @@ import put.inf154030.frog.models.responses.ContainerSpeciesUpdateResponse
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.models.responses.SpeciesListResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 
-class SpeciesRepository {
+class SpeciesRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun deleteSpeciesFromContainer(
         containerId: Int,
         speciesId: Int,
@@ -20,7 +23,7 @@ class SpeciesRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.deleteSpeciesFromContainer(containerId, speciesId)
+        apiService.deleteSpeciesFromContainer(containerId, speciesId)
             .enqueue(object : retrofit2.Callback<MessageResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<MessageResponse>,
@@ -54,7 +57,7 @@ class SpeciesRepository {
     ) {
         // Indicate loading started
         onResult(false, false,null)
-        ApiClient.apiService.updateContainerSpecies(containerId, speciesId, request)
+        apiService.updateContainerSpecies(containerId, speciesId, request)
             .enqueue(object : retrofit2.Callback<ContainerSpeciesUpdateResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ContainerSpeciesUpdateResponse>,
@@ -81,7 +84,7 @@ class SpeciesRepository {
         request: AddSpeciesRequest,
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.addSpeciesToContainer(containerId, request)
+        apiService.addSpeciesToContainer(containerId, request)
             .enqueue(object : retrofit2.Callback<ContainerSpeciesItemResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ContainerSpeciesItemResponse>,
@@ -110,7 +113,7 @@ class SpeciesRepository {
             species: List<Species>?,
             errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.getSpecies(category)
+        apiService.getSpecies(category)
             .enqueue(object : retrofit2.Callback<SpeciesListResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<SpeciesListResponse>,
