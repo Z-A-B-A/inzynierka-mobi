@@ -4,8 +4,11 @@ import put.inf154030.frog.models.requests.ParameterUpdateRequest
 import put.inf154030.frog.models.responses.ParameterHistoryResponse
 import put.inf154030.frog.models.responses.ParameterResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 
-class ParametersRepository {
+class ParametersRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun getParameterHistory(
         containerId: Int,
         parameterType: String,
@@ -17,7 +20,7 @@ class ParametersRepository {
             errorMessage: String?
         ) -> Unit
     ) {
-        ApiClient.apiService.getParameterHistory(containerId, parameterType, fromDate, toDate)
+        apiService.getParameterHistory(containerId, parameterType, fromDate, toDate)
             .enqueue(object : retrofit2.Callback<ParameterHistoryResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ParameterHistoryResponse>,
@@ -51,7 +54,7 @@ class ParametersRepository {
     ) {
         // Indicate loading started
         onResult(false, false, null)
-        ApiClient.apiService.updateParameter(containerId, request, parameterType)
+        apiService.updateParameter(containerId, request, parameterType)
             .enqueue(object : retrofit2.Callback<ParameterResponse> {
                 override fun onResponse(
                     call: retrofit2.Call<ParameterResponse>,

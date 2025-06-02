@@ -1,20 +1,22 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import put.inf154030.frog.models.ParameterInfo
 import put.inf154030.frog.models.requests.ParameterUpdateRequest
 import put.inf154030.frog.models.responses.ParameterHistoryResponse
 import put.inf154030.frog.models.responses.ParameterResponse
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class ParametersRepositoryTest {
 
@@ -29,16 +31,19 @@ class ParametersRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
     }
 
     @Test
     fun `getParameterHistory success calls onResult with true and response`() {
-        val repo = ParametersRepository()
-        val responseObj = ParameterHistoryResponse(emptyList())
+        val repo = ParametersRepository(mockApiService)
+        val responseObj = ParameterHistoryResponse(
+            ParameterInfo(
+                "Test",
+                "%",
+                "water_temp"
+            ),
+            emptyList()
+        )
         val response = Response.success(responseObj)
         `when`(mockApiService.getParameterHistory(1, "temp", null, null)).thenReturn(mockHistoryCall)
 
@@ -55,9 +60,9 @@ class ParametersRepositoryTest {
 
     @Test
     fun `getParameterHistory failure calls onResult with false and error`() {
-        val repo = ParametersRepository()
+        val repo = ParametersRepository(mockApiService)
         val response = Response.error<ParameterHistoryResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getParameterHistory(1, "temp", null, null)).thenReturn(mockHistoryCall)
 
@@ -74,7 +79,7 @@ class ParametersRepositoryTest {
 
     @Test
     fun `getParameterHistory network failure calls onResult with false and network error`() {
-        val repo = ParametersRepository()
+        val repo = ParametersRepository(mockApiService)
         `when`(mockApiService.getParameterHistory(1, "temp", null, null)).thenReturn(mockHistoryCall)
 
         var errorMsg: String? = null
@@ -90,9 +95,20 @@ class ParametersRepositoryTest {
 
     @Test
     fun `updateParameter success calls onResult with true`() {
-        val repo = ParametersRepository()
-        val request = ParameterUpdateRequest(1.0)
-        val response = Response.success(ParameterResponse("ok"))
+        val repo = ParametersRepository(mockApiService)
+        val request = ParameterUpdateRequest(
+            1.0,
+            2.0
+        )
+        val response = Response.success(ParameterResponse(
+            1,
+            "water_temp",
+            "Temperature",
+            "%",
+            1.0,
+            2.0,
+            "02-06-2025 19:00"
+        ))
         `when`(mockApiService.updateParameter(1, request, "temp")).thenReturn(mockUpdateCall)
 
         var called = false
@@ -108,10 +124,13 @@ class ParametersRepositoryTest {
 
     @Test
     fun `updateParameter failure calls onResult with false and error`() {
-        val repo = ParametersRepository()
-        val request = ParameterUpdateRequest(1.0)
+        val repo = ParametersRepository(mockApiService)
+        val request = ParameterUpdateRequest(
+            1.0,
+            2.0
+        )
         val response = Response.error<ParameterResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateParameter(1, request, "temp")).thenReturn(mockUpdateCall)
 
@@ -128,8 +147,11 @@ class ParametersRepositoryTest {
 
     @Test
     fun `updateParameter network failure calls onResult with false and network error`() {
-        val repo = ParametersRepository()
-        val request = ParameterUpdateRequest(1.0)
+        val repo = ParametersRepository(mockApiService)
+        val request = ParameterUpdateRequest(
+            1.0,
+            2.0
+        )
         `when`(mockApiService.updateParameter(1, request, "temp")).thenReturn(mockUpdateCall)
 
         var errorMsg: String? = null
