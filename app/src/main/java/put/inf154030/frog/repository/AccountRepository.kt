@@ -7,19 +7,22 @@ import put.inf154030.frog.models.responses.AuthResponse
 import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.UserResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import put.inf154030.frog.network.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class AccountRepository {
+class AccountRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun updateUser (
         request: UserUpdateRequest,
         onResult: (
             success: Boolean,
             errorMessage: String? ) -> Unit
     ) {
-        ApiClient.apiService.updateUser(request)
+        apiService.updateUser(request)
             .enqueue(object : Callback<UserResponse> {
                 override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                     if (response.isSuccessful) {
@@ -57,7 +60,7 @@ class AccountRepository {
             success: Boolean,
             errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.loginUser(request)
+        apiService.loginUser(request)
             .enqueue(object : Callback<AuthResponse> {
                 override fun onResponse(
                     call: Call<AuthResponse>,
@@ -94,7 +97,7 @@ class AccountRepository {
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
         onResult(false,  null) // Loading started
-        ApiClient.apiService.registerUser(request)
+        apiService.registerUser(request)
             .enqueue(object : Callback<RegisterResponse> {
                 override fun onResponse(
                     call: Call<RegisterResponse>,

@@ -1,11 +1,19 @@
 package put.inf154030.frog.repository
 
+import android.content.SharedPreferences
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import put.inf154030.frog.models.User
 import put.inf154030.frog.models.requests.LoginRequest
 import put.inf154030.frog.models.requests.RegisterRequest
 import put.inf154030.frog.models.requests.UserUpdateRequest
@@ -13,12 +21,10 @@ import put.inf154030.frog.models.responses.AuthResponse
 import put.inf154030.frog.models.responses.RegisterResponse
 import put.inf154030.frog.models.responses.UserResponse
 import put.inf154030.frog.network.ApiClient
-import put.inf154030.frog.network.SessionManager
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class AccountRepositoryTest {
 
@@ -37,26 +43,29 @@ class AccountRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        // Replace ApiClient.apiService with our mock
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
+        val mockPrefs = mock(SharedPreferences::class.java)
+        val mockEditor = mock(SharedPreferences.Editor::class.java)
+        // Make edit() return the mock editor
+        `when`(mockPrefs.edit()).thenReturn(mockEditor)
+        // Make putString and apply return the editor itself (for chaining)
+        `when`(mockEditor.putString(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString())).thenReturn(mockEditor)
+        `when`(mockEditor.apply()).then { }
+        put.inf154030.frog.network.SessionManager.prefs = mockPrefs
     }
 
     // --- updateUser tests ---
 
     @Test
     fun `updateUser success updates session and calls onResult with success`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = UserUpdateRequest("John", "john@example.com")
-        val userResponse = UserResponse(1, "John", "john@example.com")
+        val userResponse = UserResponse(1, "John", "john@example.com", "user")
         val response = Response.success(userResponse)
 
         `when`(mockApiService.updateUser(request)).thenReturn(mockUserCall)
 
         var callback: ((Boolean, String?) -> Unit)? = null
-        repo.updateUser(request) { success, error ->
+        repo.updateUser(request) { _, _ ->
             callback = { s, e -> 
                 assert(s)
                 assert(e == null)
@@ -74,7 +83,7 @@ class AccountRepositoryTest {
 
     @Test
     fun `updateUser failure calls onResult with error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = UserUpdateRequest("John", "john@example.com")
         val response = Response.error<UserResponse>(
             400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
@@ -94,7 +103,7 @@ class AccountRepositoryTest {
 
     @Test
     fun `updateUser network failure calls onResult with network error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService) // Use mockApiService!
         val request = UserUpdateRequest("John", "john@example.com")
 
         `when`(mockApiService.updateUser(request)).thenReturn(mockUserCall)
@@ -113,9 +122,9 @@ class AccountRepositoryTest {
 
     @Test
     fun `loginUser success saves token and user info and calls onResult with success`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = LoginRequest("john@example.com", "password")
-        val user = AuthResponse.User(1, "John", "john@example.com")
+        val user = User(1, "John", "john@example.com", "user")
         val authResponse = AuthResponse("token123", user)
         val response = Response.success(authResponse)
 
@@ -138,10 +147,10 @@ class AccountRepositoryTest {
 
     @Test
     fun `loginUser failure calls onResult with error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = LoginRequest("john@example.com", "password")
         val response = Response.error<AuthResponse>(
-            401, ResponseBody.create("application/json".toMediaTypeOrNull(), "unauthorized")
+            401, "unauthorized".toResponseBody("application/json".toMediaTypeOrNull())
         )
 
         `when`(mockApiService.loginUser(request)).thenReturn(mockAuthCall)
@@ -158,7 +167,7 @@ class AccountRepositoryTest {
 
     @Test
     fun `loginUser network failure calls onResult with network error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = LoginRequest("john@example.com", "password")
 
         `when`(mockApiService.loginUser(request)).thenReturn(mockAuthCall)
@@ -177,66 +186,69 @@ class AccountRepositoryTest {
 
     @Test
     fun `registerUser success calls onResult with success`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = RegisterRequest("John", "john@example.com", "password")
-        val registerResponse = RegisterResponse("success")
+        val registerResponse = RegisterResponse("success", 1)
         val response = Response.success(registerResponse)
 
         `when`(mockApiService.registerUser(request)).thenReturn(mockRegisterCall)
 
+        var callCount = 0
         repo.registerUser(request) { success, error ->
-            // The first call is for loading started, skip it
-        }
-        repo.registerUser(request) { success, error ->
-            assert(success)
-            assert(error == null)
+            callCount++
+            if (callCount == 2) {
+                assert(success)
+                assert(error == null)
+            }
         }
 
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<RegisterResponse>>
-        verify(mockRegisterCall, times(2)).enqueue(captor.capture())
+        verify(mockRegisterCall).enqueue(captor.capture())
         captor.value.onResponse(mockRegisterCall, response)
     }
 
     @Test
     fun `registerUser failure calls onResult with error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = RegisterRequest("John", "john@example.com", "password")
         val response = Response.error<RegisterResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
 
         `when`(mockApiService.registerUser(request)).thenReturn(mockRegisterCall)
 
+        var callCount = 0
         repo.registerUser(request) { success, error ->
-            // The first call is for loading started, skip it
-        }
-        repo.registerUser(request) { success, error ->
-            assert(!success)
-            assert(error?.contains("Registration failed") == true || error != null)
+            callCount++
+            if (callCount == 2) {
+                assert(!success)
+                assert(error?.contains("Registration failed") == true || error != null)
+            }
         }
 
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<RegisterResponse>>
-        verify(mockRegisterCall, times(2)).enqueue(captor.capture())
+        verify(mockRegisterCall).enqueue(captor.capture())
         captor.value.onResponse(mockRegisterCall, response)
     }
 
     @Test
     fun `registerUser network failure calls onResult with network error`() {
-        val repo = AccountRepository()
+        val repo = AccountRepository(mockApiService)
         val request = RegisterRequest("John", "john@example.com", "password")
 
         `when`(mockApiService.registerUser(request)).thenReturn(mockRegisterCall)
 
+        var callCount = 0
         repo.registerUser(request) { success, error ->
-            // The first call is for loading started, skip it
-        }
-        repo.registerUser(request) { success, error ->
-            assert(!success)
-            assert(error?.contains("Network error") == true)
+            callCount++
+            if (callCount == 2) {
+                assert(!success)
+                assert(error == "Network error: Cannot connect to server")
+            }
         }
 
         val captor = ArgumentCaptor.forClass(Callback::class.java) as ArgumentCaptor<Callback<RegisterResponse>>
-        verify(mockRegisterCall, times(2)).enqueue(captor.capture())
+        verify(mockRegisterCall).enqueue(captor.capture())
         captor.value.onFailure(mockRegisterCall, Throwable("timeout"))
     }
 }
