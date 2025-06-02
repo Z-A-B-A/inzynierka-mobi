@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -15,8 +17,7 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun BackButton (
-    onClick: () -> Unit,
-    modifier: Modifier? = Modifier.semantics { contentDescription = "Back" } 
+    onClick: () -> Unit
 ) {
     Text(
         text = "<<< back",
@@ -27,6 +28,7 @@ fun BackButton (
         modifier = Modifier
             .clickable { onClick() }
             .padding(16.dp)
+            .semantics { contentDescription = "Back" }
     )
 }
 

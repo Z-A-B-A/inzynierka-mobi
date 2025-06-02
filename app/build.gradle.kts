@@ -16,6 +16,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
@@ -77,6 +78,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.guava)
     implementation(libs.androidx.concurrent)
+    implementation(libs.androidx.ui.test.junit4.android)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
