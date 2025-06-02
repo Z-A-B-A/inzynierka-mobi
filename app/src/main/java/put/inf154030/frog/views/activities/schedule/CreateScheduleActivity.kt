@@ -89,6 +89,9 @@ class CreateScheduleActivity : ComponentActivity() {
                             }
                         )
                     },
+                    setErrorMessage = { error ->
+                        errorMessage = error
+                    },
                     isLoading = isLoading,
                     errorMessage = errorMessage
                 )
@@ -102,12 +105,13 @@ class CreateScheduleActivity : ComponentActivity() {
 fun CreateScheduleScreen(
     onBackClick: () -> Unit,
     onCreateClick: (String, String, String, String) -> Unit,
+    setErrorMessage: (String?) -> Unit,
     isLoading: Boolean,
     errorMessage: String?
 ) {
     // State for form fields
     var name by remember { mutableStateOf("") }
-    var execution by remember { mutableStateOf(false) }
+    var execution by remember { mutableStateOf(true) }
     var weekDays by remember { mutableStateOf("") }
     var hour by remember { mutableIntStateOf(12) }
     var minute by remember { mutableIntStateOf(0) }
@@ -160,6 +164,7 @@ fun CreateScheduleScreen(
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
+                        setErrorMessage(null)
                         if (newValue.length <= 32) {
                             name = newValue
                         }
@@ -205,7 +210,7 @@ fun CreateScheduleScreen(
                         fontSize = 18.sp,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(72.dp),
+                        modifier = Modifier.width(96.dp),
                         textAlign = TextAlign.End
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -220,7 +225,7 @@ fun CreateScheduleScreen(
                         fontSize = 18.sp,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(72.dp),
+                        modifier = Modifier.width(96.dp),
                         textAlign = TextAlign.Start
                     )
                 }
@@ -262,7 +267,7 @@ fun CreateScheduleScreen(
                                     Text(
                                         text = day,
                                         fontFamily = PoppinsFamily,
-                                        fontSize = 14.sp,
+                                        fontSize = 12.sp,
                                         color = if (isSelected)
                                             MaterialTheme.colorScheme.secondary
                                         else
@@ -443,6 +448,7 @@ fun CreateScheduleActivityPreview() {
         CreateScheduleScreen(
             onBackClick = {},
             onCreateClick = { _, _, _, _ -> },
+            setErrorMessage = { _ -> },
             isLoading = false,
             errorMessage = null
         )

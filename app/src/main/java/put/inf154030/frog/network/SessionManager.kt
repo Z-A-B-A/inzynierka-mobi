@@ -2,6 +2,7 @@ package put.inf154030.frog.network
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 object SessionManager {
     private const val PREFS_NAME = "FrogAppPrefs"
@@ -17,9 +18,9 @@ object SessionManager {
     }
 
     fun saveAuthToken(token: String) {
-        val editor = prefs.edit()
-        editor.putString(KEY_TOKEN, token)
-        editor.apply()
+        prefs.edit {
+            putString(KEY_TOKEN, token)
+        }
     }
 
     fun getToken(): String? {
@@ -27,18 +28,18 @@ object SessionManager {
     }
 
     fun saveUserInfo(userId: String, name: String, email: String) {
-        val editor = prefs.edit()
-        editor.putString(KEY_USER_ID, userId)
-        editor.putString(KEY_USER_NAME, name)
-        editor.putString(KEY_USER_EMAIL, email)
-        editor.apply()
+        prefs.edit {
+            putString(KEY_USER_ID, userId)
+            putString(KEY_USER_NAME, name)
+            putString(KEY_USER_EMAIL, email)
+        }
     }
 
     fun saveUpdatedUserInfo(name: String, email: String) {
-        val editor = prefs.edit()
-        editor.putString(KEY_USER_NAME, name)
-        editor.putString(KEY_USER_EMAIL, email)
-        editor.apply()
+        prefs.edit {
+            putString(KEY_USER_NAME, name)
+            putString(KEY_USER_EMAIL, email)
+        }
     }
 
     fun getUserName(): String? {
@@ -47,11 +48,5 @@ object SessionManager {
 
     fun getUserEmail(): String? {
         return prefs.getString(KEY_USER_EMAIL, null)
-    }
-
-    fun clearSession() {
-        val editor = prefs.edit()
-        editor.clear()
-        editor.apply()
     }
 }

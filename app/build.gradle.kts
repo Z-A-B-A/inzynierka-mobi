@@ -27,12 +27,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
     packaging {
@@ -73,6 +73,20 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.benchmark.common)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.core.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.guava)
+    implementation(libs.androidx.concurrent)
     ksp(libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.test.core)
+    testImplementation(libs.test.runner)
+    testImplementation(libs.arch.core)
+    testImplementation(libs.mockk)
+    testImplementation(libs.mockito.inline)
 }
