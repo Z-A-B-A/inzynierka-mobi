@@ -1,21 +1,26 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import put.inf154030.frog.models.Location
 import put.inf154030.frog.models.requests.LocationCreateRequest
 import put.inf154030.frog.models.requests.LocationUpdateRequest
-import put.inf154030.frog.models.responses.*
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.models.responses.LocationDetailResponse
+import put.inf154030.frog.models.responses.LocationResponse
+import put.inf154030.frog.models.responses.LocationUpdateResponse
+import put.inf154030.frog.models.responses.LocationsResponse
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class LocationsRepositoryTest {
 
@@ -36,16 +41,12 @@ class LocationsRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
     }
 
     @Test
     fun `getLocations success calls onResult with true and locations`() {
-        val repo = LocationsRepository()
-        val locations = listOf(Location(1, "Test", "desc", null, null, null, null, null, null))
+        val repo = LocationsRepository(mockApiService)
+        val locations = listOf(Location(1, "Test", "02-06-2025 19:00"))
         val response = Response.success(LocationsResponse(locations))
         `when`(mockApiService.getLocations()).thenReturn(mockGetCall)
 
@@ -62,9 +63,9 @@ class LocationsRepositoryTest {
 
     @Test
     fun `getLocations failure calls onResult with false and error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         val response = Response.error<LocationsResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getLocations()).thenReturn(mockGetCall)
 
@@ -81,7 +82,7 @@ class LocationsRepositoryTest {
 
     @Test
     fun `getLocations network failure calls onResult with false and network error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         `when`(mockApiService.getLocations()).thenReturn(mockGetCall)
 
         var errorMsg: String? = null
@@ -97,8 +98,8 @@ class LocationsRepositoryTest {
 
     @Test
     fun `getLocation success calls onResult with true and detail`() {
-        val repo = LocationsRepository()
-        val detail = LocationDetailResponse(1, "Test", "desc", null, null, null, null, null, null, null)
+        val repo = LocationsRepository(mockApiService)
+        val detail = LocationDetailResponse(1, "Test", "02-06-2025 19:00", 1)
         val response = Response.success(detail)
         `when`(mockApiService.getLocation(1)).thenReturn(mockDetailCall)
 
@@ -115,9 +116,9 @@ class LocationsRepositoryTest {
 
     @Test
     fun `getLocation failure calls onResult with false and error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         val response = Response.error<LocationDetailResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getLocation(1)).thenReturn(mockDetailCall)
 
@@ -134,7 +135,7 @@ class LocationsRepositoryTest {
 
     @Test
     fun `getLocation network failure calls onResult with false and network error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         `when`(mockApiService.getLocation(1)).thenReturn(mockDetailCall)
 
         var errorMsg: String? = null
@@ -150,8 +151,8 @@ class LocationsRepositoryTest {
 
     @Test
     fun `createLocation success calls onResult with true`() {
-        val repo = LocationsRepository()
-        val request = LocationCreateRequest("Test", "desc")
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationCreateRequest("Test")
         val response = Response.success(LocationResponse(1, "Test", "desc"))
         `when`(mockApiService.createLocation(request)).thenReturn(mockCreateCall)
 
@@ -168,10 +169,10 @@ class LocationsRepositoryTest {
 
     @Test
     fun `createLocation failure calls onResult with false and error`() {
-        val repo = LocationsRepository()
-        val request = LocationCreateRequest("Test", "desc")
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationCreateRequest("Test")
         val response = Response.error<LocationResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.createLocation(request)).thenReturn(mockCreateCall)
 
@@ -188,8 +189,8 @@ class LocationsRepositoryTest {
 
     @Test
     fun `createLocation network failure calls onResult with false and network error`() {
-        val repo = LocationsRepository()
-        val request = LocationCreateRequest("Test", "desc")
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationCreateRequest("Test")
         `when`(mockApiService.createLocation(request)).thenReturn(mockCreateCall)
 
         var errorMsg: String? = null
@@ -205,7 +206,7 @@ class LocationsRepositoryTest {
 
     @Test
     fun `deleteLocation success calls onResult with true`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         val response = Response.success(MessageResponse("deleted"))
         `when`(mockApiService.deleteLocation(1)).thenReturn(mockDeleteCall)
 
@@ -222,9 +223,9 @@ class LocationsRepositoryTest {
 
     @Test
     fun `deleteLocation failure calls onResult with false and error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         val response = Response.error<MessageResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.deleteLocation(1)).thenReturn(mockDeleteCall)
 
@@ -241,7 +242,7 @@ class LocationsRepositoryTest {
 
     @Test
     fun `deleteLocation network failure calls onResult with false and network error`() {
-        val repo = LocationsRepository()
+        val repo = LocationsRepository(mockApiService)
         `when`(mockApiService.deleteLocation(1)).thenReturn(mockDeleteCall)
 
         var errorMsg: String? = null
@@ -257,9 +258,9 @@ class LocationsRepositoryTest {
 
     @Test
     fun `updateLocation success calls onResult with true`() {
-        val repo = LocationsRepository()
-        val request = LocationUpdateRequest("Test", "desc")
-        val response = Response.success(LocationUpdateResponse("updated"))
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationUpdateRequest("Test")
+        val response = Response.success(LocationUpdateResponse(1, "Test", "02-06-2025 19:00", "02-06-2025 19:00"))
         `when`(mockApiService.updateLocation(1, request)).thenReturn(mockUpdateCall)
 
         var called = false
@@ -275,10 +276,10 @@ class LocationsRepositoryTest {
 
     @Test
     fun `updateLocation failure calls onResult with false and error`() {
-        val repo = LocationsRepository()
-        val request = LocationUpdateRequest("Test", "desc")
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationUpdateRequest("Test")
         val response = Response.error<LocationUpdateResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateLocation(1, request)).thenReturn(mockUpdateCall)
 
@@ -295,8 +296,8 @@ class LocationsRepositoryTest {
 
     @Test
     fun `updateLocation network failure calls onResult with false and network error`() {
-        val repo = LocationsRepository()
-        val request = LocationUpdateRequest("Test", "desc")
+        val repo = LocationsRepository(mockApiService)
+        val request = LocationUpdateRequest("Test")
         `when`(mockApiService.updateLocation(1, request)).thenReturn(mockUpdateCall)
 
         var errorMsg: String? = null

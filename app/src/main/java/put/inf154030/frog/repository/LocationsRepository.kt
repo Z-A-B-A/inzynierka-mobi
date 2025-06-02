@@ -9,11 +9,14 @@ import put.inf154030.frog.models.responses.LocationUpdateResponse
 import put.inf154030.frog.models.responses.LocationsResponse
 import put.inf154030.frog.models.responses.MessageResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LocationsRepository {
+class LocationsRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun getLocations(
         onResult: (
             success: Boolean,
@@ -23,7 +26,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null, null)
-        ApiClient.apiService.getLocations()
+        apiService.getLocations()
             .enqueue(object : Callback<LocationsResponse> {
             override fun onResponse(
                 call: Call<LocationsResponse>,
@@ -52,7 +55,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null, null)
-        ApiClient.apiService.getLocation(locationId)
+        apiService.getLocation(locationId)
             .enqueue(object : Callback<LocationDetailResponse> {
                 override fun onResponse(
                     call: Call<LocationDetailResponse>,
@@ -83,7 +86,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.createLocation(request)
+        apiService.createLocation(request)
             .enqueue(object : Callback<LocationResponse> {
                 override fun onResponse(
                     call: Call<LocationResponse>,
@@ -114,7 +117,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.deleteLocation(locationId)
+        apiService.deleteLocation(locationId)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
                     call: Call<MessageResponse>,
@@ -146,7 +149,7 @@ class LocationsRepository {
     ) {
         // Indicate loading started
         onResult(false, null)
-        ApiClient.apiService.updateLocation(locationId, request)
+        apiService.updateLocation(locationId, request)
             .enqueue(object : Callback<LocationUpdateResponse> {
                 override fun onResponse(
                     call: Call<LocationUpdateResponse>,
