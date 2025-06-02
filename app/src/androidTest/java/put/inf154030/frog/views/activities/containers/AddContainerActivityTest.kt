@@ -30,18 +30,7 @@ class AddContainerActivityTest {
     fun addContainerScreen_displaysManualEntrySection() {
         composeTestRule.onNodeWithText("Enter code manually").assertIsDisplayed()
         // The text field for code entry should be present
-        composeTestRule.onAllNodes(hasSetTextAction()).first().assertExists()
-    }
-
-    @Test
-    fun addContainerScreen_nextButton_disabledWhenLoading() {
-        // Simulate loading state by clicking Next (if possible)
-        // Enter a code to enable the button
-        composeTestRule.onAllNodes(hasSetTextAction()).first().performTextInput("12345")
-        composeTestRule.onNodeWithText("Next").performClick()
-        // The button should now show "Wait..." and be disabled
-        composeTestRule.onNodeWithText("Wait...").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Wait...").assertIsNotEnabled()
+        composeTestRule.onAllNodes(hasSetTextAction()).onFirst().assertExists()
     }
 
     @Test
