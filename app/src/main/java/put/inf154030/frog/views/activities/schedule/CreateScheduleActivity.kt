@@ -393,7 +393,7 @@ fun CreateScheduleScreen(
             ) {
                 androidx.compose.material3.CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp).testTag("CircularProgressIndicator")
                 )
             }
         }
