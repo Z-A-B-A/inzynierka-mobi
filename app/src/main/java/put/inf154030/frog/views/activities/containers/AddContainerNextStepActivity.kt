@@ -229,7 +229,11 @@ fun AddContainerNextStepScreen (
                 Spacer(modifier = Modifier.size(54.dp))
                 // Loading spinner while submitting
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .testTag("CircularProgressIndicator")
+                    )
                 }
 
                 errorMessage?.let {
