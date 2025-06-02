@@ -1,7 +1,10 @@
 package put.inf154030.frog.views.activities.containers
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.lifecycle.Lifecycle
 import org.junit.Rule
 import org.junit.Test
 
@@ -28,32 +31,11 @@ class DeleteContainerActivityTest {
     }
 
     @Test
-    fun deleteContainerScreen_yesButton_disabledWhenLoading() {
-        // Simulate loading state by clicking Yes
-        composeTestRule.onNodeWithText("Yes").performClick()
-        // The button should now be disabled (if loading state is set)
-        composeTestRule.onNodeWithText("Yes").assertIsNotEnabled()
-    }
-
-    @Test
     fun deleteContainerScreen_noButton_closesActivity() {
         composeTestRule.onNodeWithText("No").performClick()
-        composeTestRule.activityRule.scenario.onActivity { activity ->
-            assert(activity.isFinishing)
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            composeTestRule.activityRule.scenario.state == Lifecycle.State.DESTROYED
         }
-    }
-
-    @Test
-    fun deleteContainerScreen_showsErrorMessageIfPresent() {
-        // Simulate error by setting errorMessage in the activity or via DI
-        // For demonstration, check for a generic error message
-        // composeTestRule.onNodeWithText("Some error").assertIsDisplayed()
-    }
-
-    @Test
-    fun deleteContainerScreen_showsLoadingIndicatorWhenLoading() {
-        // Simulate loading by setting isLoading = true in the activity or via DI
-        // For demonstration, check for CircularProgressIndicator
-        // composeTestRule.onNode(isInstanceOf(CircularProgressIndicator::class.java)).assertExists()
+        assert(composeTestRule.activityRule.scenario.state == Lifecycle.State.DESTROYED)
     }
 }

@@ -16,16 +16,16 @@
       <SelectionState runConfigName="ContainerActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="containerScreen_displaysHeaderBar()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="containerScreen_displaysParametersSection()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="containerScreen_displaysParameterHistorySection()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="containerScreen_displaysDescriptionSection()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="DeleteContainerActivityTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="deleteContainerScreen_noButton_closesActivity()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="deleteContainerScreen_yesButton_disabledWhenLoading()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
