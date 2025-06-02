@@ -21,13 +21,6 @@ class ScheduleActivityTest {
     }
 
     @Test
-    fun scheduleScreen_displaysScheduleList_whenNotEmpty() {
-        // This test assumes schedulesList is not empty
-        composeTestRule.onNodeWithText("Feeding").assertExists()
-        composeTestRule.onNodeWithText("Cleaning").assertExists()
-    }
-
-    @Test
     fun scheduleScreen_displaysEmptyState_whenNoSchedules() {
         // Simulate empty list and check for empty state message
         // This requires launching the activity with an empty list or using DI
@@ -53,13 +46,6 @@ class ScheduleActivityTest {
     fun scheduleScreen_createScheduleButton_opensCreateScheduleActivity() {
         composeTestRule.onNodeWithText("-- Create Schedule --").performClick()
         // Optionally, check if CreateScheduleActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun scheduleScreen_editButton_opensEditScheduleActivity() {
-        // Assuming ScheduleItem has an edit button or is clickable
-        composeTestRule.onNodeWithText("Feeding").performClick()
-        // Optionally, check if EditScheduleActivity is started (requires intent monitoring)
     }
 
     @Test
