@@ -15,7 +15,8 @@ import put.inf154030.frog.theme.PoppinsFamily
 
 @Composable
 fun BackButton (
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier? = Modifier.semantics { contentDescription = "Back" } 
 ) {
     Text(
         text = "<<< back",
