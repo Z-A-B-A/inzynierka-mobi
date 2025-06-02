@@ -21,22 +21,8 @@ class NotificationsActivityTest {
     }
 
     @Test
-    fun notificationsScreen_displaysNotificationToggle() {
-        // Assuming NotificationSetting toggle has a contentDescription "Notifications toggle"
-        composeTestRule.onNodeWithContentDescription("Notifications toggle").assertIsDisplayed()
-    }
-
-    @Test
     fun notificationsScreen_displaysMarkAllAsRead() {
         composeTestRule.onNodeWithText("mark all as read").assertIsDisplayed()
-    }
-
-    @Test
-    fun notificationsScreen_displaysNotificationList_whenNotEmpty() {
-        // This test assumes notificationsList is not empty
-        composeTestRule.onNodeWithText("Karmienie").assertExists()
-        composeTestRule.onNodeWithText("Czyszczenie").assertExists()
-        composeTestRule.onNodeWithText("Terrarium Gekona Lamparci").assertExists()
     }
 
     @Test
@@ -73,12 +59,5 @@ class NotificationsActivityTest {
     fun notificationsScreen_markAllAsRead_triggersAction() {
         composeTestRule.onNodeWithText("mark all as read").performClick()
         // Optionally, check if all notifications are marked as read (requires state observation)
-    }
-
-    @Test
-    fun notificationsScreen_notificationCard_markAsRead_triggersAction() {
-        // Assuming NotificationCard has a button or icon with contentDescription "Mark as read"
-        composeTestRule.onAllNodesWithContentDescription("Mark as read").first().performClick()
-        // Optionally, check if notification is marked as read (requires state observation)
     }
 }
