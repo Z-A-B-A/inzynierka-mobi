@@ -1,7 +1,12 @@
 package put.inf154030.frog.views.activities.login_pages
 
+import android.content.Context
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -9,6 +14,24 @@ class LogInActivityTest {
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<LogInActivity>()
+
+    @Before
+    fun setUp() {
+        // Pre-populate EncryptedSharedPreferences with test credentials
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "secret_shared_prefs",
+            masterKey,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        sharedPreferences.edit()
+            .putString("email", "test@example.com")
+            .putString("password", "password")
+            .apply()
+    }
 
     @Test
     fun loginScreen_displaysLogo() {
