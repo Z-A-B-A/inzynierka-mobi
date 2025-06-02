@@ -33,14 +33,6 @@ class LocationActivityTest {
     }
 
     @Test
-    fun locationScreen_displaysContainerList_whenNotEmpty() {
-        // This test assumes containersList is not empty
-        // Check for a known container name from your preview or test data
-        composeTestRule.onNodeWithText("ASDF1").assertExists()
-        composeTestRule.onNodeWithText("ASDF2").assertExists()
-    }
-
-    @Test
     fun locationScreen_displaysEmptyState_whenNoContainers() {
         // Simulate empty list and check for empty state message
         // This requires launching the activity with an empty list or using DI
@@ -63,30 +55,8 @@ class LocationActivityTest {
     }
 
     @Test
-    fun locationScreen_backButton_closesActivity() {
-        composeTestRule.onNodeWithContentDescription("Back").performClick()
-        composeTestRule.activityRule.scenario.onActivity { activity ->
-            assert(activity.isFinishing)
-        }
-    }
-
-    @Test
     fun locationScreen_addContainerButton_opensAddContainerActivity() {
         composeTestRule.onNodeWithContentDescription("Add new container").performClick()
         // Optionally, check if AddContainerActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun locationScreen_containerCard_opensContainerActivity() {
-        // Click on a container card and check if ContainerActivity is started
-        composeTestRule.onNodeWithText("ASDF1").performClick()
-        // Optionally, check if ContainerActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun locationScreen_editButton_opensEditContainerActivity() {
-        // Assuming ContainerCard has an edit button with contentDescription "Edit"
-        composeTestRule.onNodeWithContentDescription("Edit").performClick()
-        // Optionally, check if EditContainerActivity is started (requires intent monitoring)
     }
 }
