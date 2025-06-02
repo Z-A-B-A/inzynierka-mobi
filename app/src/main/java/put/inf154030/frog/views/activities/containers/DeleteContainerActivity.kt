@@ -88,7 +88,7 @@ fun DeleteContainerScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(modifier = Modifier.testTag("CircularProgressIndicator"))
             }
         }
         Column {
