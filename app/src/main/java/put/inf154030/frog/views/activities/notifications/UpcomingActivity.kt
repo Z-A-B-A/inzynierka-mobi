@@ -106,7 +106,8 @@ fun UpcomingScreen (
                     CircularProgressIndicator(
                         modifier = Modifier
                             .padding(top = 48.dp)
-                            .align(Alignment.CenterHorizontally),
+                            .align(Alignment.CenterHorizontally)
+                            .testTag("CircularProgressIndicator"),
                         color = MaterialTheme.colorScheme.secondary
                     )
                 } else {
