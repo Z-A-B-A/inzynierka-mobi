@@ -100,7 +100,7 @@ fun EditSpeciesRow (
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Add parameter",
+                        contentDescription = "Remove species",
                         tint = Color.Red
                     )
                 }

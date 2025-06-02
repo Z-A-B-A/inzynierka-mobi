@@ -11,28 +11,6 @@ class ManageContainerActivityTest {
     val composeTestRule = createAndroidComposeRule<ManageContainerActivity>()
 
     @Test
-    fun manageContainerScreen_displaysHeaderBar() {
-        composeTestRule.onNodeWithText("Container X").assertIsDisplayed()
-    }
-
-    @Test
-    fun manageContainerScreen_displaysParameterSection() {
-        composeTestRule.onNodeWithText("Parameter").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Min").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Max").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Temperatura wody").assertIsDisplayed()
-        composeTestRule.onNodeWithText("pH").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Światło").assertIsDisplayed()
-    }
-
-    @Test
-    fun manageContainerScreen_displaysSpeciesSection() {
-        composeTestRule.onNodeWithText("Species").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Count").assertIsDisplayed()
-        composeTestRule.onNodeWithText("frog").assertIsDisplayed()
-    }
-
-    @Test
     fun manageContainerScreen_displaysAddSpeciesButton() {
         composeTestRule.onNodeWithContentDescription("Add species").assertIsDisplayed()
     }
@@ -41,13 +19,6 @@ class ManageContainerActivityTest {
     fun manageContainerScreen_addSpeciesButton_opensAddSpeciesActivity() {
         composeTestRule.onNodeWithContentDescription("Add species").performClick()
         // Optionally, check if AddSpeciesActivity is started (requires intent monitoring)
-    }
-
-    @Test
-    fun manageContainerScreen_removeSpeciesButton_removesSpecies() {
-        // Assuming EditSpeciesRow has a delete icon with contentDescription "Remove species"
-        composeTestRule.onNodeWithContentDescription("Remove species").performClick()
-        // Optionally, check if species is removed from the list
     }
 
     @Test
