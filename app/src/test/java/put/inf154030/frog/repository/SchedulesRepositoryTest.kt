@@ -1,21 +1,25 @@
 package put.inf154030.frog.repository
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import put.inf154030.frog.models.Schedule
 import put.inf154030.frog.models.requests.ScheduleCreateRequest
 import put.inf154030.frog.models.requests.ScheduleUpdateRequest
-import put.inf154030.frog.models.responses.*
-import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.models.responses.MessageResponse
+import put.inf154030.frog.models.responses.ScheduleResponse
+import put.inf154030.frog.models.responses.ScheduleUpdateResponse
+import put.inf154030.frog.models.responses.SchedulesResponse
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody
 
 class SchedulesRepositoryTest {
 
@@ -34,17 +38,15 @@ class SchedulesRepositoryTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        ApiClient::class.java.getDeclaredField("apiService").apply {
-            isAccessible = true
-            set(ApiClient, mockApiService)
-        }
     }
 
     @Test
     fun `createSchedule success calls onResult with true`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleCreateRequest("name", "desc", "2024-01-01", "12:00")
-        val response = Response.success(ScheduleResponse(1, "name", "desc", "2024-01-01", "12:00"))
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleCreateRequest(
+            "name", "2024-01-01", "daily", "0", "12:00"
+        )
+        val response = Response.success(ScheduleResponse(1, "name", "2024-01-01", "daily", "0","12:00", "2024-01-01 19:00"))
         `when`(mockApiService.createSchedule(1, request)).thenReturn(mockCreateCall)
 
         var called = false
@@ -60,10 +62,12 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `createSchedule failure calls onResult with false and error`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleCreateRequest("name", "desc", "2024-01-01", "12:00")
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleCreateRequest(
+            "name", "2024-01-01", "daily", "0", "12:00"
+        )
         val response = Response.error<ScheduleResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.createSchedule(1, request)).thenReturn(mockCreateCall)
 
@@ -80,8 +84,10 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `createSchedule network failure calls onResult with false and network error`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleCreateRequest("name", "desc", "2024-01-01", "12:00")
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleCreateRequest(
+            "name", "2024-01-01", "daily", "0", "12:00"
+        )
         `when`(mockApiService.createSchedule(1, request)).thenReturn(mockCreateCall)
 
         var errorMsg: String? = null
@@ -97,7 +103,7 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `deleteSchedule success calls onResult with true`() {
-        val repo = SchedulesRepository()
+        val repo = SchedulesRepository(mockApiService)
         val response = Response.success(MessageResponse("deleted"))
         `when`(mockApiService.deleteSchedule(1)).thenReturn(mockDeleteCall)
 
@@ -114,9 +120,9 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `deleteSchedule failure calls onResult with false and error`() {
-        val repo = SchedulesRepository()
+        val repo = SchedulesRepository(mockApiService)
         val response = Response.error<MessageResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.deleteSchedule(1)).thenReturn(mockDeleteCall)
 
@@ -133,7 +139,7 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `deleteSchedule network failure calls onResult with false and error`() {
-        val repo = SchedulesRepository()
+        val repo = SchedulesRepository(mockApiService)
         `when`(mockApiService.deleteSchedule(1)).thenReturn(mockDeleteCall)
 
         var errorMsg: String? = null
@@ -149,9 +155,14 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `updateSchedule success calls onResult with true`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleUpdateRequest("name", "desc", "2024-01-01", "12:00")
-        val response = Response.success(ScheduleUpdateResponse("updated"))
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleUpdateRequest("12:00")
+        val response = Response.success(ScheduleUpdateResponse(
+            1,
+            "Karmienie",
+            "12:00",
+            "2024-01-01 19:00"
+        ))
         `when`(mockApiService.updateSchedule(1, request)).thenReturn(mockUpdateCall)
 
         var called = false
@@ -167,10 +178,10 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `updateSchedule failure calls onResult with false and error`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleUpdateRequest("name", "desc", "2024-01-01", "12:00")
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleUpdateRequest("12:00")
         val response = Response.error<ScheduleUpdateResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.updateSchedule(1, request)).thenReturn(mockUpdateCall)
 
@@ -187,8 +198,8 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `updateSchedule network failure calls onResult with false and network error`() {
-        val repo = SchedulesRepository()
-        val request = ScheduleUpdateRequest("name", "desc", "2024-01-01", "12:00")
+        val repo = SchedulesRepository(mockApiService)
+        val request = ScheduleUpdateRequest("12:00")
         `when`(mockApiService.updateSchedule(1, request)).thenReturn(mockUpdateCall)
 
         var errorMsg: String? = null
@@ -204,8 +215,11 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `getSchedules success calls onResult with true and schedules`() {
-        val repo = SchedulesRepository()
-        val schedules = listOf(Schedule(1, "name", "desc", "2024-01-01", "12:00"))
+        val repo = SchedulesRepository(mockApiService)
+        val schedules = listOf(Schedule(
+            1, "name", "2024-01-01", "daily", "0", "12:00", "2024-01-01 19:00",
+            "2024-01-01 19:00"
+        ))
         val response = Response.success(SchedulesResponse(schedules))
         `when`(mockApiService.getSchedules(1)).thenReturn(mockGetCall)
 
@@ -222,9 +236,9 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `getSchedules failure calls onResult with false and error`() {
-        val repo = SchedulesRepository()
+        val repo = SchedulesRepository(mockApiService)
         val response = Response.error<SchedulesResponse>(
-            400, ResponseBody.create("application/json".toMediaTypeOrNull(), "error")
+            400, "error".toResponseBody("application/json".toMediaTypeOrNull())
         )
         `when`(mockApiService.getSchedules(1)).thenReturn(mockGetCall)
 
@@ -241,7 +255,7 @@ class SchedulesRepositoryTest {
 
     @Test
     fun `getSchedules network failure calls onResult with false and network error`() {
-        val repo = SchedulesRepository()
+        val repo = SchedulesRepository(mockApiService)
         `when`(mockApiService.getSchedules(1)).thenReturn(mockGetCall)
 
         var errorMsg: String? = null
