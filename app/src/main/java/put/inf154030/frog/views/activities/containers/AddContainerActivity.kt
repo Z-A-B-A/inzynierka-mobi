@@ -330,7 +330,9 @@ private fun ActionButtonsSection(
     Column {
         if (isLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .testTag("CircularProgressIndicator")
             )
         }
         Button(
