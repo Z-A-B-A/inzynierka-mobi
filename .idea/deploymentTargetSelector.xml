@@ -13,19 +13,19 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="ContainerActivityTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="containerScreen_displaysDescriptionSection()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="DeleteContainerActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="deleteContainerScreen_noButton_closesActivity()">
+      <SelectionState runConfigName="deleteContainerScreen_yesButton_disabledWhenLoading()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="deleteContainerScreen_yesButton_disabledWhenLoading()">
+      <SelectionState runConfigName="EditContainerActivityTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="editContainerScreen_backButton_closesActivity()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="editContainerScreen_showsErrorMessageForEmptyFields()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
