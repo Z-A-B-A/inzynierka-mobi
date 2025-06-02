@@ -23,7 +23,7 @@ class CreateScheduleActivityTest {
 
     @Test
     fun createScheduleScreen_nameField_acceptsInputAndUpdatesCounter() {
-        composeTestRule.onAllNodes(hasSetTextAction()).first().performTextInput("Feeding")
+        composeTestRule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Feeding")
         composeTestRule.onNodeWithText("7/32 characters").assertIsDisplayed()
     }
 
@@ -60,7 +60,7 @@ class CreateScheduleActivityTest {
     @Test
     fun createScheduleScreen_createButton_disabledWhenLoading() {
         // Enter valid name
-        composeTestRule.onAllNodes(hasSetTextAction()).first().performTextInput("Feeding")
+        composeTestRule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Feeding")
         // Click Create to trigger loading
         composeTestRule.onNodeWithText("Create").performClick()
         // Button should now be disabled (if loading state is set)
