@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -106,7 +107,8 @@ fun UpcomingScreen (
                     CircularProgressIndicator(
                         modifier = Modifier
                             .padding(top = 48.dp)
-                            .align(Alignment.CenterHorizontally),
+                            .align(Alignment.CenterHorizontally)
+                            .testTag("CircularProgressIndicator"),
                         color = MaterialTheme.colorScheme.secondary
                     )
                 } else {

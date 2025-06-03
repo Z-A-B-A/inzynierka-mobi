@@ -7,16 +7,19 @@ import put.inf154030.frog.models.responses.NotificationMarkAllReadResponse
 import put.inf154030.frog.models.responses.NotificationUpdateResponse
 import put.inf154030.frog.models.responses.NotificationsResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NotificationsRepository {
+class NotificationsRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun updateDeviceToken(
         request: DeviceTokenRequest,
         onResult: (errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.updateDeviceToken(request)
+        apiService.updateDeviceToken(request)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
                     call: Call<MessageResponse>,
@@ -43,7 +46,7 @@ class NotificationsRepository {
         unreadOnly: Boolean = true,
         onResult: (notifications: List<Notification>?, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.getNotifications(unreadOnly)
+        apiService.getNotifications(unreadOnly)
             .enqueue(object : Callback<NotificationsResponse> {
                 override fun onResponse(
                     call: Call<NotificationsResponse>,
@@ -66,7 +69,7 @@ class NotificationsRepository {
         notificationId: Int,
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.markNotificationAsRead(notificationId)
+        apiService.markNotificationAsRead(notificationId)
             .enqueue(object : Callback<NotificationUpdateResponse> {
                 override fun onResponse(
                     call: Call<NotificationUpdateResponse>,
@@ -91,7 +94,7 @@ class NotificationsRepository {
     fun markAllNotificationsAsRead(
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.markAllNotificationsAsRead()
+        apiService.markAllNotificationsAsRead()
             .enqueue(object : Callback<NotificationMarkAllReadResponse> {
                 override fun onResponse(
                     call: Call<NotificationMarkAllReadResponse>,

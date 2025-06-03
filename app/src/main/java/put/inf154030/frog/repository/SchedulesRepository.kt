@@ -8,17 +8,20 @@ import put.inf154030.frog.models.responses.ScheduleResponse
 import put.inf154030.frog.models.responses.ScheduleUpdateResponse
 import put.inf154030.frog.models.responses.SchedulesResponse
 import put.inf154030.frog.network.ApiClient
+import put.inf154030.frog.network.ApiService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SchedulesRepository {
+class SchedulesRepository (
+    private val apiService: ApiService = ApiClient.apiService
+) {
     fun createSchedule(
         containerId: Int,
         request: ScheduleCreateRequest,
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.createSchedule(containerId, request)
+        apiService.createSchedule(containerId, request)
             .enqueue(object : Callback<ScheduleResponse> {
                 override fun onResponse(
                     call: Call<ScheduleResponse>,
@@ -42,7 +45,7 @@ class SchedulesRepository {
         scheduleId: Int,
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.deleteSchedule(scheduleId)
+        apiService.deleteSchedule(scheduleId)
             .enqueue(object : Callback<MessageResponse> {
                 override fun onResponse(
                     call: Call<MessageResponse>,
@@ -67,7 +70,7 @@ class SchedulesRepository {
         request: ScheduleUpdateRequest,
         onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.updateSchedule(scheduleId, request)
+        apiService.updateSchedule(scheduleId, request)
             .enqueue(object : Callback<ScheduleUpdateResponse> {
                 override fun onResponse(
                     call: Call<ScheduleUpdateResponse>,
@@ -94,7 +97,7 @@ class SchedulesRepository {
             schedules: List<Schedule>?,
             errorMessage: String?) -> Unit
     ) {
-        ApiClient.apiService.getSchedules(containerId)
+        apiService.getSchedules(containerId)
             .enqueue(object : Callback<SchedulesResponse> {
                 override fun onResponse(
                     call: Call<SchedulesResponse>,

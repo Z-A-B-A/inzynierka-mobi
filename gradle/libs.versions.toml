@@ -28,6 +28,19 @@ datastore = "1.1.7"
 benchmarkCommon = "1.3.4"
 biometric = "1.2.0-alpha05"
 securityCryptoKtx = "1.0.0"
+coreKtxVersion = "1.6.1"
+junit = "4.13.2"
+mockito = "4.0.0"
+robolectric = "4.10.3"
+testCore = "1.6.1"
+testRunner = "1.6.2"
+archCore = "2.2.0"
+firebaseFirestoreKtx = "25.1.4"
+mockk = "1.13.8"
+mockitoInline = "4.8.1"
+guava = "32.1.3-android"
+concurrent = "1.1.0"
+uiTestJunit4Android = "1.8.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +74,20 @@ androidx-datastore-preferences-core = { group = "androidx.datastore", name = "da
 androidx-benchmark-common = { group = "androidx.benchmark", name = "benchmark-common", version.ref = "benchmarkCommon" }
 biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCryptoKtx" }
+core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtxVersion" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockito" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+test-core = { group = "androidx.test", name = "core", version.ref = "testCore" }
+test-runner = { group = "androidx.test", name = "runner", version.ref = "testRunner" }
+arch-core = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCore" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref = "mockitoInline" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+androidx-concurrent = { group = "androidx.concurrent", name = "concurrent-futures", version.ref = "concurrent" }
+androidx-ui-test-junit4-android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "uiTestJunit4Android" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
