@@ -93,7 +93,7 @@ fun DeleteContainerScreen(
             }
         }
         Column {
-            TopHeaderBar(title = "Delete Container")
+            TopHeaderBar(title = "Usuń Pojemnik")
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -113,7 +113,7 @@ fun DeleteContainerScreen(
                 }
                 // Confirmation question
                 Text(
-                    text = "Are you sure?",
+                    text = "Czy na pewno?",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -121,7 +121,7 @@ fun DeleteContainerScreen(
                 )
                 // Warning about irreversibility
                 Text(
-                    text = "This operation can not be undone",
+                    text = "Ta operacja jest nieodwracalna",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -136,7 +136,7 @@ fun DeleteContainerScreen(
                         enabled = !isLoading // Disable while loading
                     ) {
                         Text(
-                            text = "Yes",
+                            text = "Tak",
                             fontFamily = PoppinsFamily
                         )
                     }
@@ -146,7 +146,7 @@ fun DeleteContainerScreen(
                         onClick = { onNoClick() }
                     ) {
                         Text(
-                            text = "No",
+                            text = "Nie",
                             fontFamily = PoppinsFamily
                         )
                     }

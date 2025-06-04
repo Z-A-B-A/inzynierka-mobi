@@ -244,7 +244,7 @@ fun ContainerScreen (
             ) {
                 BackButton { onBackClick() }
                 Text(
-                    text = "schedule >>>",
+                    text = "harmonogramy >>>",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 20.sp,
                     fontFamily = PoppinsFamily,
@@ -269,7 +269,7 @@ fun ContainerScreen (
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "-- description --",
+                            text = "-- opis --",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary
@@ -288,7 +288,7 @@ fun ContainerScreen (
                 item {
                     if (parametersList.isEmpty()) {
                         Text(
-                            text = "-- no parameters --",
+                            text = "-- brak parametrów --",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary
@@ -318,14 +318,14 @@ fun ContainerScreen (
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Species",
+                                text = "Gatunki",
                                 fontFamily = PoppinsFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.secondary
                             )
                             Text(
-                                text = "Count",
+                                text = "Ilość",
                                 fontFamily = PoppinsFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
@@ -346,7 +346,7 @@ fun ContainerScreen (
                 item {
                     if (speciesList.isEmpty()) {
                         Text(
-                            text = "-- no species --",
+                            text = "-- brak gatunków --",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary
@@ -373,7 +373,7 @@ fun ContainerScreen (
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Parameter History",
+                            text = "Historia Parametrów",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
@@ -388,16 +388,16 @@ fun ContainerScreen (
                                 .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                         ) {
-                            TimeFilterChip(TIMEFRAME_1H, "Last Hour", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip(TIMEFRAME_6H, "Last 6 Hours", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip(TIMEFRAME_12H, "Last 12 Hours", selectedTimeframe, onTimeframeSelected)
-                            TimeFilterChip(TIMEFRAME_24H, "Last Day", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_1H, "Godzina", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_6H, "6 Godzin", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_12H, "12 Godzin", selectedTimeframe, onTimeframeSelected)
+                            TimeFilterChip(TIMEFRAME_24H, "24 Godziny", selectedTimeframe, onTimeframeSelected)
                         }
 
                         // Show message if no history data is available
                         if (parametersList.isEmpty() || parameterHistoryData.isEmpty()) {
                             Text(
-                                text = "No history data available",
+                                text = "Brak dostępnej historii",
                                 fontFamily = PoppinsFamily,
                                 color = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.padding(top = 16.dp)
@@ -439,7 +439,7 @@ fun ContainerScreen (
                         .fillMaxWidth(0.65f)
                 ) {
                     Text(
-                        text = "Change",
+                        text = "Zmień",
                         fontFamily = PoppinsFamily
                     )
                 }

@@ -94,7 +94,7 @@ fun DeleteLocationScreen (
             }
         }
         Column {
-            TopHeaderBar(title = "Delete Location")
+            TopHeaderBar(title = "Usuń lokalizację")
             Column (
                 modifier = Modifier
                     .fillMaxSize()
@@ -113,7 +113,7 @@ fun DeleteLocationScreen (
                 }
                 // Confirmation question
                 Text(
-                    text = "Are you sure?",
+                    text = "Czy na pewno?",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -121,7 +121,7 @@ fun DeleteLocationScreen (
                 )
                 // Warning about irreversibility
                 Text(
-                    text = "Note: This operation deletes the location along with all containers, parameters, schedules, notifications and other related data",
+                    text = "Uwada: Ta operacja usuwa lokalizację wraz ze wszystkimi jej pojemnikami, parametrami, harmonogramami, powiadomieniami i innymi powiązanymi danymi",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -137,7 +137,7 @@ fun DeleteLocationScreen (
                         enabled = !isLoading // Disable while loading
                     ) {
                         Text(
-                            text = "Yes",
+                            text = "Tak",
                             fontFamily = PoppinsFamily
                         )
                     }
@@ -147,7 +147,7 @@ fun DeleteLocationScreen (
                         onClick = { onNoClick() }
                     ) {
                         Text(
-                            text = "No",
+                            text = "Nie",
                             fontFamily = PoppinsFamily
                         )
                     }

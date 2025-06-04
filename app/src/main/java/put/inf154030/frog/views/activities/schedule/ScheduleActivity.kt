@@ -129,7 +129,7 @@ fun ScheduleScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "Schedule")
+            TopHeaderBar(title = "Harmonogram")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -170,7 +170,7 @@ fun ScheduleScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No schedule added yet",
+                            text = "Brak harmonogramów",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium
@@ -206,7 +206,7 @@ fun ScheduleScreen(
             ) {
                 Spacer(modifier = Modifier.size(32.dp))
                 Text(
-                    text = "-- Create Schedule --",
+                    text = "-- utwórz harmonogram --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     fontFamily = PoppinsFamily,

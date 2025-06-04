@@ -47,7 +47,7 @@ fun ParameterChart(
             )
         } else {
             Text(
-                text = "No data available",
+                text = "Brak danych",
                 fontFamily = PoppinsFamily,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(8.dp)

@@ -100,7 +100,7 @@ fun SideMenu(
                         }
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "account",
+                            text = "profil",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
@@ -115,7 +115,7 @@ fun SideMenu(
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "upcoming",
+                            text = "nadchodzące",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
@@ -130,7 +130,7 @@ fun SideMenu(
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "notifications",
+                            text = "powiadomienia",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
@@ -145,7 +145,7 @@ fun SideMenu(
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "about",
+                            text = "o aplikacji",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,

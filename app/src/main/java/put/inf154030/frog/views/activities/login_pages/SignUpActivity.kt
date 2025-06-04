@@ -163,7 +163,7 @@ fun SignUpScreen (
             ) {
                 // Name input
                 Text(
-                    text = "Name",
+                    text = "Imię",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -197,7 +197,7 @@ fun SignUpScreen (
                 Spacer(modifier = Modifier.size(16.dp))
                 // Email input
                 Text(
-                    text = "Email",
+                    text = "Adres e-mail",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -231,7 +231,7 @@ fun SignUpScreen (
                 // Email validation message
                 if (email.isNotEmpty() && !emailValid.value) {
                     Text(
-                        text = "Enter valid email address.",
+                        text = "Wprowadź prawidłowy adres email",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -243,7 +243,7 @@ fun SignUpScreen (
                 Spacer(modifier = Modifier.size(16.dp))
                 // Password input with show/hide toggle
                 Text(
-                    text = "Password",
+                    text = "Hasło",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -291,7 +291,7 @@ fun SignUpScreen (
                 // Password validation message
                 if (password.isNotEmpty() && !passwordValid.value) {
                     Text(
-                        text = "Password must have at least 8 characters, 1 uppercase, 1 lowercase, and 1 number.",
+                        text = "Hasło musi powinno mieć przynajmniej 8 znaków, jedną wielką, jedną małą literę oraz liczbę",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -303,7 +303,7 @@ fun SignUpScreen (
                 Spacer(modifier = Modifier.size(16.dp))
                 // Confirm password input with show/hide toggle
                 Text(
-                    text = "Confirm password",
+                    text = "Potwierdź hasło",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -359,7 +359,7 @@ fun SignUpScreen (
                 // Passwords match validation message
                 if (passwordConfirmation.isNotEmpty() && !passwordsMatch.value) {
                     Text(
-                        text = "Passwords do not match.",
+                        text = "Hasła nie są identyczne",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -385,7 +385,7 @@ fun SignUpScreen (
                         )
                     } else {
                         Text(
-                            text = "Sign Up",
+                            text = "Zarejestruj",
                             fontFamily = PoppinsFamily
                         )
                     }

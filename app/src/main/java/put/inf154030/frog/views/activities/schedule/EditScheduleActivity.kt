@@ -144,7 +144,7 @@ fun EditScheduleScreen(
     ) {
         Column {
             // Top bar and back button
-            TopHeaderBar(title = "Edit Schedule")
+            TopHeaderBar(title = "Edytuj Harmonogram")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
             Column (
@@ -156,7 +156,7 @@ fun EditScheduleScreen(
             ) {
                 // Time selection label and picker
                 Text(
-                    text = "Execution time",
+                    text = "Czas wykonania",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -218,7 +218,7 @@ fun EditScheduleScreen(
                 }
                 // Delete schedule action
                 Text(
-                    text = "delete schedule",
+                    text = "usuń harmonogram",
                     color = Color.Red,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -236,7 +236,7 @@ fun EditScheduleScreen(
                     enabled = !isLoading,
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Zapisz",
                         fontFamily = PoppinsFamily
                     )
                 }

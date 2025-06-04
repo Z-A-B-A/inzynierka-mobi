@@ -138,7 +138,7 @@ fun EditLocationScreen (
             }
         }
         Column {
-            TopHeaderBar(title = "Edit Location")
+            TopHeaderBar(title = "Edytuj Lokalizację")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -153,7 +153,7 @@ fun EditLocationScreen (
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Name",
+                        text = "Nazwa",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -162,7 +162,7 @@ fun EditLocationScreen (
                     )
                     // Character count display
                     Text(
-                        text = "${name.length}/32 characters",
+                        text = "${name.length}/32 znaki",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -211,7 +211,7 @@ fun EditLocationScreen (
                 Spacer(modifier = Modifier.size(56.dp))
                 // Delete location link
                 Text(
-                    text = "delete location",
+                    text = "usuń lokalizację",
                     color = Color.Red,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -226,7 +226,7 @@ fun EditLocationScreen (
                 Button(
                     onClick = {
                         if (name.isEmpty()) {
-                            setErrorMessage("Location name cannot be empty")
+                            setErrorMessage("Nazwa nie może być pusta")
                             return@Button
                         }
                         onSaveClick(name)
@@ -235,7 +235,7 @@ fun EditLocationScreen (
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = if (isLoading) "Saving..." else "Save",
+                        text = if (isLoading) "Zapisywanie..." else "Zapisz",
                         fontFamily = PoppinsFamily
                     )
                 }

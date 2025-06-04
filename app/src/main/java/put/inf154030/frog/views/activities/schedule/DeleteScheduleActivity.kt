@@ -85,7 +85,7 @@ fun DeleteScheduleScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "Delete Schedule")
+            TopHeaderBar(title = "Usuń Harmonogram")
             Column (
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,14 +103,14 @@ fun DeleteScheduleScreen (
                 }
                 // Confirmation prompt
                 Text(
-                    text = "Are you sure?",
+                    text = "Czy na pewno?",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 36.sp,
                 )
                 Text(
-                    text = "This operation can not be undone",
+                    text = "Ta operacja jest nieodwracalna",
                     color = MaterialTheme.colorScheme.secondary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -125,7 +125,7 @@ fun DeleteScheduleScreen (
                         enabled = !isLoading
                     ) {
                         Text(
-                            text = "Yes",
+                            text = "Tak",
                             fontFamily = PoppinsFamily
                         )
                     }
@@ -135,7 +135,7 @@ fun DeleteScheduleScreen (
                         onClick = { onNoClick() }
                     ) {
                         Text(
-                            text = "No",
+                            text = "Nie",
                             fontFamily = PoppinsFamily
                         )
                     }

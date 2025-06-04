@@ -118,7 +118,7 @@ class LocationActivity : ComponentActivity() {
     // Fetch containers for this location from API
     private fun loadContainers() {
         if (locationId == -1) {
-            errorMessage = "Invalid location ID"
+            errorMessage = "Nieprawidłowe ID lokalizacji"
             return
         }
 
@@ -221,8 +221,8 @@ fun LocationScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (selectedFilter == "all") "No containers added yet"
-                        else "No ${selectedFilter}s in this location",
+                        text = if (selectedFilter == "all") "Brak pojemników"
+                        else "Brak ${selectedFilter} w tej lokalizacji",
                         color = MaterialTheme.colorScheme.secondary,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium

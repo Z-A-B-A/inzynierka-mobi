@@ -119,7 +119,7 @@ fun CreateScheduleScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     // Days of week selection
     var selectedDays by remember { mutableStateOf(setOf<Int>()) }
-    val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val days = listOf("Pon", "Wto", "Śro", "Czw", "Pią", "Sob", "Nie")
     // Format time as "HH:mm"
     val formattedTime = String.format(Locale.US, "%02d:%02d", hour, minute)
 
@@ -129,7 +129,7 @@ fun CreateScheduleScreen(
     ) {
         Column {
             // Top bar and back button
-            TopHeaderBar(title = "Create Schedule")
+            TopHeaderBar(title = "Utwórz Harmonogram")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(64.dp))
             Column (
@@ -146,7 +146,7 @@ fun CreateScheduleScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Name",
+                        text = "Nazwa",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -154,7 +154,7 @@ fun CreateScheduleScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${name.length}/32 characters",
+                        text = "${name.length}/32 znaki",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -193,7 +193,7 @@ fun CreateScheduleScreen(
                 Spacer(modifier = Modifier.size(32.dp))
                 // Execution mode toggle
                 Text(
-                    text = "-- execution --",
+                    text = "-- wykonanie --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     fontFamily = PoppinsFamily,
@@ -206,12 +206,12 @@ fun CreateScheduleScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "daily",
+                        text = "codziennie",
                         color = MaterialTheme.colorScheme.secondary,
                         fontSize = 18.sp,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(96.dp),
+                        modifier = Modifier.width(128.dp),
                         textAlign = TextAlign.End
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -221,12 +221,12 @@ fun CreateScheduleScreen(
                     )
                     Spacer(modifier = Modifier.size(16.dp))
                     Text(
-                        text = "weekly",
+                        text = "tygodniowo",
                         color = MaterialTheme.colorScheme.secondary,
                         fontSize = 18.sp,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(96.dp),
+                        modifier = Modifier.width(128.dp),
                         textAlign = TextAlign.Start
                     )
                 }
@@ -282,7 +282,7 @@ fun CreateScheduleScreen(
                     // Show selected days or error
                     if (selectedDays.isNotEmpty()) {
                         Text(
-                            text = "Selected: ${selectedDays.sorted().joinToString(", ")}",
+                            text = "Wybrano: ${selectedDays.sorted().joinToString(", ")}",
                             fontSize = 14.sp,
                             fontFamily = PoppinsFamily,
                             color = MaterialTheme.colorScheme.secondary,
@@ -290,7 +290,7 @@ fun CreateScheduleScreen(
                         )
                     } else {
                         Text(
-                            text = "Please select at least one day",
+                            text = "Proszę wybrać przynajmniej jeden dzień",
                             fontSize = 14.sp,
                             fontFamily = PoppinsFamily,
                             color = MaterialTheme.colorScheme.error,
@@ -301,7 +301,7 @@ fun CreateScheduleScreen(
                 }
                 // Time selection
                 Text(
-                    text = "-- execution time --",
+                    text = "-- czas wykonania --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     fontFamily = PoppinsFamily,
@@ -376,7 +376,7 @@ fun CreateScheduleScreen(
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = "Create",
+                        text = "Utwórz",
                         fontFamily = PoppinsFamily
                     )
                 }
@@ -418,7 +418,7 @@ fun TimePickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Select Time", fontFamily = PoppinsFamily) },
+        title = { Text("Wybierz czas", fontFamily = PoppinsFamily) },
         text = {
             TimePicker(state = timePickerState)
         },
@@ -435,7 +435,7 @@ fun TimePickerDialog(
             Button(
                 onClick = onDismissRequest
             ) {
-                Text("Cancel", fontFamily = PoppinsFamily)
+                Text("Anuluj", fontFamily = PoppinsFamily)
             }
         }
     )

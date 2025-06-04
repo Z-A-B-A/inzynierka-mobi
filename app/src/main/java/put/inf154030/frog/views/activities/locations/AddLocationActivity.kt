@@ -93,7 +93,7 @@ fun AddLocationScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "New Location")
+            TopHeaderBar(title = "Nowa Lokalizacja")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -108,7 +108,7 @@ fun AddLocationScreen (
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Name",
+                        text = "Nazwa",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -116,7 +116,7 @@ fun AddLocationScreen (
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${name.length}/32 characters",
+                        text = "${name.length}/32 znaki",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -168,7 +168,7 @@ fun AddLocationScreen (
                 Button(
                     onClick = {
                         if (name.isEmpty()) {
-                            setErrorMessage("Location name cannot be empty")
+                            setErrorMessage("Nazwa nie może być pusta")
                             return@Button
                         }
                         onAddClick(name)
@@ -177,7 +177,7 @@ fun AddLocationScreen (
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = if (isLoading) "Adding..." else "Add",
+                        text = if (isLoading) "Dodawanie..." else "Dodaj",
                         fontFamily = PoppinsFamily
                     )
                 }

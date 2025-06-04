@@ -94,7 +94,7 @@ fun AddContainerNextStepScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar( title = "New Container" ) // Header bar
+            TopHeaderBar( title = "Nowy Pojemnik" ) // Header bar
             BackButton { onBackClick() } // Back button
             Column (
                 modifier = Modifier
@@ -115,7 +115,7 @@ fun AddContainerNextStepScreen (
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Name",
+                        text = "Nazwa",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -123,7 +123,7 @@ fun AddContainerNextStepScreen (
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${name.length}/32 characters",
+                        text = "${name.length}/32 znaki",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -174,7 +174,7 @@ fun AddContainerNextStepScreen (
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Description",
+                        text = "Opis",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -182,7 +182,7 @@ fun AddContainerNextStepScreen (
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${description.length}/300 characters",
+                        text = "${description.length}/300 znaków",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -251,12 +251,12 @@ fun AddContainerNextStepScreen (
                         var hasError = false
                         // Validate name
                         if (name.trim().isEmpty()) {
-                            errorMessageName = "Container name cannot be empty"
+                            errorMessageName = "Nazwa nie może być pusta"
                             hasError = true
                         }
                         // Validate description
                         if (description.trim().isEmpty()) {
-                            errorMessageDescription = "Description cannot be empty"
+                            errorMessageDescription = "Opis nie może być pusty"
                             hasError = true
                         }
                         if (hasError) return@Button
@@ -271,7 +271,7 @@ fun AddContainerNextStepScreen (
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = if (isLoading) "Loading..." else "Finish",
+                        text = if (isLoading) "Ładowanie..." else "Zakończ",
                         fontFamily = PoppinsFamily
                     )
                 }

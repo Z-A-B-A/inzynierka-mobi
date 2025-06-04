@@ -114,7 +114,7 @@ class NotificationsActivity : ComponentActivity() {
         } else if (!enabled) {
             Toast.makeText(
                 this,
-                "Notifications disabled for this app",
+                "Powiadomienia wyłączone dla tej aplikacji",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -188,7 +188,7 @@ fun NotificationsScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar( title = "Notifications" )
+            TopHeaderBar( title = "Powiadomienia" )
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -204,7 +204,7 @@ fun NotificationsScreen(
                 Spacer(modifier = Modifier.size(16.dp))
                 // "Mark all as read" action
                 Text(
-                    text = "mark all as read",
+                    text = "oznacz wszystkie jako przeczytane",
                     color = MaterialTheme.colorScheme.tertiary,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
@@ -260,7 +260,7 @@ fun NotificationsScreen(
                         if (notificationsList.isEmpty()) {
                             item {
                                 Text(
-                                    text = "No new notifications",
+                                    text = "Brak nowych powiadomień",
                                     fontFamily = PoppinsFamily,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 18.sp,
