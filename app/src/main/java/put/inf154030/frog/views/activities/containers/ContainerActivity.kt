@@ -57,6 +57,7 @@ import put.inf154030.frog.views.fragments.TopHeaderBar
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class ContainerActivity : ComponentActivity() {
     // State variables for UI and data
@@ -297,9 +298,10 @@ fun ContainerScreen (
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             parametersList.forEach { parameter ->
+                                val formattedValue = String.format(Locale.US, "%.2f", parameter.currentValue ?: 0.0).toDouble()
                                 ParameterItem(
                                     parameterName = parameter.name,
-                                    currentValue = parameter.currentValue ?: 0.0,
+                                    currentValue = formattedValue,
                                     unit = parameter.unit
                                 )
                             }
