@@ -52,6 +52,8 @@ import put.inf154030.frog.theme.PoppinsFamily
 import put.inf154030.frog.views.fragments.BackButton
 import put.inf154030.frog.views.fragments.TopHeaderBar
 
+data class Category(val value: String, val label: String)
+
 // Activity for adding a species to a container
 class AddSpeciesActivity : ComponentActivity() {
     // State for species list, loading, and error message
@@ -91,7 +93,7 @@ class AddSpeciesActivity : ComponentActivity() {
                     },
                     speciesList = speciesList,
                     onFilterSelected = { category ->
-                        loadSpecies(if (category == "none") null else category)
+                        loadSpecies(if (category == "brak") null else category)
                     },
                     isLoading = isLoading,
                     errorMessage = errorMessage
@@ -108,7 +110,7 @@ class AddSpeciesActivity : ComponentActivity() {
         errorMessage = null
 
         speciesRepository.getSpecies(
-            if (category == "none") null else category,
+            if (category == "brak") null else category,
             onResult = { success, species, error ->
                 if (success && !species.isNullOrEmpty()) speciesList = species
                 isLoading = false
@@ -130,8 +132,15 @@ fun AddSpeciesScreen(
 ) {
     var isSpeciesDropdownExpanded by remember { mutableStateOf(false) }
     var selectedSpecies by remember { mutableStateOf<Species?>(null) }
-    val categories = listOf("none", "reptile", "amphibian", "invertebrate", "fish", "aquatic invertebrate")
-    var selectedCategory by remember { mutableStateOf("none") }
+    val categories = listOf(
+        Category("none", "Brak"),
+        Category("reptile", "Gad"),
+        Category("amphibian", "Płaz"),
+        Category("invertebrate", "Bezkręgowce"),
+        Category("fish", "Ryba"),
+        Category("aquatic invertebrate", "Bezkręgowce wodne")
+    )
+    var selectedCategory by remember { mutableStateOf(Category("none", "Brak")) }
     var speciesCount by remember { mutableIntStateOf(1) }
     var isCountDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -140,7 +149,7 @@ fun AddSpeciesScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "Add Species")
+            TopHeaderBar(title = "Dodaj gatunek")
             BackButton { onBackClick() }
             Column (
                 modifier = Modifier
@@ -152,7 +161,7 @@ fun AddSpeciesScreen(
                 Spacer(modifier = Modifier.size(16.dp))
                 // Filter chips for categories
                 Text(
-                    text = "-- filters --",
+                    text = "-- filtry --",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.secondary
@@ -173,15 +182,15 @@ fun AddSpeciesScreen(
                                 onClick = {
                                     selectedCategory = category
                                     // Filter species list based on category
-                                    if (category == "none") {
+                                    if (category.value == "none") {
                                         onFilterSelected(null)
                                     } else {
-                                        onFilterSelected(category)
+                                        onFilterSelected(category.value)
                                     }
                                 },
                                 label = {
                                     Text(
-                                        text = category.replaceFirstChar { it.uppercase() },
+                                        text = category.label,
                                         fontFamily = PoppinsFamily,
                                         fontSize = 14.sp,
                                         maxLines = 1
@@ -214,7 +223,7 @@ fun AddSpeciesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = selectedSpecies?.name ?: "Select species",
+                            text = selectedSpecies?.name ?: "Wybierz gatunek",
                             fontFamily = PoppinsFamily
                         )
 
@@ -263,7 +272,7 @@ fun AddSpeciesScreen(
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(
-                                text = "Species Count:",
+                                text = "Liczba osobników:",
                                 fontFamily = PoppinsFamily,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
@@ -324,7 +333,7 @@ fun AddSpeciesScreen(
                         Spacer(modifier = Modifier.size(16.dp))
                         // Show selected species details
                         Text(
-                            text = "Category: ${selectedSpecies!!.category}",
+                            text = "Kategoria: ${selectedSpecies!!.category}",
                             fontFamily = PoppinsFamily,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -339,7 +348,7 @@ fun AddSpeciesScreen(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Description: \n${selectedSpecies!!.description}",
+                            text = "Opis: \n${selectedSpecies!!.description}",
                             fontFamily = PoppinsFamily,
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.secondary,
@@ -377,7 +386,7 @@ fun AddSpeciesScreen(
                     enabled = !isLoading // Disabled while loading
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Zapisz",
                         fontFamily = PoppinsFamily
                     )
                 }

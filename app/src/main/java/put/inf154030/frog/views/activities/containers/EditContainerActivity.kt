@@ -172,7 +172,7 @@ fun EditContainerScreen(
             }
         }
         Column {
-            TopHeaderBar(title = "Edit Container")
+            TopHeaderBar(title = "Edytuj Pojemnik")
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(16.dp))
 
@@ -195,7 +195,7 @@ fun EditContainerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Name",
+                        text = "Nazwa",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -203,7 +203,7 @@ fun EditContainerScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${name.length}/32 characters",
+                        text = "${name.length}/32 znaki",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -256,7 +256,7 @@ fun EditContainerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Description",
+                        text = "Opis",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -264,7 +264,7 @@ fun EditContainerScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "${description.length}/300 characters",
+                        text = "${description.length}/300 znaków",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
@@ -338,7 +338,7 @@ fun EditContainerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = selectedLocation?.name ?: if (isLoading) "Loading locations..." else "Select location",
+                            text = selectedLocation?.name ?: if (isLoading) "Ładowanie kolalizacji..." else "Wybierz lokalizację",
                             fontFamily = PoppinsFamily
                         )
 
@@ -384,7 +384,7 @@ fun EditContainerScreen(
             ) {
                 // Delete container link
                 Text(
-                    text = "delete container",
+                    text = "usuń pojemnik",
                     color = Color.Red,
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -408,11 +408,11 @@ fun EditContainerScreen(
                 Button(
                     onClick = {
                         if (name.isBlank()) {
-                            errorMessageName = "Name cannot be empty"
+                            errorMessageName = "Imię nie może być puste"
                         } else if (description.isBlank()) {
-                            errorMessageDescription = "Description cannot be empty"
+                            errorMessageDescription = "Opis nie może być pusty"
                         } else if (selectedLocation == null) {
-                            setErrorMessage("Please select a location")
+                            setErrorMessage("Proszę wybrać lokalizację")
                         } else {
                             errorMessageName = null
                             errorMessageDescription = null

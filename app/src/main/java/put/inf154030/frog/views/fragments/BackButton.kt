@@ -20,7 +20,7 @@ fun BackButton (
     onClick: () -> Unit
 ) {
     Text(
-        text = "<<< back",
+        text = "<<< powrót",
         color = MaterialTheme.colorScheme.secondary,
         fontSize = 20.sp,
         fontFamily = PoppinsFamily,

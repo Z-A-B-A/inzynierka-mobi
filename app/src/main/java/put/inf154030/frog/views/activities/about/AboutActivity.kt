@@ -50,7 +50,7 @@ fun AboutScreen (
     ) {
         Column {
             TopHeaderBar(
-                title = "About" // Show header bar with title
+                title = "O Aplikacji" // Show header bar with title
             )
             BackButton { onBackClick() } // Show back button
             Box (

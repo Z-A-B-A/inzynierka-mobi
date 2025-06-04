@@ -92,7 +92,7 @@ fun InitialScreen (
                     .fillMaxWidth(0.65f),
             ) {
                 Text(
-                    text = "Log In",
+                    text = "Logowanie",
                     fontFamily = PoppinsFamily
                 )
             }
@@ -104,7 +104,7 @@ fun InitialScreen (
                     .fillMaxWidth(0.65f),
             ) {
                 Text(
-                    text = "Sign Up",
+                    text = "Rejestracja",
                     fontFamily = PoppinsFamily
                 )
             }

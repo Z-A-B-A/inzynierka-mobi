@@ -47,7 +47,7 @@ class AddContainerActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (!isGranted) {
-            Toast.makeText(this, "Camera permission is required to scan QR codes", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Uprawnienia do kamery są potrzebne, aby skanować kody QR", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -113,7 +113,7 @@ fun AddContainerScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "New Container")
+            TopHeaderBar(title = "Nowy Pojemnik")
             BackButton { onBackClick() }
             if (showCamera) {
                 // Show camera preview for QR scanning

@@ -180,7 +180,7 @@ fun LocationsScreen(
         ) {
             // Top navigation bar with menu button
             TopNavigationBar(
-                title = "Hi, $userName!",
+                title = "Cześć, $userName!",
                 onMenuClick = { showMenu = !showMenu }
             )
 
@@ -219,7 +219,7 @@ fun LocationsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Tap + to add your first location",
+                        text = "Kliknij + żeby dodać pierwsza lokalizację",
                         color = MaterialTheme.colorScheme.secondary,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium

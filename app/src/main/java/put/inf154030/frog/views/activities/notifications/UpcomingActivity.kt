@@ -83,7 +83,7 @@ fun UpcomingScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar(title = "Upcoming")
+            TopHeaderBar(title = "Nadchodzące")
             BackButton { onBackClick() }
             Column(
                 modifier = Modifier
@@ -115,7 +115,7 @@ fun UpcomingScreen (
                     // Show empty state if no events
                     if (upcomingList.isEmpty()) {
                         Text(
-                            text = "No upcoming events 🎉",
+                            text = "Brak nadchodzących wydarzeń 🎉",
                             color = MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,

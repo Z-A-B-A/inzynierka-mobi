@@ -180,25 +180,25 @@ class LogInActivity : FragmentActivity() {
                             }
                         )
                     }  else {
-                        errorMessage = "No stored credentials found"
+                        errorMessage = "Brak danych do logowania"
                     }
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
-                    errorMessage = "Authentication error: $errString"
+                    errorMessage = "Błąd uwierzytelniania: $errString"
                 }
 
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    errorMessage = "Authentication failed"
+                    errorMessage = "Uwierzytelnienie nie powiodło się"
                 }
             })
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Biometric Login")
-            .setSubtitle("Log in using your biometric credential")
-            .setNegativeButtonText("Cancel")
+            .setTitle("Logowanie Biometryczne")
+            .setSubtitle("Zaloguj za pomocą biometrii")
+            .setNegativeButtonText("Anuluj")
             .build()
 
         biometricPrompt.authenticate(promptInfo)
@@ -216,12 +216,12 @@ class LogInActivity : FragmentActivity() {
         // Validate input
         if (email.isEmpty() || password.isEmpty()) {
             isLoading = false
-            errorMessage = "Please enter email and password"
+            errorMessage = "Wprowadź dane logowania"
             return
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             isLoading = false
-            errorMessage = "Please enter a valid email address"
+            errorMessage = "Wprowadź prawidlowy adres e-mail"
             return
         }
 
@@ -316,7 +316,7 @@ fun LogInScreen(
                         )
                     }
                     Text(
-                        text = "Use biometrics to login",
+                        text = "Zaloguj za pomocą biometrii",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -324,7 +324,7 @@ fun LogInScreen(
                 }
                 // Email label and input
                 Text(
-                    text = "Email",
+                    text = "Adres e-mail",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -358,7 +358,7 @@ fun LogInScreen(
                 // Error message if email is not valid
                 if (!emailValid.value && email.isNotEmpty()) {
                     Text(
-                        text = "Invalid email address",
+                        text = "Nieprawidłowy adres email",
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -368,7 +368,7 @@ fun LogInScreen(
                 Spacer(modifier = Modifier.size(16.dp))
                 // Password label and input
                 Text(
-                    text = "Password",
+                    text = "Hasło",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -421,13 +421,13 @@ fun LogInScreen(
                 Spacer(modifier = Modifier.size(32.dp))
                 // "Frogot password" clickable text
                 Text(
-                    text = "-- frogot password? --",
+                    text = "-- żabomniałeś/aś hasła? --",
                     color = MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
                         .clickable { 
-                            Toast.makeText(context, "Not implemented yet", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Jeszcze nie zaimplementowane", Toast.LENGTH_SHORT).show()
                          }
                         .padding(8.dp)
                 )
@@ -458,7 +458,7 @@ fun LogInScreen(
                         )
                     } else {
                         Text(
-                            text = "Log In",
+                            text = "Zaloguj",
                             fontFamily = PoppinsFamily
                         )
                     }

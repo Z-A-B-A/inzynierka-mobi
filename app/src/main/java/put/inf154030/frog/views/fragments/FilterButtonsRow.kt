@@ -19,17 +19,17 @@ fun FilterButtonsRow(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         FilterButton(
-            text = "All",
+            text = "Wszystkie",
             selected = selectedFilter == "all",
             onClick = { onFilterSelected("all") }
         )
         FilterButton(
-            text = "Aquariums",
+            text = "Akwaria",
             selected = selectedFilter == "aquariums",
             onClick = { onFilterSelected("aquariums") }
         )
         FilterButton(
-            text = "Terrariums",
+            text = "Terraria",
             selected = selectedFilter == "terrariums",
             onClick = { onFilterSelected("terrariums") }
         )

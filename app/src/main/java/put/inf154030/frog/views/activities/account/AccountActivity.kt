@@ -88,7 +88,7 @@ fun AccountScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar( title = "Account" ) // Header bar with title
+            TopHeaderBar( title = "Profil" ) // Header bar with title
             BackButton { onBackClick() }
             Spacer(modifier = Modifier.size(32.dp))
 
@@ -105,7 +105,7 @@ fun AccountScreen (
                 contentAlignment = Alignment.CenterStart
             ) {
                 Text(
-                    text = userName ?: "Could not load name",
+                    text = userName ?: "Nie załadowano imienia",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -130,7 +130,7 @@ fun AccountScreen (
                 contentAlignment = Alignment.CenterStart
             ) {
                 AutoResizeText(
-                    text = userEmail ?: "Could not load email",
+                    text = userEmail ?: "Nie załadowano maila",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.secondary,
@@ -155,7 +155,7 @@ fun AccountScreen (
                         .fillMaxWidth(0.65f),
                 ) {
                     Text(
-                        text = "Edit",
+                        text = "Edytuj",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold
                     )

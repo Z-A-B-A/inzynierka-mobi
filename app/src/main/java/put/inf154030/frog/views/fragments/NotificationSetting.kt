@@ -26,7 +26,7 @@ fun NotificationSetting (
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Allow notifications",
+            text = "Powiadomienia",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,

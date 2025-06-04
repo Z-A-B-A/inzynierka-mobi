@@ -103,7 +103,7 @@ fun EditAccountScreen (
         color = MaterialTheme.colorScheme.background
     ) {
         Column {
-            TopHeaderBar( title = "Account" ) // Header bar
+            TopHeaderBar( title = "Edytuj Profil" ) // Header bar
             BackButton { onBackClick() } // Back button
             Spacer(modifier = Modifier.size(64.dp))
             
@@ -116,7 +116,7 @@ fun EditAccountScreen (
             ) {
                 // Name label and input
                 Text(
-                    text = "Name",
+                    text = "Imię",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -151,7 +151,7 @@ fun EditAccountScreen (
 
                 // Email label and input
                 Text(
-                    text = "Email",
+                    text = "Adres e-mail",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
@@ -187,7 +187,7 @@ fun EditAccountScreen (
                 // Show email validation error
                 if (email.isNotEmpty() && !emailValid.value) {
                     Text(
-                        text = "Enter valid email address.",
+                        text = "Wprowadź prawidłowy adres email",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontFamily = PoppinsFamily,
@@ -234,7 +234,7 @@ fun EditAccountScreen (
                         .fillMaxWidth(0.65f),
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Zapisz",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold
                     )

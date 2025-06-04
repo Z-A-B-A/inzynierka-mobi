@@ -208,7 +208,7 @@ class ManageContainerActivity : ComponentActivity() {
 
         // If nothing to update, just return
         if (totalSaveRequests == 0) {
-            Toast.makeText(this, "No changes to save", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Brak zmian do zapisu", Toast.LENGTH_SHORT).show()
             isLoading = false
             return
         }
@@ -269,7 +269,7 @@ class ManageContainerActivity : ComponentActivity() {
     // Load container details and update state
     private fun loadContainerDetails() {
         if (containerId == -1) {
-            errorMessage = "Invalid container ID"
+            errorMessage = "Nieprawidłowe ID pojemnika"
             return
         }
 
@@ -330,7 +330,7 @@ fun ManageContainerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Parameter",
+                        text = "Parametr",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -398,7 +398,7 @@ fun ManageContainerScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No parameter added yet",
+                            text = "Brak parametrów",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium
@@ -432,7 +432,7 @@ fun ManageContainerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Species",
+                        text = "Gatunek",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -442,7 +442,7 @@ fun ManageContainerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Count",
+                            text = "Ilość",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -501,7 +501,7 @@ fun ManageContainerScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No species added yet",
+                            text = "Brak gatunków",
                             color = MaterialTheme.colorScheme.secondary,
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium
@@ -537,7 +537,7 @@ fun ManageContainerScreen(
             ) {
                 if (hasInvalidInput) {
                     Text(
-                        text = "Please correct invalid parameter or species values.",
+                        text = "Popraw nieprawidłowe wartości parametrów lub liczbę gatunków",
                         color = MaterialTheme.colorScheme.error,
                         fontFamily = PoppinsFamily,
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -549,7 +549,7 @@ fun ManageContainerScreen(
                     enabled = !isLoading && !hasInvalidInput
                 ) {
                     Text(
-                        text = if (isLoading) "Saving..." else "Save",
+                        text = if (isLoading) "Zapisywanie..." else "Zapisz",
                         fontFamily = PoppinsFamily
                     )
                 }

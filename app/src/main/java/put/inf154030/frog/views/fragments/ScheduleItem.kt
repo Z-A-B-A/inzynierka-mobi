@@ -93,7 +93,7 @@ fun ScheduleItem (
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    text = frequency,
+                    text = "codziennie",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 18.sp,
@@ -101,7 +101,7 @@ fun ScheduleItem (
                 )
             }
         } else {
-            val dayLabels = listOf("Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays", "Sundays")
+            val dayLabels = listOf("Poniedziałki", "Wtorki", "Środy", "Czwartki", "Piątki", "Soboty", "Niedziele")
             val days = weekDays.split(",").map { it.toInt() }
 
             Column(
@@ -117,14 +117,14 @@ fun ScheduleItem (
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "${dayLabels[day - 1]} at $formattedTime",
+                            text = "${dayLabels[day - 1]} o $formattedTime",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = frequency,
+                            text = "tygodniowo",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
