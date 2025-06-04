@@ -174,9 +174,8 @@ fun EditLocationScreen (
                 BasicTextField(
                     value = name,
                     onValueChange = { newValue ->
-                        val trimmed = newValue.trim()
-                        if (trimmed.length <= 32) {
-                            name = trimmed
+                        if (newValue.length <= 32) {
+                            name = newValue
                             setErrorMessage(null)
                         }
                     },
