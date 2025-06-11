@@ -425,7 +425,7 @@ fun EditContainerScreen(
                     enabled = !isLoading
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Zapisz",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold
                     )
