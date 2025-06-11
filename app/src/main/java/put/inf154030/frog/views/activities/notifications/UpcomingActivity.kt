@@ -39,7 +39,7 @@ import put.inf154030.frog.views.fragments.UpcomingCard
 class UpcomingActivity : ComponentActivity() {
     // State for upcoming events, loading, and error
     private var upcomingList by mutableStateOf<List<UpcomingEvent>>(emptyList())
-    private var isLoading by mutableStateOf(true)
+    private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
     private val notificationsRepository = NotificationsRepository()
 
@@ -67,6 +67,11 @@ class UpcomingActivity : ComponentActivity() {
 //        errorMessage = null
 //
 //        TODO("czekam na ogarnięcie requesta")
+
+        upcomingList = listOf(
+            UpcomingEvent(1, 1, ContainerReference(1, "Jaszczurka"), "Karmienie", "2025-06-23T18:00:00Z"),
+            UpcomingEvent(2, 2, ContainerReference(2, "Żółwik"), "Czyszczenie", "2025-06-23T18:30:00Z")
+        )
     }
 }
 
