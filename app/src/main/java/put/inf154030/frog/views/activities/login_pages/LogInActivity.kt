@@ -75,17 +75,13 @@ class LogInActivity : FragmentActivity() {
     private var errorMessage by mutableStateOf<String?>(null)
     private val accountRepository = AccountRepository()
     private val notificationsRepository = NotificationsRepository()
+    private var fromNotification: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // If opened from notification create a chain to get to notifications activity
-        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
-        if (fromNotification) {
-            val intent = Intent(this, LocationsActivity::class.java)
-            intent.putExtra("FROM_NOTIFICATION", true)
-            startActivity(intent)
-        }
+        fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
 
         // Check if user has stored credentials
         val storedCredentials = getCredentials(this)
@@ -105,6 +101,7 @@ class LogInActivity : FragmentActivity() {
                                     sendFcmTokenToServer()
                                     // Navigate to main locations screen
                                     val intent = Intent(this, LocationsActivity::class.java)
+                                    if (fromNotification) intent.putExtra("FROM_NOTIFICATION", true)
                                     startActivity(intent)
                                     finish()
                                 }
@@ -174,6 +171,7 @@ class LogInActivity : FragmentActivity() {
                                     // Navigate to main locations screen
                                     val intent =
                                         Intent(this@LogInActivity, LocationsActivity::class.java)
+                                    if (fromNotification) intent.putExtra("FROM_NOTIFICATION", true)
                                     startActivity(intent)
                                     finish()
                                 }
