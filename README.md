@@ -29,7 +29,8 @@ The system is composed of three main components:
 
 - **Kotlin:** Main programming language (for mobile app)
 - **Raspberry Pi:** Edge computing device for measurement and control
-- **Web technologies:** For the management website and server backend
+- **Web technologies:** For the management website
+- **Go** For API server
 
 ---
 
